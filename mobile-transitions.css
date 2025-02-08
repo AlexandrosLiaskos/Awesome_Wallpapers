@@ -1,0 +1,20 @@
+.mobile-info-panel {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    background-color: rgba(10, 20, 20, 0.95);
+    margin-top: 0;
+    border-radius: 0.5rem;
+    transform: translateY(-20px);
+    pointer-events: none;
+}
+
+.mobile-info-panel.expanded {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 1rem;
+    transform: translateY(0);
+    pointer-events: auto;
+    padding: 1rem;
+}
