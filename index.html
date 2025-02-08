@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Previous head content remains the same until style section -->
+<!-- Previous head and style content remains the same until mobile styles -->
 <style>
-    /* Previous styles remain the same */
+    /* ... previous styles ... */
     
-    /* Updated Mobile Layout styles */
     @media (max-width: 768px) {
         .layout-container {
             display: block;
@@ -31,7 +30,7 @@
             background-color: rgba(10, 20, 20, 0.95);
             margin-top: 0;
             border-radius: 0.5rem;
-            transform: translateY(-20px);
+            transform: translateY(-10px);
             pointer-events: none;
         }
 
@@ -44,14 +43,6 @@
             padding: 1rem;
         }
 
-        .wallpaper-card {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .wallpaper-card.selected {
-            order: -1;
-        }
-
         .mobile-info-content {
             transition: opacity 0.3s ease;
             opacity: 0;
@@ -61,39 +52,64 @@
             opacity: 1;
             transition-delay: 0.2s;
         }
+
+        /* Remove any styles that affect card ordering */
+        .wallpaper-card.selected {
+            /* Remove order property */
+        }
     }
 </style>
 
-<!-- Previous HTML content remains the same until mobile info panel -->
+<!-- HTML content remains largely the same, but simplify the mobile info panel -->
+<div class="main-panel min-h-screen p-4">
+    <div class="image-grid">
+        <div v-for="wallpaper in wallpapers" 
+             :key="wallpaper.filename"
+             class="wallpaper-card rounded-lg overflow-hidden cursor-pointer"
+             :class="{'selected-preview': selectedWallpaper?.filename === wallpaper.filename}"
+             :id="'preview-' + wallpaper.filename"
+             @click="selectWallpaperFromPreview(wallpaper)">
+            <img :src="wallpaper.github_raw_url" 
+                 :alt="getFilenameWithoutExtension(wallpaper.filename)"
+                 class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                 loading="lazy">
+            <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black to-transparent">
+                <div class="text-sm text-white truncate">
+                    {{ getFilenameWithoutExtension(wallpaper.filename) }}
+                </div>
+            </div>
 
-<!-- Inside the wallpaper-card div, update the mobile info panel -->
-<div :class="['mobile-info-panel', {'expanded': selectedWallpaper?.filename === wallpaper.filename}]">
-    <div class="mobile-info-content">
-        <div class="text-sm text-gray-300">
-            <h3 class="font-bold text-white text-lg mb-2">
-                {{ getFilenameWithoutExtension(wallpaper.filename) }}
-            </h3>
-            <div class="mb-2">
-                Tags: {{ wallpaper.tags.join(', ') }}
+            <!-- Mobile Info Panel -->
+            <div :class="['mobile-info-panel', {'expanded': selectedWallpaper?.filename === wallpaper.filename}]">
+                <div class="mobile-info-content">
+                    <div class="text-sm text-gray-300">
+                        <h3 class="font-bold text-white text-lg mb-2">
+                            {{ getFilenameWithoutExtension(wallpaper.filename) }}
+                        </h3>
+                        <div class="mb-2">
+                            Tags: {{ wallpaper.tags.join(', ') }}
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>Resolution:</div>
+                            <div>{{ wallpaper.metadata.width }}x{{ wallpaper.metadata.height }}</div>
+                            <div>File Size:</div>
+                            <div>{{ wallpaper.metadata.file_size_mb }}MB</div>
+                            <div>File Type:</div>
+                            <div>{{ getFileExtension(wallpaper.filename) }}</div>
+                        </div>
+                        <a :href="wallpaper.github_raw_url" 
+                           target="_blank"
+                           class="block mt-4 text-center p-2 rounded-lg border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-900 transition-colors duration-200">
+                            Download Wallpaper
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-                <div>Resolution:</div>
-                <div>{{ wallpaper.metadata.width }}x{{ wallpaper.metadata.height }}</div>
-                <div>File Size:</div>
-                <div>{{ wallpaper.metadata.file_size_mb }}MB</div>
-                <div>File Type:</div>
-                <div>{{ getFileExtension(wallpaper.filename) }}</div>
-            </div>
-            <a :href="wallpaper.github_raw_url" 
-               target="_blank"
-               class="block mt-4 text-center p-2 rounded-lg border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-900 transition-colors duration-200">
-                Download Wallpaper
-            </a>
         </div>
     </div>
 </div>
 
-<!-- Previous script content remains the same, but update the selectWallpaperFromPreview function -->
+<!-- Update the script section -->
 <script>
     // ... previous code ...
 
@@ -115,18 +131,9 @@
             if (listElement) {
                 listElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        } else {
-            // On mobile, scroll the selected image to top with a slight delay
-            await nextTick();
-            const previewElement = document.getElementById('preview-' + wallpaper.filename);
-            if (previewElement) {
-                setTimeout(() => {
-                    previewElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            }
         }
+        // Remove any mobile-specific scrolling
     };
 
     // ... rest of the code ...
 </script>
-</html>
