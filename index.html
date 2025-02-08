@@ -68,16 +68,9 @@
             max-height: 500px;
             opacity: 1;
         }
-        
-        .slide-fade-enter-active,
-        .slide-fade-leave-active {
-            transition: all 0.3s ease;
-        }
-        
-        .slide-fade-enter-from,
-        .slide-fade-leave-to {
-            transform: translateY(-20px);
-            opacity: 0;
+
+        .selected-preview {
+            scroll-margin-top: 100px;
         }
         
         @media (max-width: 768px) {
@@ -122,11 +115,11 @@
                     <div 
                         v-for="(result, index) in searchResults" 
                         :key="index"
-                        @click="selectWallpaper(result)"
+                        @click="selectWallpaperFromSearch(result)"
                         :class="['p-2 cursor-pointer hover:bg-gray-700 transition-colors duration-200', 
                                 {'selected-item': index === selectedResultIndex}]"
                     >
-                        <div class="font-bold">{{ result.filename }}</div>
+                        <div class="font-bold">{{ getFilenameWithoutExtension(result.filename) }}</div>
                         <div class="text-sm text-gray-400">
                             Tags: {{ result.tags.join(', ') }}
                         </div>
@@ -143,10 +136,10 @@
                      class="mb-4 p-4 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-all duration-300"
                      :class="{'neon-border': selectedWallpaper?.filename === wallpaper.filename}"
                      :ref="wallpaper.filename === selectedWallpaper?.filename ? 'selectedItem' : null"
-                     @click="selectWallpaper(wallpaper)">
+                     @click="toggleInfoPanel(wallpaper)">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-bold text-white">{{ wallpaper.filename }}</h3>
+                            <h3 class="font-bold text-white">{{ getFilenameWithoutExtension(wallpaper.filename) }}</h3>
                             <div class="text-sm text-gray-400 mt-1">
                                 Tags: {{ wallpaper.tags.join(', ') }}
                             </div>
@@ -156,7 +149,7 @@
                         </div>
                     </div>
                     
-                    <div :class="['info-panel', {'expanded': selectedWallpaper?.filename === wallpaper.filename}]">
+                    <div :class="['info-panel', {'expanded': expandedPanels[wallpaper.filename]}]">
                         <div class="mt-4 text-sm text-gray-300">
                             <div class="grid grid-cols-2 gap-2">
                                 <div>Resolution:</div>
@@ -165,6 +158,8 @@
                                 <div>{{ wallpaper.metadata.aspect_ratio }}</div>
                                 <div>File Size:</div>
                                 <div>{{ wallpaper.metadata.file_size_mb }}MB</div>
+                                <div>File Type:</div>
+                                <div>{{ getFileExtension(wallpaper.filename) }}</div>
                             </div>
                             <a :href="wallpaper.github_raw_url" 
                                target="_blank"
@@ -182,13 +177,17 @@
                     <div v-for="wallpaper in wallpapers" 
                          :key="wallpaper.filename"
                          class="wallpaper-card rounded-lg overflow-hidden cursor-pointer"
-                         @click="selectWallpaper(wallpaper)">
+                         :class="{'selected-preview': selectedWallpaper?.filename === wallpaper.filename}"
+                         :ref="wallpaper.filename === selectedWallpaper?.filename ? 'selectedPreview' : null"
+                         @click="selectWallpaperFromPreview(wallpaper)">
                         <img :src="wallpaper.github_raw_url" 
-                             :alt="wallpaper.filename"
+                             :alt="getFilenameWithoutExtension(wallpaper.filename)"
                              class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
                              loading="lazy">
                         <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black to-transparent">
-                            <div class="text-sm text-white truncate">{{ wallpaper.filename }}</div>
+                            <div class="text-sm text-white truncate">
+                                {{ getFilenameWithoutExtension(wallpaper.filename) }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -205,6 +204,16 @@
                 const selectedWallpaper = ref(null)
                 const searchQuery = ref('')
                 const selectedResultIndex = ref(0)
+                const expandedPanels = ref({})
+
+                // Helper functions
+                const getFilenameWithoutExtension = (filename) => {
+                    return filename.split('.').slice(0, -1).join('.')
+                }
+
+                const getFileExtension = (filename) => {
+                    return filename.split('.').pop().toUpperCase()
+                }
 
                 // Load wallpapers data
                 fetch('wallpapers_database.json')
@@ -234,7 +243,7 @@
                     }
 
                     return wallpapers.value.filter(w => 
-                        w.filename.toLowerCase().includes(query) ||
+                        getFilenameWithoutExtension(w.filename).toLowerCase().includes(query) ||
                         w.tags.some(tag => tag.toLowerCase().includes(query))
                     )
                 })
@@ -243,11 +252,14 @@
                     searchQuery.value.length > 0 && searchResults.value.length > 0
                 )
 
-                const selectWallpaper = async (wallpaper) => {
-                    selectedWallpaper.value = wallpaper
-                    searchQuery.value = ''
-                    selectedResultIndex.value = 0
+                const toggleInfoPanel = (wallpaper) => {
+                    expandedPanels.value[wallpaper.filename] = !expandedPanels.value[wallpaper.filename]
+                }
 
+                const selectWallpaperFromPreview = async (wallpaper) => {
+                    selectedWallpaper.value = wallpaper
+                    expandedPanels.value[wallpaper.filename] = true
+                    
                     // Wait for DOM update
                     await nextTick()
 
@@ -255,6 +267,21 @@
                     const selectedElement = document.querySelector('[ref="selectedItem"]')
                     if (selectedElement) {
                         selectedElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    }
+                }
+
+                const selectWallpaperFromSearch = async (wallpaper) => {
+                    selectedWallpaper.value = wallpaper
+                    expandedPanels.value[wallpaper.filename] = true
+                    searchQuery.value = ''
+                    
+                    // Wait for DOM update
+                    await nextTick()
+
+                    // Scroll selected preview into view
+                    const selectedPreview = document.querySelector('[ref="selectedPreview"]')
+                    if (selectedPreview) {
+                        selectedPreview.scrollIntoView({ behavior: 'smooth', block: 'center' })
                     }
                 }
 
@@ -272,7 +299,7 @@
 
                 const selectResult = () => {
                     if (searchResults.value.length > 0) {
-                        selectWallpaper(searchResults.value[selectedResultIndex.value])
+                        selectWallpaperFromSearch(searchResults.value[selectedResultIndex.value])
                     }
                 }
 
@@ -288,7 +315,12 @@
                     showDropdown,
                     selectedResultIndex,
                     sortedWallpapers,
-                    selectWallpaper,
+                    expandedPanels,
+                    getFilenameWithoutExtension,
+                    getFileExtension,
+                    toggleInfoPanel,
+                    selectWallpaperFromPreview,
+                    selectWallpaperFromSearch,
                     selectNextResult,
                     selectPreviousResult,
                     selectResult
