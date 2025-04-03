@@ -81,4 +81,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgements
 
-Wallpapers featured in this gallery are curated from various online sources. Credit belongs to the original creators. This project serves as an interface for browsing this specific collection.
+Wallpapers featured in this gallery are forked from [https://github.com/D3Ext/aesthetic-wallpapers](https://github.com/D3Ext/aesthetic-wallpapers) developed by [D3Ext](https://github.com/D3Ext)
