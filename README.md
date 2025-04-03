@@ -6,7 +6,7 @@ An interactive and visually appealing web application for browsing, searching, a
 
 **Live Demo:** [https://alexandrosliaskos.github.io/Awesome_Wallpapers/](https://alexandrosliaskos.github.io/Awesome_Wallpapers/)
 
-![Screenshot placeholder - consider adding desktop and mobile screenshots]
+![image](https://github.com/user-attachments/assets/f66d7b63-297b-4a28-addd-234be641d48d)
 
 ## Key Features
 
