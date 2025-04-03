@@ -1,6 +1,6 @@
 # Awesome Wallpapers - Interactive Gallery
 
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 An interactive and visually appealing web application for browsing, searching, and downloading a curated collection of high-quality wallpapers. Built with Vue.js and Tailwind CSS, featuring a distinct neon teal aesthetic.
 
