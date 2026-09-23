@@ -13,9 +13,7 @@
   },
   "manga.png": {
     "filename": "manga.png",
-    "tags": [
-      "chill"
-    ],
+    "tags": ["chill"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -27,9 +25,7 @@
   },
   "cyberpunk_car.png": {
     "filename": "cyberpunk_car.png",
-    "tags": [
-      "fantasy"
-    ],
+    "tags": ["fantasy"],
     "metadata": {
       "width": 6058,
       "height": 3408,
@@ -41,9 +37,7 @@
   },
   "grey_red_tree.png": {
     "filename": "grey_red_tree.png",
-    "tags": [
-      "car"
-    ],
+    "tags": ["car"],
     "metadata": {
       "width": 960,
       "height": 540,
@@ -55,9 +49,7 @@
   },
   "minimal_nord_guy.png": {
     "filename": "minimal_nord_guy.png",
-    "tags": [
-      "red"
-    ],
+    "tags": ["red"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -69,9 +61,7 @@
   },
   "nord_dark_city.png": {
     "filename": "nord_dark_city.png",
-    "tags": [
-      "minimal"
-    ],
+    "tags": ["minimal"],
     "metadata": {
       "width": 5579,
       "height": 2956,
@@ -83,9 +73,7 @@
   },
   "nord_minimal_cat.png": {
     "filename": "nord_minimal_cat.png",
-    "tags": [
-      "dark"
-    ],
+    "tags": ["dark"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -97,9 +85,7 @@
   },
   "minim.jpg": {
     "filename": "minim.jpg",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -111,9 +97,7 @@
   },
   "minimal_landscape.jpg": {
     "filename": "minimal_landscape.jpg",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 7698,
       "height": 4330,
@@ -125,9 +109,7 @@
   },
   "moon.png": {
     "filename": "moon.png",
-    "tags": [
-      "snow"
-    ],
+    "tags": ["snow"],
     "metadata": {
       "width": 2560,
       "height": 1500,
@@ -139,9 +121,7 @@
   },
   "mountains.png": {
     "filename": "mountains.png",
-    "tags": [
-      "moon"
-    ],
+    "tags": ["moon"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -153,9 +133,7 @@
   },
   "minimal-purple.jpg": {
     "filename": "minimal-purple.jpg",
-    "tags": [
-      "mountains"
-    ],
+    "tags": ["mountains"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -167,9 +145,7 @@
   },
   "art-lake.png": {
     "filename": "art-lake.png",
-    "tags": [
-      "simple"
-    ],
+    "tags": ["simple"],
     "metadata": {
       "width": 2400,
       "height": 1334,
@@ -181,9 +157,7 @@
   },
   "australia.jpg": {
     "filename": "australia.jpg",
-    "tags": [
-      "cartoon"
-    ],
+    "tags": ["cartoon"],
     "metadata": {
       "width": 2560,
       "height": 1600,
@@ -195,9 +169,7 @@
   },
   "bici.jpg": {
     "filename": "bici.jpg",
-    "tags": [
-      "sunset"
-    ],
+    "tags": ["sunset"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -209,9 +181,7 @@
   },
   "shiny-colors.png": {
     "filename": "shiny-colors.png",
-    "tags": [
-      "cartoon"
-    ],
+    "tags": ["cartoon"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -223,9 +193,7 @@
   },
   "purple-girl.png": {
     "filename": "purple-girl.png",
-    "tags": [
-      "shiny"
-    ],
+    "tags": ["shiny"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -249,9 +217,7 @@
   },
   "manga-samurai.png": {
     "filename": "manga-samurai.png",
-    "tags": [
-      "nix"
-    ],
+    "tags": ["nix"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -263,9 +229,7 @@
   },
   "TokyoSimplistic.jpg": {
     "filename": "TokyoSimplistic.jpg",
-    "tags": [
-      "dark"
-    ],
+    "tags": ["dark"],
     "metadata": {
       "width": 3465,
       "height": 1850,
@@ -277,9 +241,7 @@
   },
   "ign_megumin_dark.png": {
     "filename": "ign_megumin_dark.png",
-    "tags": [
-      "tokyo"
-    ],
+    "tags": ["tokyo"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -315,9 +277,7 @@
   },
   "nord_purple_waves.png": {
     "filename": "nord_purple_waves.png",
-    "tags": [
-      "girl"
-    ],
+    "tags": ["girl"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -329,9 +289,7 @@
   },
   "wallhaven-76d5xv.png": {
     "filename": "wallhaven-76d5xv.png",
-    "tags": [
-      "purple"
-    ],
+    "tags": ["purple"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -343,9 +301,7 @@
   },
   "wallpaper_nord_1.png": {
     "filename": "wallpaper_nord_1.png",
-    "tags": [
-      "forest"
-    ],
+    "tags": ["forest"],
     "metadata": {
       "width": 7680,
       "height": 4320,
@@ -357,9 +313,7 @@
   },
   "pixiv_73483903.png": {
     "filename": "pixiv_73483903.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 2600,
       "height": 1046,
@@ -383,9 +337,7 @@
   },
   "earth.png": {
     "filename": "earth.png",
-    "tags": [
-      "pastel"
-    ],
+    "tags": ["pastel"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -397,9 +349,7 @@
   },
   "fire-skull.jpg": {
     "filename": "fire-skull.jpg",
-    "tags": [
-      "planet"
-    ],
+    "tags": ["planet"],
     "metadata": {
       "width": 2732,
       "height": 1536,
@@ -411,9 +361,7 @@
   },
   "fractal.png": {
     "filename": "fractal.png",
-    "tags": [
-      "skull"
-    ],
+    "tags": ["skull"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -425,9 +373,7 @@
   },
   "camp_day.png": {
     "filename": "camp_day.png",
-    "tags": [
-      "water"
-    ],
+    "tags": ["water"],
     "metadata": {
       "width": 2880,
       "height": 1800,
@@ -439,9 +385,7 @@
   },
   "3squares.png": {
     "filename": "3squares.png",
-    "tags": [
-      "minimal"
-    ],
+    "tags": ["minimal"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -453,9 +397,7 @@
   },
   "japan.png": {
     "filename": "japan.png",
-    "tags": [
-      "squares"
-    ],
+    "tags": ["squares"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -467,9 +409,7 @@
   },
   "japan2.jpg": {
     "filename": "japan2.jpg",
-    "tags": [
-      "japan"
-    ],
+    "tags": ["japan"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -481,9 +421,7 @@
   },
   "pink-katana.png": {
     "filename": "pink-katana.png",
-    "tags": [
-      "samurai"
-    ],
+    "tags": ["samurai"],
     "metadata": {
       "width": 817,
       "height": 459,
@@ -495,9 +433,7 @@
   },
   "jupiter.png": {
     "filename": "jupiter.png",
-    "tags": [
-      "katana"
-    ],
+    "tags": ["katana"],
     "metadata": {
       "width": 816,
       "height": 459,
@@ -509,9 +445,7 @@
   },
   "japan3.jpg": {
     "filename": "japan3.jpg",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 4420,
       "height": 2486,
@@ -523,9 +457,7 @@
   },
   "katana.jpg": {
     "filename": "katana.jpg",
-    "tags": [
-      "japan"
-    ],
+    "tags": ["japan"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -537,9 +469,7 @@
   },
   "neon-shacks-nord.png": {
     "filename": "neon-shacks-nord.png",
-    "tags": [
-      "anime"
-    ],
+    "tags": ["anime"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -551,9 +481,7 @@
   },
   "knight.png": {
     "filename": "knight.png",
-    "tags": [
-      "retro"
-    ],
+    "tags": ["retro"],
     "metadata": {
       "width": 860,
       "height": 484,
@@ -565,9 +493,7 @@
   },
   "landscape2.jpg": {
     "filename": "landscape2.jpg",
-    "tags": [
-      "knight"
-    ],
+    "tags": ["knight"],
     "metadata": {
       "width": 6600,
       "height": 3600,
@@ -579,9 +505,7 @@
   },
   "lightning.jpg": {
     "filename": "lightning.jpg",
-    "tags": [
-      "landscape"
-    ],
+    "tags": ["landscape"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -593,9 +517,7 @@
   },
   "literal-wallpaper.png": {
     "filename": "literal-wallpaper.png",
-    "tags": [
-      "lightning"
-    ],
+    "tags": ["lightning"],
     "metadata": {
       "width": 1366,
       "height": 768,
@@ -607,9 +529,7 @@
   },
   "acrylic.jpg": {
     "filename": "acrylic.jpg",
-    "tags": [
-      "minimal"
-    ],
+    "tags": ["minimal"],
     "metadata": {
       "width": 6144,
       "height": 3456,
@@ -621,9 +541,7 @@
   },
   "blue_demon.png": {
     "filename": "blue_demon.png",
-    "tags": [
-      "acrylic"
-    ],
+    "tags": ["acrylic"],
     "metadata": {
       "width": 1920,
       "height": 1165,
@@ -647,9 +565,7 @@
   },
   "one-piece-luffy.jpg": {
     "filename": "one-piece-luffy.jpg",
-    "tags": [
-      "drake"
-    ],
+    "tags": ["drake"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -661,9 +577,7 @@
   },
   "pond_shed.png": {
     "filename": "pond_shed.png",
-    "tags": [
-      "one piece"
-    ],
+    "tags": ["one piece"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -675,9 +589,7 @@
   },
   "retro_market.png": {
     "filename": "retro_market.png",
-    "tags": [
-      "pond"
-    ],
+    "tags": ["pond"],
     "metadata": {
       "width": 2160,
       "height": 1080,
@@ -689,9 +601,7 @@
   },
   "weeknd.png": {
     "filename": "weeknd.png",
-    "tags": [
-      "retro"
-    ],
+    "tags": ["retro"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -703,9 +613,7 @@
   },
   "a_cartoon_of_a_house_on_a_cliff.png": {
     "filename": "a_cartoon_of_a_house_on_a_cliff.png",
-    "tags": [
-      "city"
-    ],
+    "tags": ["city"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -741,9 +649,7 @@
   },
   "pink-clouds.png": {
     "filename": "pink-clouds.png",
-    "tags": [
-      "blue"
-    ],
+    "tags": ["blue"],
     "metadata": {
       "width": 815,
       "height": 458,
@@ -755,9 +661,7 @@
   },
   "purple-mountain.png": {
     "filename": "purple-mountain.png",
-    "tags": [
-      "pink"
-    ],
+    "tags": ["pink"],
     "metadata": {
       "width": 817,
       "height": 459,
@@ -769,9 +673,7 @@
   },
   "elon-musk.png": {
     "filename": "elon-musk.png",
-    "tags": [
-      "mountain"
-    ],
+    "tags": ["mountain"],
     "metadata": {
       "width": 815,
       "height": 458,
@@ -783,9 +685,7 @@
   },
   "purple-car.jpg": {
     "filename": "purple-car.jpg",
-    "tags": [
-      "minimal"
-    ],
+    "tags": ["minimal"],
     "metadata": {
       "width": 815,
       "height": 458,
@@ -797,9 +697,7 @@
   },
   "nord-winter.png": {
     "filename": "nord-winter.png",
-    "tags": [
-      "car"
-    ],
+    "tags": ["car"],
     "metadata": {
       "width": 817,
       "height": 459,
@@ -811,9 +709,7 @@
   },
   "nord-shanghai.png": {
     "filename": "nord-shanghai.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 789,
       "height": 459,
@@ -825,9 +721,7 @@
   },
   "color-waves.png": {
     "filename": "color-waves.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 817,
       "height": 459,
@@ -839,9 +733,7 @@
   },
   "arch-eagle.png": {
     "filename": "arch-eagle.png",
-    "tags": [
-      "waves"
-    ],
+    "tags": ["waves"],
     "metadata": {
       "width": 814,
       "height": 458,
@@ -853,9 +745,7 @@
   },
   "blue-black-girl.png": {
     "filename": "blue-black-girl.png",
-    "tags": [
-      "arch"
-    ],
+    "tags": ["arch"],
     "metadata": {
       "width": 814,
       "height": 458,
@@ -867,9 +757,7 @@
   },
   "nasa1.png": {
     "filename": "nasa1.png",
-    "tags": [
-      "girl"
-    ],
+    "tags": ["girl"],
     "metadata": {
       "width": 814,
       "height": 458,
@@ -881,9 +769,7 @@
   },
   "orange-planets.png": {
     "filename": "orange-planets.png",
-    "tags": [
-      "nasa"
-    ],
+    "tags": ["nasa"],
     "metadata": {
       "width": 938,
       "height": 393,
@@ -895,9 +781,7 @@
   },
   "pastel-japanese-temple.png": {
     "filename": "pastel-japanese-temple.png",
-    "tags": [
-      "orange"
-    ],
+    "tags": ["orange"],
     "metadata": {
       "width": 814,
       "height": 458,
@@ -909,9 +793,7 @@
   },
   "underwater.png": {
     "filename": "underwater.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -923,9 +805,7 @@
   },
   "vader.png": {
     "filename": "vader.png",
-    "tags": [
-      "water"
-    ],
+    "tags": ["water"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -937,9 +817,7 @@
   },
   "van.png": {
     "filename": "van.png",
-    "tags": [
-      "red"
-    ],
+    "tags": ["red"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -951,9 +829,7 @@
   },
   "venom.jpg": {
     "filename": "venom.jpg",
-    "tags": [
-      "van"
-    ],
+    "tags": ["van"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -977,9 +853,7 @@
   },
   "anime-eye-nord.png": {
     "filename": "anime-eye-nord.png",
-    "tags": [
-      "windows"
-    ],
+    "tags": ["windows"],
     "metadata": {
       "width": 4208,
       "height": 2392,
@@ -991,9 +865,7 @@
   },
   "black_car_girl.jpg": {
     "filename": "black_car_girl.jpg",
-    "tags": [
-      "anime"
-    ],
+    "tags": ["anime"],
     "metadata": {
       "width": 1280,
       "height": 720,
@@ -1005,9 +877,7 @@
   },
   "dark_skulls.png": {
     "filename": "dark_skulls.png",
-    "tags": [
-      "car"
-    ],
+    "tags": ["car"],
     "metadata": {
       "width": 5120,
       "height": 2880,
@@ -1019,9 +889,7 @@
   },
   "lofi_cat.png": {
     "filename": "lofi_cat.png",
-    "tags": [
-      "skulls"
-    ],
+    "tags": ["skulls"],
     "metadata": {
       "width": 5039,
       "height": 2835,
@@ -1033,9 +901,7 @@
   },
   "purple_car_girl.png": {
     "filename": "purple_car_girl.png",
-    "tags": [
-      "lofi"
-    ],
+    "tags": ["lofi"],
     "metadata": {
       "width": 1280,
       "height": 720,
@@ -1047,9 +913,7 @@
   },
   "wallhaven-0qrgwr.png": {
     "filename": "wallhaven-0qrgwr.png",
-    "tags": [
-      "purple"
-    ],
+    "tags": ["purple"],
     "metadata": {
       "width": 1920,
       "height": 1170,
@@ -1061,9 +925,7 @@
   },
   "japan_torii.png": {
     "filename": "japan_torii.png",
-    "tags": [
-      "robot"
-    ],
+    "tags": ["robot"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1075,9 +937,7 @@
   },
   "sunset-xfksfuywx.png": {
     "filename": "sunset-xfksfuywx.png",
-    "tags": [
-      "japan"
-    ],
+    "tags": ["japan"],
     "metadata": {
       "width": 3007,
       "height": 2048,
@@ -1089,9 +949,7 @@
   },
   "tree-nature-castleinsky.png": {
     "filename": "tree-nature-castleinsky.png",
-    "tags": [
-      "sunset"
-    ],
+    "tags": ["sunset"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1103,9 +961,7 @@
   },
   "wallhaven-x67oxo.png": {
     "filename": "wallhaven-x67oxo.png",
-    "tags": [
-      "tree"
-    ],
+    "tags": ["tree"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -1117,9 +973,7 @@
   },
   "waterfall.gif": {
     "filename": "waterfall.gif",
-    "tags": [
-      "green"
-    ],
+    "tags": ["green"],
     "metadata": {
       "width": 800,
       "height": 336,
@@ -1143,9 +997,7 @@
   },
   "green-sun.jpg": {
     "filename": "green-sun.jpg",
-    "tags": [
-      "goldfish"
-    ],
+    "tags": ["goldfish"],
     "metadata": {
       "width": 2880,
       "height": 1800,
@@ -1157,9 +1009,7 @@
   },
   "lake.jpg": {
     "filename": "lake.jpg",
-    "tags": [
-      "green"
-    ],
+    "tags": ["green"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -1171,9 +1021,7 @@
   },
   "leave-planet.jpg": {
     "filename": "leave-planet.jpg",
-    "tags": [
-      "lake"
-    ],
+    "tags": ["lake"],
     "metadata": {
       "width": 2500,
       "height": 1280,
@@ -1185,9 +1033,7 @@
   },
   "holy-arch-nordic.png": {
     "filename": "holy-arch-nordic.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1199,9 +1045,7 @@
   },
   "needing-space.jpg": {
     "filename": "needing-space.jpg",
-    "tags": [
-      "arch"
-    ],
+    "tags": ["arch"],
     "metadata": {
       "width": 2500,
       "height": 1280,
@@ -1213,9 +1057,7 @@
   },
   "neon-lights.jpg": {
     "filename": "neon-lights.jpg",
-    "tags": [
-      "space"
-    ],
+    "tags": ["space"],
     "metadata": {
       "width": 6000,
       "height": 4000,
@@ -1227,9 +1069,7 @@
   },
   "odysee.jpg": {
     "filename": "odysee.jpg",
-    "tags": [
-      "neon"
-    ],
+    "tags": ["neon"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1241,9 +1081,7 @@
   },
   "orange-cube.jpg": {
     "filename": "orange-cube.jpg",
-    "tags": [
-      "castle"
-    ],
+    "tags": ["castle"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -1255,9 +1093,7 @@
   },
   "saturn-rings.jpg": {
     "filename": "saturn-rings.jpg",
-    "tags": [
-      "orange"
-    ],
+    "tags": ["orange"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -1269,9 +1105,7 @@
   },
   "staircase.jpg": {
     "filename": "staircase.jpg",
-    "tags": [
-      "saturn"
-    ],
+    "tags": ["saturn"],
     "metadata": {
       "width": 5586,
       "height": 3724,
@@ -1283,9 +1117,7 @@
   },
   "wallhaven-9mjw78.png": {
     "filename": "wallhaven-9mjw78.png",
-    "tags": [
-      "neon"
-    ],
+    "tags": ["neon"],
     "metadata": {
       "width": 2048,
       "height": 1152,
@@ -1297,9 +1129,7 @@
   },
   "wallhaven-q21vkl.jpg": {
     "filename": "wallhaven-q21vkl.jpg",
-    "tags": [
-      "sky"
-    ],
+    "tags": ["sky"],
     "metadata": {
       "width": 2800,
       "height": 1575,
@@ -1311,9 +1141,7 @@
   },
   "anime-water.png": {
     "filename": "anime-water.png",
-    "tags": [
-      "tree"
-    ],
+    "tags": ["tree"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1325,9 +1153,7 @@
   },
   "blue-red-4k.png": {
     "filename": "blue-red-4k.png",
-    "tags": [
-      "anime"
-    ],
+    "tags": ["anime"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1339,9 +1165,7 @@
   },
   "minim-helmet.png": {
     "filename": "minim-helmet.png",
-    "tags": [
-      "blue"
-    ],
+    "tags": ["blue"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1353,9 +1177,7 @@
   },
   "neon-car2.png": {
     "filename": "neon-car2.png",
-    "tags": [
-      "minimal"
-    ],
+    "tags": ["minimal"],
     "metadata": {
       "width": 1700,
       "height": 1202,
@@ -1367,9 +1189,7 @@
   },
   "4k-ai-mountain.jpg": {
     "filename": "4k-ai-mountain.jpg",
-    "tags": [
-      "neon"
-    ],
+    "tags": ["neon"],
     "metadata": {
       "width": 3008,
       "height": 1664,
@@ -1381,9 +1201,7 @@
   },
   "estrategy-minimal.png": {
     "filename": "estrategy-minimal.png",
-    "tags": [
-      "ai"
-    ],
+    "tags": ["ai"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1395,9 +1213,7 @@
   },
   "nord-shards.jpg": {
     "filename": "nord-shards.jpg",
-    "tags": [
-      "minimal"
-    ],
+    "tags": ["minimal"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1409,9 +1225,7 @@
   },
   "plain-wallpaper.png": {
     "filename": "plain-wallpaper.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 4096,
       "height": 2160,
@@ -1423,9 +1237,7 @@
   },
   "wano_vector.png": {
     "filename": "wano_vector.png",
-    "tags": [
-      "plain"
-    ],
+    "tags": ["plain"],
     "metadata": {
       "width": 8000,
       "height": 4500,
@@ -1437,9 +1249,7 @@
   },
   "windmill.jpg": {
     "filename": "windmill.jpg",
-    "tags": [
-      "minimal"
-    ],
+    "tags": ["minimal"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1451,9 +1261,7 @@
   },
   "you-got-this.jpg": {
     "filename": "you-got-this.jpg",
-    "tags": [
-      "windmill"
-    ],
+    "tags": ["windmill"],
     "metadata": {
       "width": 5120,
       "height": 3173,
@@ -1729,9 +1537,7 @@
   },
   "catppuccin-rainbow-arch.png": {
     "filename": "catppuccin-rainbow-arch.png",
-    "tags": [
-      "planets"
-    ],
+    "tags": ["planets"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1779,9 +1585,7 @@
   },
   "cute-town-dark.png": {
     "filename": "cute-town-dark.png",
-    "tags": [
-      "classic"
-    ],
+    "tags": ["classic"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -1793,9 +1597,7 @@
   },
   "cute-town.png": {
     "filename": "cute-town.png",
-    "tags": [
-      "dark"
-    ],
+    "tags": ["dark"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -1807,9 +1609,7 @@
   },
   "debian.png": {
     "filename": "debian.png",
-    "tags": [
-      "light"
-    ],
+    "tags": ["light"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -1821,9 +1621,7 @@
   },
   "forest.png": {
     "filename": "forest.png",
-    "tags": [
-      "debian"
-    ],
+    "tags": ["debian"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1835,9 +1633,7 @@
   },
   "fox.png": {
     "filename": "fox.png",
-    "tags": [
-      "forest"
-    ],
+    "tags": ["forest"],
     "metadata": {
       "width": 1280,
       "height": 735,
@@ -1849,9 +1645,7 @@
   },
   "fantasy-woods.jpg": {
     "filename": "fantasy-woods.jpg",
-    "tags": [
-      "fox"
-    ],
+    "tags": ["fox"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -1863,9 +1657,7 @@
   },
   "girl.jpg": {
     "filename": "girl.jpg",
-    "tags": [
-      "forest"
-    ],
+    "tags": ["forest"],
     "metadata": {
       "width": 1000,
       "height": 707,
@@ -1877,9 +1669,7 @@
   },
   "girl-on-black.png": {
     "filename": "girl-on-black.png",
-    "tags": [
-      "girl"
-    ],
+    "tags": ["girl"],
     "metadata": {
       "width": 811,
       "height": 456,
@@ -1891,9 +1681,7 @@
   },
   "orbit.png": {
     "filename": "orbit.png",
-    "tags": [
-      "girl"
-    ],
+    "tags": ["girl"],
     "metadata": {
       "width": 811,
       "height": 456,
@@ -1905,9 +1693,7 @@
   },
   "gray-background.png": {
     "filename": "gray-background.png",
-    "tags": [
-      "planet"
-    ],
+    "tags": ["planet"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -1919,9 +1705,7 @@
   },
   "hands.jpg": {
     "filename": "hands.jpg",
-    "tags": [
-      "gray"
-    ],
+    "tags": ["gray"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -1933,9 +1717,7 @@
   },
   "hill-house.png": {
     "filename": "hill-house.png",
-    "tags": [
-      "black"
-    ],
+    "tags": ["black"],
     "metadata": {
       "width": 1920,
       "height": 1339,
@@ -1947,9 +1729,7 @@
   },
   "light-ring.jpg": {
     "filename": "light-ring.jpg",
-    "tags": [
-      "hill"
-    ],
+    "tags": ["hill"],
     "metadata": {
       "width": 5640,
       "height": 2400,
@@ -1961,9 +1741,7 @@
   },
   "taza.png": {
     "filename": "taza.png",
-    "tags": [
-      "light"
-    ],
+    "tags": ["light"],
     "metadata": {
       "width": 809,
       "height": 455,
@@ -1975,9 +1753,7 @@
   },
   "hello-worlds.png": {
     "filename": "hello-worlds.png",
-    "tags": [
-      "cup"
-    ],
+    "tags": ["cup"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -1989,9 +1765,7 @@
   },
   "home127-dark.jpg": {
     "filename": "home127-dark.jpg",
-    "tags": [
-      "hello world"
-    ],
+    "tags": ["hello world"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2003,9 +1777,7 @@
   },
   "home127-light.jpg": {
     "filename": "home127-light.jpg",
-    "tags": [
-      "localhost"
-    ],
+    "tags": ["localhost"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2017,9 +1789,7 @@
   },
   "4k-keyboard.jpg": {
     "filename": "4k-keyboard.jpg",
-    "tags": [
-      "localhost"
-    ],
+    "tags": ["localhost"],
     "metadata": {
       "width": 2453,
       "height": 1637,
@@ -2031,9 +1801,7 @@
   },
   "python-dev.png": {
     "filename": "python-dev.png",
-    "tags": [
-      "keyboard"
-    ],
+    "tags": ["keyboard"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -2045,9 +1813,7 @@
   },
   "tree-house.png": {
     "filename": "tree-house.png",
-    "tags": [
-      "python"
-    ],
+    "tags": ["python"],
     "metadata": {
       "width": 2912,
       "height": 1632,
@@ -2059,9 +1825,7 @@
   },
   "trigonometry.png": {
     "filename": "trigonometry.png",
-    "tags": [
-      "tree"
-    ],
+    "tags": ["tree"],
     "metadata": {
       "width": 1920,
       "height": 1200,
@@ -2073,9 +1837,7 @@
   },
   "wallpaper3-dark.png": {
     "filename": "wallpaper3-dark.png",
-    "tags": [
-      "maths"
-    ],
+    "tags": ["maths"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -2087,9 +1849,7 @@
   },
   "36592_serial_experiments_lain.png": {
     "filename": "36592_serial_experiments_lain.png",
-    "tags": [
-      "dark"
-    ],
+    "tags": ["dark"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2125,9 +1885,7 @@
   },
   "rick.jpg": {
     "filename": "rick.jpg",
-    "tags": [
-      "catpuccin"
-    ],
+    "tags": ["catpuccin"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -2139,9 +1897,7 @@
   },
   "egypt.png": {
     "filename": "egypt.png",
-    "tags": [
-      "rick"
-    ],
+    "tags": ["rick"],
     "metadata": {
       "width": 816,
       "height": 459,
@@ -2153,9 +1909,7 @@
   },
   "horror_cult.jpg": {
     "filename": "horror_cult.jpg",
-    "tags": [
-      "egypt"
-    ],
+    "tags": ["egypt"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2167,9 +1921,7 @@
   },
   "river.png": {
     "filename": "river.png",
-    "tags": [
-      "cult"
-    ],
+    "tags": ["cult"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2181,9 +1933,7 @@
   },
   "rm-rf.jpg": {
     "filename": "rm-rf.jpg",
-    "tags": [
-      "river"
-    ],
+    "tags": ["river"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2195,9 +1945,7 @@
   },
   "robot.jpg": {
     "filename": "robot.jpg",
-    "tags": [
-      "linux"
-    ],
+    "tags": ["linux"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2209,9 +1957,7 @@
   },
   "rocket.png": {
     "filename": "rocket.png",
-    "tags": [
-      "robot"
-    ],
+    "tags": ["robot"],
     "metadata": {
       "width": 2200,
       "height": 1375,
@@ -2223,9 +1969,7 @@
   },
   "room.jpg": {
     "filename": "room.jpg",
-    "tags": [
-      "rainbow"
-    ],
+    "tags": ["rainbow"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -2237,9 +1981,7 @@
   },
   "room2.jpg": {
     "filename": "room2.jpg",
-    "tags": [
-      "room"
-    ],
+    "tags": ["room"],
     "metadata": {
       "width": 3443,
       "height": 1440,
@@ -2251,9 +1993,7 @@
   },
   "routine.jpg": {
     "filename": "routine.jpg",
-    "tags": [
-      "room"
-    ],
+    "tags": ["room"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -2265,9 +2005,7 @@
   },
   "shibainu.jpeg": {
     "filename": "shibainu.jpeg",
-    "tags": [
-      "code"
-    ],
+    "tags": ["code"],
     "metadata": {
       "width": 1182,
       "height": 665,
@@ -2279,9 +2017,7 @@
   },
   "swirls.png": {
     "filename": "swirls.png",
-    "tags": [
-      "samurai"
-    ],
+    "tags": ["samurai"],
     "metadata": {
       "width": 860,
       "height": 484,
@@ -2293,9 +2029,7 @@
   },
   "tech.png": {
     "filename": "tech.png",
-    "tags": [
-      "waves"
-    ],
+    "tags": ["waves"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2307,9 +2041,7 @@
   },
   "town.jpg": {
     "filename": "town.jpg",
-    "tags": [
-      "circuit"
-    ],
+    "tags": ["circuit"],
     "metadata": {
       "width": 2880,
       "height": 1620,
@@ -2321,9 +2053,7 @@
   },
   "two-astronauts.png": {
     "filename": "two-astronauts.png",
-    "tags": [
-      "pixel"
-    ],
+    "tags": ["pixel"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2335,9 +2065,7 @@
   },
   "trees.png": {
     "filename": "trees.png",
-    "tags": [
-      "dark"
-    ],
+    "tags": ["dark"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2349,9 +2077,7 @@
   },
   "yellow-robot.png": {
     "filename": "yellow-robot.png",
-    "tags": [
-      "trees"
-    ],
+    "tags": ["trees"],
     "metadata": {
       "width": 815,
       "height": 458,
@@ -2363,9 +2089,7 @@
   },
   "em-rofi.webp": {
     "filename": "em-rofi.webp",
-    "tags": [
-      "robot"
-    ],
+    "tags": ["robot"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -2377,9 +2101,7 @@
   },
   "gas-station.jpg": {
     "filename": "gas-station.jpg",
-    "tags": [
-      "city"
-    ],
+    "tags": ["city"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -2391,9 +2113,7 @@
   },
   "glasses.png": {
     "filename": "glasses.png",
-    "tags": [
-      "nigth"
-    ],
+    "tags": ["nigth"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2405,9 +2125,7 @@
   },
   "gradient-pb.png": {
     "filename": "gradient-pb.png",
-    "tags": [
-      "simple"
-    ],
+    "tags": ["simple"],
     "metadata": {
       "width": 6016,
       "height": 3384,
@@ -2419,9 +2137,7 @@
   },
   "pacman-black.png": {
     "filename": "pacman-black.png",
-    "tags": [
-      "gradient"
-    ],
+    "tags": ["gradient"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2433,9 +2149,7 @@
   },
   "plant.png": {
     "filename": "plant.png",
-    "tags": [
-      "pacman"
-    ],
+    "tags": ["pacman"],
     "metadata": {
       "width": 1890,
       "height": 1080,
@@ -2447,9 +2161,7 @@
   },
   "wallhaven-z8pdqo.jpg": {
     "filename": "wallhaven-z8pdqo.jpg",
-    "tags": [
-      "plant"
-    ],
+    "tags": ["plant"],
     "metadata": {
       "width": 2560,
       "height": 1600,
@@ -2473,9 +2185,7 @@
   },
   "naruto.png": {
     "filename": "naruto.png",
-    "tags": [
-      "rainbow"
-    ],
+    "tags": ["rainbow"],
     "metadata": {
       "width": 1200,
       "height": 675,
@@ -2487,9 +2197,7 @@
   },
   "naruto_2.png": {
     "filename": "naruto_2.png",
-    "tags": [
-      "naruto"
-    ],
+    "tags": ["naruto"],
     "metadata": {
       "width": 1920,
       "height": 1200,
@@ -2501,9 +2209,7 @@
   },
   "nature.jpg": {
     "filename": "nature.jpg",
-    "tags": [
-      "naruto"
-    ],
+    "tags": ["naruto"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2515,9 +2221,7 @@
   },
   "neocity.png": {
     "filename": "neocity.png",
-    "tags": [
-      "river"
-    ],
+    "tags": ["river"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -2529,9 +2233,7 @@
   },
   "neocity2.jpg": {
     "filename": "neocity2.jpg",
-    "tags": [
-      "city"
-    ],
+    "tags": ["city"],
     "metadata": {
       "width": 860,
       "height": 484,
@@ -2543,9 +2245,7 @@
   },
   "neosamurai.webp": {
     "filename": "neosamurai.webp",
-    "tags": [
-      "city"
-    ],
+    "tags": ["city"],
     "metadata": {
       "width": 2400,
       "height": 1600,
@@ -2557,9 +2257,7 @@
   },
   "nordic.png": {
     "filename": "nordic.png",
-    "tags": [
-      "samurai"
-    ],
+    "tags": ["samurai"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -2571,9 +2269,7 @@
   },
   "nord-street.png": {
     "filename": "nord-street.png",
-    "tags": [
-      "rainbow"
-    ],
+    "tags": ["rainbow"],
     "metadata": {
       "width": 5120,
       "height": 2880,
@@ -2585,9 +2281,7 @@
   },
   "onepiece.png": {
     "filename": "onepiece.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 1600,
       "height": 987,
@@ -2599,9 +2293,7 @@
   },
   "wallhaven-j8ym1p.png": {
     "filename": "wallhaven-j8ym1p.png",
-    "tags": [
-      "one piece"
-    ],
+    "tags": ["one piece"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2613,9 +2305,7 @@
   },
   "wallhaven-nmr788.jpg": {
     "filename": "wallhaven-nmr788.jpg",
-    "tags": [
-      "spiderman"
-    ],
+    "tags": ["spiderman"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2627,9 +2317,7 @@
   },
   "python-minim.png": {
     "filename": "python-minim.png",
-    "tags": [
-      "pixelart"
-    ],
+    "tags": ["pixelart"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -2641,9 +2329,7 @@
   },
   "wallhaven-rrpvd7.png": {
     "filename": "wallhaven-rrpvd7.png",
-    "tags": [
-      "python"
-    ],
+    "tags": ["python"],
     "metadata": {
       "width": 8000,
       "height": 4500,
@@ -2655,9 +2341,7 @@
   },
   "autumn_leaves.jpg": {
     "filename": "autumn_leaves.jpg",
-    "tags": [
-      "starfield"
-    ],
+    "tags": ["starfield"],
     "metadata": {
       "width": 6000,
       "height": 4000,
@@ -2669,9 +2353,7 @@
   },
   "berserkdrac.png": {
     "filename": "berserkdrac.png",
-    "tags": [
-      "autumn"
-    ],
+    "tags": ["autumn"],
     "metadata": {
       "width": 7680,
       "height": 4320,
@@ -2695,9 +2377,7 @@
   },
   "retro_live.gif": {
     "filename": "retro_live.gif",
-    "tags": [
-      "ruins"
-    ],
+    "tags": ["ruins"],
     "metadata": {
       "width": 498,
       "height": 280,
@@ -2709,9 +2389,7 @@
   },
   "waves_live.gif": {
     "filename": "waves_live.gif",
-    "tags": [
-      "retro"
-    ],
+    "tags": ["retro"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2723,9 +2401,7 @@
   },
   "nord_car_live.gif": {
     "filename": "nord_car_live.gif",
-    "tags": [
-      "waves"
-    ],
+    "tags": ["waves"],
     "metadata": {
       "width": 1280,
       "height": 540,
@@ -2737,9 +2413,7 @@
   },
   "retro2_live.gif": {
     "filename": "retro2_live.gif",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2751,9 +2425,7 @@
   },
   "sunset_live.gif": {
     "filename": "sunset_live.gif",
-    "tags": [
-      "mario"
-    ],
+    "tags": ["mario"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2765,9 +2437,7 @@
   },
   "retro_city.gif": {
     "filename": "retro_city.gif",
-    "tags": [
-      "beach"
-    ],
+    "tags": ["beach"],
     "metadata": {
       "width": 2160,
       "height": 1080,
@@ -2779,9 +2449,7 @@
   },
   "chill.gif": {
     "filename": "chill.gif",
-    "tags": [
-      "retro"
-    ],
+    "tags": ["retro"],
     "metadata": {
       "width": 960,
       "height": 486,
@@ -2805,9 +2473,7 @@
   },
   "pastel-car.png": {
     "filename": "pastel-car.png",
-    "tags": [
-      "pastel"
-    ],
+    "tags": ["pastel"],
     "metadata": {
       "width": 7680,
       "height": 4320,
@@ -2819,9 +2485,7 @@
   },
   "pastel-window.png": {
     "filename": "pastel-window.png",
-    "tags": [
-      "pastel"
-    ],
+    "tags": ["pastel"],
     "metadata": {
       "width": 2880,
       "height": 1620,
@@ -2833,9 +2497,7 @@
   },
   "pixelart_landscape.jpg": {
     "filename": "pixelart_landscape.jpg",
-    "tags": [
-      "room"
-    ],
+    "tags": ["room"],
     "metadata": {
       "width": 744,
       "height": 484,
@@ -2847,9 +2509,7 @@
   },
   "pixel-earth.png": {
     "filename": "pixel-earth.png",
-    "tags": [
-      "pixels"
-    ],
+    "tags": ["pixels"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2861,9 +2521,7 @@
   },
   "pixel-city.png": {
     "filename": "pixel-city.png",
-    "tags": [
-      "earth"
-    ],
+    "tags": ["earth"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2875,9 +2533,7 @@
   },
   "planets.png": {
     "filename": "planets.png",
-    "tags": [
-      "city"
-    ],
+    "tags": ["city"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2889,9 +2545,7 @@
   },
   "platforms.png": {
     "filename": "platforms.png",
-    "tags": [
-      "planets"
-    ],
+    "tags": ["planets"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2903,9 +2557,7 @@
   },
   "puppy.jpg": {
     "filename": "puppy.jpg",
-    "tags": [
-      "platforms"
-    ],
+    "tags": ["platforms"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2917,9 +2569,7 @@
   },
   "beach_landscape.png": {
     "filename": "beach_landscape.png",
-    "tags": [
-      "dog"
-    ],
+    "tags": ["dog"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2931,9 +2581,7 @@
   },
   "minimal_gradient.png": {
     "filename": "minimal_gradient.png",
-    "tags": [
-      "HD"
-    ],
+    "tags": ["HD"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -2945,9 +2593,7 @@
   },
   "nord_mask.png": {
     "filename": "nord_mask.png",
-    "tags": [
-      "gradient"
-    ],
+    "tags": ["gradient"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -2959,9 +2605,7 @@
   },
   "pixel_art_beach.jpeg": {
     "filename": "pixel_art_beach.jpeg",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -2973,9 +2617,7 @@
   },
   "pixelart_pagoda.jpg": {
     "filename": "pixelart_pagoda.jpg",
-    "tags": [
-      "pixelart"
-    ],
+    "tags": ["pixelart"],
     "metadata": {
       "width": 1920,
       "height": 1200,
@@ -2987,9 +2629,7 @@
   },
   "rad_samurai.jpg": {
     "filename": "rad_samurai.jpg",
-    "tags": [
-      "pixelart"
-    ],
+    "tags": ["pixelart"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3001,9 +2641,7 @@
   },
   "red-forest.jpg": {
     "filename": "red-forest.jpg",
-    "tags": [
-      "samurai"
-    ],
+    "tags": ["samurai"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3015,9 +2653,7 @@
   },
   "shougan_castle.png": {
     "filename": "shougan_castle.png",
-    "tags": [
-      "forest"
-    ],
+    "tags": ["forest"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3029,9 +2665,7 @@
   },
   "s4vitar.png": {
     "filename": "s4vitar.png",
-    "tags": [
-      "pagoda"
-    ],
+    "tags": ["pagoda"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3043,9 +2677,7 @@
   },
   "s4vitar_old.png": {
     "filename": "s4vitar_old.png",
-    "tags": [
-      "s4vitar"
-    ],
+    "tags": ["s4vitar"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3057,9 +2689,7 @@
   },
   "bmw.jpg": {
     "filename": "bmw.jpg",
-    "tags": [
-      "s4vitar"
-    ],
+    "tags": ["s4vitar"],
     "metadata": {
       "width": 1200,
       "height": 675,
@@ -3071,9 +2701,7 @@
   },
   "green-girl.jpg": {
     "filename": "green-girl.jpg",
-    "tags": [
-      "car"
-    ],
+    "tags": ["car"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3085,9 +2713,7 @@
   },
   "gruvbox_forest-4.png": {
     "filename": "gruvbox_forest-4.png",
-    "tags": [
-      "green"
-    ],
+    "tags": ["green"],
     "metadata": {
       "width": 1920,
       "height": 1077,
@@ -3099,9 +2725,7 @@
   },
   "gruvbox_retrocity.png": {
     "filename": "gruvbox_retrocity.png",
-    "tags": [
-      "gruvbox"
-    ],
+    "tags": ["gruvbox"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3113,9 +2737,7 @@
   },
   "gruvbox_room.png": {
     "filename": "gruvbox_room.png",
-    "tags": [
-      "gruvbox"
-    ],
+    "tags": ["gruvbox"],
     "metadata": {
       "width": 1920,
       "height": 1081,
@@ -3127,9 +2749,7 @@
   },
   "gruvbox_witcher.png": {
     "filename": "gruvbox_witcher.png",
-    "tags": [
-      "gruvbox"
-    ],
+    "tags": ["gruvbox"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3141,9 +2761,7 @@
   },
   "japan-purple-blur.png": {
     "filename": "japan-purple-blur.png",
-    "tags": [
-      "gruvbox"
-    ],
+    "tags": ["gruvbox"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3167,9 +2785,7 @@
   },
   "deer-red-moon.png": {
     "filename": "deer-red-moon.png",
-    "tags": [
-      "astronaut"
-    ],
+    "tags": ["astronaut"],
     "metadata": {
       "width": 700,
       "height": 395,
@@ -3181,9 +2797,7 @@
   },
   "japanese-house.png": {
     "filename": "japanese-house.png",
-    "tags": [
-      "deer"
-    ],
+    "tags": ["deer"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3195,9 +2809,7 @@
   },
   "pink-mecha.png": {
     "filename": "pink-mecha.png",
-    "tags": [
-      "house"
-    ],
+    "tags": ["house"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3209,9 +2821,7 @@
   },
   "wallhaven.png": {
     "filename": "wallhaven.png",
-    "tags": [
-      "pink"
-    ],
+    "tags": ["pink"],
     "metadata": {
       "width": 3840,
       "height": 2400,
@@ -3223,9 +2833,7 @@
   },
   "wallhaven-28rjj6.png": {
     "filename": "wallhaven-28rjj6.png",
-    "tags": [
-      "death"
-    ],
+    "tags": ["death"],
     "metadata": {
       "width": 4999,
       "height": 2812,
@@ -3237,9 +2845,7 @@
   },
   "nord_dots.png": {
     "filename": "nord_dots.png",
-    "tags": [
-      "neon"
-    ],
+    "tags": ["neon"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3251,9 +2857,7 @@
   },
   "circuits.png": {
     "filename": "circuits.png",
-    "tags": [
-      "colors"
-    ],
+    "tags": ["colors"],
     "metadata": {
       "width": 1600,
       "height": 831,
@@ -3265,9 +2869,7 @@
   },
   "abandoned.jpg": {
     "filename": "abandoned.jpg",
-    "tags": [
-      "circuit"
-    ],
+    "tags": ["circuit"],
     "metadata": {
       "width": 3500,
       "height": 1969,
@@ -3279,9 +2881,7 @@
   },
   "abstract.jpg": {
     "filename": "abstract.jpg",
-    "tags": [
-      "underground"
-    ],
+    "tags": ["underground"],
     "metadata": {
       "width": 3999,
       "height": 2999,
@@ -3293,9 +2893,7 @@
   },
   "anime-chick.jpg": {
     "filename": "anime-chick.jpg",
-    "tags": [
-      "flow"
-    ],
+    "tags": ["flow"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3307,9 +2905,7 @@
   },
   "astronaut-balloons.jpg": {
     "filename": "astronaut-balloons.jpg",
-    "tags": [
-      "girl"
-    ],
+    "tags": ["girl"],
     "metadata": {
       "width": 2400,
       "height": 1200,
@@ -3321,9 +2917,7 @@
   },
   "astronaut-planet.jpg": {
     "filename": "astronaut-planet.jpg",
-    "tags": [
-      "astronaut"
-    ],
+    "tags": ["astronaut"],
     "metadata": {
       "width": 2500,
       "height": 1400,
@@ -3335,9 +2929,7 @@
   },
   "california.jpg": {
     "filename": "california.jpg",
-    "tags": [
-      "astronaut"
-    ],
+    "tags": ["astronaut"],
     "metadata": {
       "width": 5594,
       "height": 3729,
@@ -3349,9 +2941,7 @@
   },
   "cat_anime-girl.png": {
     "filename": "cat_anime-girl.png",
-    "tags": [
-      "california"
-    ],
+    "tags": ["california"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3363,9 +2953,7 @@
   },
   "catpuccin_samurai.png": {
     "filename": "catpuccin_samurai.png",
-    "tags": [
-      "anime"
-    ],
+    "tags": ["anime"],
     "metadata": {
       "width": 2458,
       "height": 1260,
@@ -3377,9 +2965,7 @@
   },
   "cool_rocks.png": {
     "filename": "cool_rocks.png",
-    "tags": [
-      "catpuccin"
-    ],
+    "tags": ["catpuccin"],
     "metadata": {
       "width": 4031,
       "height": 2267,
@@ -3391,9 +2977,7 @@
   },
   "dark_forest.png": {
     "filename": "dark_forest.png",
-    "tags": [
-      "rocks"
-    ],
+    "tags": ["rocks"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3405,9 +2989,7 @@
   },
   "pixel_big_city.png": {
     "filename": "pixel_big_city.png",
-    "tags": [
-      "forest"
-    ],
+    "tags": ["forest"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -3419,9 +3001,7 @@
   },
   "anime-nord.png": {
     "filename": "anime-nord.png",
-    "tags": [
-      "pixelart"
-    ],
+    "tags": ["pixelart"],
     "metadata": {
       "width": 2500,
       "height": 1406,
@@ -3433,9 +3013,7 @@
   },
   "anime-pond.png": {
     "filename": "anime-pond.png",
-    "tags": [
-      "anime"
-    ],
+    "tags": ["anime"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3447,9 +3025,7 @@
   },
   "golden-mountains.png": {
     "filename": "golden-mountains.png",
-    "tags": [
-      "pond"
-    ],
+    "tags": ["pond"],
     "metadata": {
       "width": 1366,
       "height": 768,
@@ -3461,9 +3037,7 @@
   },
   "lets_go_home.png": {
     "filename": "lets_go_home.png",
-    "tags": [
-      "black"
-    ],
+    "tags": ["black"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3475,9 +3049,7 @@
   },
   "shiny_purple.png": {
     "filename": "shiny_purple.png",
-    "tags": [
-      "bike"
-    ],
+    "tags": ["bike"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -3489,9 +3061,7 @@
   },
   "steampunk_portal.png": {
     "filename": "steampunk_portal.png",
-    "tags": [
-      "purple"
-    ],
+    "tags": ["purple"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -3503,9 +3073,7 @@
   },
   "towashi.jpg": {
     "filename": "towashi.jpg",
-    "tags": [
-      "steampunk"
-    ],
+    "tags": ["steampunk"],
     "metadata": {
       "width": 2500,
       "height": 1406,
@@ -3517,9 +3085,7 @@
   },
   "waves_dracula_flipped.png": {
     "filename": "waves_dracula_flipped.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3543,9 +3109,7 @@
   },
   "ink_wave.png": {
     "filename": "ink_wave.png",
-    "tags": [
-      "forest"
-    ],
+    "tags": ["forest"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3557,9 +3121,7 @@
   },
   "lofi-cafe_gray.jpg": {
     "filename": "lofi-cafe_gray.jpg",
-    "tags": [
-      "wave"
-    ],
+    "tags": ["wave"],
     "metadata": {
       "width": 2334,
       "height": 1312,
@@ -3571,9 +3133,7 @@
   },
   "minim_blocks.png": {
     "filename": "minim_blocks.png",
-    "tags": [
-      "street"
-    ],
+    "tags": ["street"],
     "metadata": {
       "width": 1436,
       "height": 1000,
@@ -3585,9 +3145,7 @@
   },
   "pixelart_forest.jpg": {
     "filename": "pixelart_forest.jpg",
-    "tags": [
-      "minimalist"
-    ],
+    "tags": ["minimalist"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3599,9 +3157,7 @@
   },
   "shape-abstract.jpg": {
     "filename": "shape-abstract.jpg",
-    "tags": [
-      "pixelart"
-    ],
+    "tags": ["pixelart"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -3613,9 +3169,7 @@
   },
   "smooth_blue.png": {
     "filename": "smooth_blue.png",
-    "tags": [
-      "abstract"
-    ],
+    "tags": ["abstract"],
     "metadata": {
       "width": 6016,
       "height": 3387,
@@ -3627,9 +3181,7 @@
   },
   "smooth_pink.png": {
     "filename": "smooth_pink.png",
-    "tags": [
-      "blue"
-    ],
+    "tags": ["blue"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3641,9 +3193,7 @@
   },
   "Doodle_Space_Nord.png": {
     "filename": "Doodle_Space_Nord.png",
-    "tags": [
-      "pink"
-    ],
+    "tags": ["pink"],
     "metadata": {
       "width": 2750,
       "height": 1546,
@@ -3667,9 +3217,7 @@
   },
   "mecha-nostalgia.png": {
     "filename": "mecha-nostalgia.png",
-    "tags": [
-      "japan"
-    ],
+    "tags": ["japan"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3681,9 +3229,7 @@
   },
   "plane_sunset.png": {
     "filename": "plane_sunset.png",
-    "tags": [
-      "pc"
-    ],
+    "tags": ["pc"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3695,9 +3241,7 @@
   },
   "planet_minimal.png": {
     "filename": "planet_minimal.png",
-    "tags": [
-      "plane"
-    ],
+    "tags": ["plane"],
     "metadata": {
       "width": 4400,
       "height": 2475,
@@ -3709,9 +3253,7 @@
   },
   "train_and_lake.png": {
     "filename": "train_and_lake.png",
-    "tags": [
-      "planet"
-    ],
+    "tags": ["planet"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3723,9 +3265,7 @@
   },
   "white_yinyang.jpg": {
     "filename": "white_yinyang.jpg",
-    "tags": [
-      "train"
-    ],
+    "tags": ["train"],
     "metadata": {
       "width": 5235,
       "height": 2880,
@@ -3737,9 +3277,7 @@
   },
   "awesome.png": {
     "filename": "awesome.png",
-    "tags": [
-      "white"
-    ],
+    "tags": ["white"],
     "metadata": {
       "width": 2048,
       "height": 1280,
@@ -3751,9 +3289,7 @@
   },
   "my-neighbor-totoro-sunflowers.png": {
     "filename": "my-neighbor-totoro-sunflowers.png",
-    "tags": [
-      "awesome"
-    ],
+    "tags": ["awesome"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3765,9 +3301,7 @@
   },
   "gruvbox_code.png": {
     "filename": "gruvbox_code.png",
-    "tags": [
-      "sunflowers"
-    ],
+    "tags": ["sunflowers"],
     "metadata": {
       "width": 1280,
       "height": 720,
@@ -3779,9 +3313,7 @@
   },
   "catpuccin_landscape.png": {
     "filename": "catpuccin_landscape.png",
-    "tags": [
-      "gruvbox"
-    ],
+    "tags": ["gruvbox"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3793,9 +3325,7 @@
   },
   "guy_sleeping_colored.png": {
     "filename": "guy_sleeping_colored.png",
-    "tags": [
-      "catpuccin"
-    ],
+    "tags": ["catpuccin"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3819,9 +3349,7 @@
   },
   "mushroom-purple.png": {
     "filename": "mushroom-purple.png",
-    "tags": [
-      "steampunk"
-    ],
+    "tags": ["steampunk"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -3833,9 +3361,7 @@
   },
   "oled-mountains.jpg": {
     "filename": "oled-mountains.jpg",
-    "tags": [
-      "mushroom"
-    ],
+    "tags": ["mushroom"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3847,9 +3373,7 @@
   },
   "purple-bomb.png": {
     "filename": "purple-bomb.png",
-    "tags": [
-      "mountains"
-    ],
+    "tags": ["mountains"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -3861,9 +3385,7 @@
   },
   "purple-crystal.png": {
     "filename": "purple-crystal.png",
-    "tags": [
-      "purple"
-    ],
+    "tags": ["purple"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3875,9 +3397,7 @@
   },
   "alien_planet.jpeg": {
     "filename": "alien_planet.jpeg",
-    "tags": [
-      "purple"
-    ],
+    "tags": ["purple"],
     "metadata": {
       "width": 3648,
       "height": 2432,
@@ -3889,9 +3409,7 @@
   },
   "dopesmoker_gruvbox.png": {
     "filename": "dopesmoker_gruvbox.png",
-    "tags": [
-      "planet"
-    ],
+    "tags": ["planet"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3903,9 +3421,7 @@
   },
   "polar_catppuccin.png": {
     "filename": "polar_catppuccin.png",
-    "tags": [
-      "gruvbox"
-    ],
+    "tags": ["gruvbox"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -3917,9 +3433,7 @@
   },
   "sushi_dark.png": {
     "filename": "sushi_dark.png",
-    "tags": [
-      "polar"
-    ],
+    "tags": ["polar"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3931,9 +3445,7 @@
   },
   "lana_silhouette.png": {
     "filename": "lana_silhouette.png",
-    "tags": [
-      "sushi"
-    ],
+    "tags": ["sushi"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3957,9 +3469,7 @@
   },
   "flower_tokyo.png": {
     "filename": "flower_tokyo.png",
-    "tags": [
-      "wave"
-    ],
+    "tags": ["wave"],
     "metadata": {
       "width": 1919,
       "height": 1080,
@@ -3971,9 +3481,7 @@
   },
   "tiger-gray.jpg": {
     "filename": "tiger-gray.jpg",
-    "tags": [
-      "flower"
-    ],
+    "tags": ["flower"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -3997,9 +3505,7 @@
   },
   "dark_samurai_mobile.jpg": {
     "filename": "dark_samurai_mobile.jpg",
-    "tags": [
-      "pacman"
-    ],
+    "tags": ["pacman"],
     "metadata": {
       "width": 223,
       "height": 459,
@@ -4011,9 +3517,7 @@
   },
   "astronaut-mobile.png": {
     "filename": "astronaut-mobile.png",
-    "tags": [
-      "samurai"
-    ],
+    "tags": ["samurai"],
     "metadata": {
       "width": 1080,
       "height": 2340,
@@ -4025,9 +3529,7 @@
   },
   "android-dark-lines.jpg": {
     "filename": "android-dark-lines.jpg",
-    "tags": [
-      "astronaut"
-    ],
+    "tags": ["astronaut"],
     "metadata": {
       "width": 1080,
       "height": 2340,
@@ -4039,9 +3541,7 @@
   },
   "wavy_dark.png": {
     "filename": "wavy_dark.png",
-    "tags": [
-      "dark"
-    ],
+    "tags": ["dark"],
     "metadata": {
       "width": 1080,
       "height": 2340,
@@ -4053,9 +3553,7 @@
   },
   "mobile-gradient.png": {
     "filename": "mobile-gradient.png",
-    "tags": [
-      "waves"
-    ],
+    "tags": ["waves"],
     "metadata": {
       "width": 2160,
       "height": 3776,
@@ -4067,9 +3565,7 @@
   },
   "mobile-girl.jpg": {
     "filename": "mobile-girl.jpg",
-    "tags": [
-      "gradient"
-    ],
+    "tags": ["gradient"],
     "metadata": {
       "width": 1440,
       "height": 2560,
@@ -4081,9 +3577,7 @@
   },
   "android-sakura.jpg": {
     "filename": "android-sakura.jpg",
-    "tags": [
-      "girl"
-    ],
+    "tags": ["girl"],
     "metadata": {
       "width": 1284,
       "height": 2778,
@@ -4107,9 +3601,7 @@
   },
   "aurora_v02.png": {
     "filename": "aurora_v02.png",
-    "tags": [
-      "sunset"
-    ],
+    "tags": ["sunset"],
     "metadata": {
       "width": 5120,
       "height": 2880,
@@ -4133,9 +3625,7 @@
   },
   "got_red.jpg": {
     "filename": "got_red.jpg",
-    "tags": [
-      "samurai"
-    ],
+    "tags": ["samurai"],
     "metadata": {
       "width": 5120,
       "height": 2880,
@@ -4147,9 +3637,7 @@
   },
   "nord-chainsaw.png": {
     "filename": "nord-chainsaw.png",
-    "tags": [
-      "samurai"
-    ],
+    "tags": ["samurai"],
     "metadata": {
       "width": 1366,
       "height": 768,
@@ -4161,9 +3649,7 @@
   },
   "nord-princess-zelda.jpg": {
     "filename": "nord-princess-zelda.jpg",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 3508,
       "height": 2279,
@@ -4175,9 +3661,7 @@
   },
   "pacman-nord.png": {
     "filename": "pacman-nord.png",
-    "tags": [
-      "zelda"
-    ],
+    "tags": ["zelda"],
     "metadata": {
       "width": 1920,
       "height": 1200,
@@ -4189,9 +3673,7 @@
   },
   "pixelart-colors.png": {
     "filename": "pixelart-colors.png",
-    "tags": [
-      "pacman"
-    ],
+    "tags": ["pacman"],
     "metadata": {
       "width": 2400,
       "height": 1350,
@@ -4203,9 +3685,7 @@
   },
   "virus-nord.png": {
     "filename": "virus-nord.png",
-    "tags": [
-      "pixelart"
-    ],
+    "tags": ["pixelart"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -4217,9 +3697,7 @@
   },
   "astronaut-rocket.jpg": {
     "filename": "astronaut-rocket.jpg",
-    "tags": [
-      "virus"
-    ],
+    "tags": ["virus"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -4231,9 +3709,7 @@
   },
   "black-panther.jpg": {
     "filename": "black-panther.jpg",
-    "tags": [
-      "astronaut"
-    ],
+    "tags": ["astronaut"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -4245,9 +3721,7 @@
   },
   "cat.jpg": {
     "filename": "cat.jpg",
-    "tags": [
-      "black panther"
-    ],
+    "tags": ["black panther"],
     "metadata": {
       "width": 2880,
       "height": 1800,
@@ -4259,9 +3733,7 @@
   },
   "cliff-edge.jpg": {
     "filename": "cliff-edge.jpg",
-    "tags": [
-      "cat"
-    ],
+    "tags": ["cat"],
     "metadata": {
       "width": 3840,
       "height": 2400,
@@ -4273,9 +3745,7 @@
   },
   "coffee.jpg": {
     "filename": "coffee.jpg",
-    "tags": [
-      "cliff"
-    ],
+    "tags": ["cliff"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -4287,9 +3757,7 @@
   },
   "deer-forest.jpg": {
     "filename": "deer-forest.jpg",
-    "tags": [
-      "coffee"
-    ],
+    "tags": ["coffee"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -4301,9 +3769,7 @@
   },
   "demon.jpg": {
     "filename": "demon.jpg",
-    "tags": [
-      "deer"
-    ],
+    "tags": ["deer"],
     "metadata": {
       "width": 7680,
       "height": 4320,
@@ -4315,9 +3781,7 @@
   },
   "forest-bridge.jpg": {
     "filename": "forest-bridge.jpg",
-    "tags": [
-      "demon"
-    ],
+    "tags": ["demon"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -4329,9 +3793,7 @@
   },
   "anime_cafe_tokyonight.png": {
     "filename": "anime_cafe_tokyonight.png",
-    "tags": [
-      "landscape"
-    ],
+    "tags": ["landscape"],
     "metadata": {
       "width": 1280,
       "height": 720,
@@ -4343,9 +3805,7 @@
   },
   "anime_skyline.png": {
     "filename": "anime_skyline.png",
-    "tags": [
-      "anime"
-    ],
+    "tags": ["anime"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -4369,9 +3829,7 @@
   },
   "astronaut.jpg": {
     "filename": "astronaut.jpg",
-    "tags": [
-      "arch"
-    ],
+    "tags": ["arch"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -4383,9 +3841,7 @@
   },
   "alfa.png": {
     "filename": "alfa.png",
-    "tags": [
-      "space"
-    ],
+    "tags": ["space"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -4397,9 +3853,7 @@
   },
   "arch-chan_to.png": {
     "filename": "arch-chan_to.png",
-    "tags": [
-      "system"
-    ],
+    "tags": ["system"],
     "metadata": {
       "width": 4096,
       "height": 2289,
@@ -4411,9 +3865,7 @@
   },
   "beautiful.jpg": {
     "filename": "beautiful.jpg",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 1920,
       "height": 1200,
@@ -4425,9 +3877,7 @@
   },
   "black.jpg": {
     "filename": "black.jpg",
-    "tags": [
-      "tree"
-    ],
+    "tags": ["tree"],
     "metadata": {
       "width": 3840,
       "height": 2400,
@@ -4439,9 +3889,7 @@
   },
   "arch-peace.png": {
     "filename": "arch-peace.png",
-    "tags": [
-      "nord"
-    ],
+    "tags": ["nord"],
     "metadata": {
       "width": 4444,
       "height": 2500,
@@ -4453,9 +3901,7 @@
   },
   "black-white-girl.png": {
     "filename": "black-white-girl.png",
-    "tags": [
-      "hippie"
-    ],
+    "tags": ["hippie"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -4467,9 +3913,7 @@
   },
   "bunny.png": {
     "filename": "bunny.png",
-    "tags": [
-      "anime"
-    ],
+    "tags": ["anime"],
     "metadata": {
       "width": 2560,
       "height": 1440,
@@ -4481,9 +3925,7 @@
   },
   "chinese.png": {
     "filename": "chinese.png",
-    "tags": [
-      "bunny"
-    ],
+    "tags": ["bunny"],
     "metadata": {
       "width": 3840,
       "height": 2160,
@@ -4495,9 +3937,7 @@
   },
   "colorful-planets.jpg": {
     "filename": "colorful-planets.jpg",
-    "tags": [
-      "red"
-    ],
+    "tags": ["red"],
     "metadata": {
       "width": 5120,
       "height": 2880,
@@ -4509,9 +3949,7 @@
   },
   "colors.jpg": {
     "filename": "colors.jpg",
-    "tags": [
-      "catpuccinn"
-    ],
+    "tags": ["catpuccinn"],
     "metadata": {
       "width": 1920,
       "height": 1080,
@@ -4535,9 +3973,7 @@
   },
   "ocean_with_cloud.png": {
     "filename": "ocean_with_cloud.png",
-    "tags": [
-      "time"
-    ],
+    "tags": ["time"],
     "metadata": {
       "width": 4096,
       "height": 1825,
@@ -4777,9 +4213,7 @@
   },
   "Nepal_5160x2160.png": {
     "filename": "Nepal_5160x2160.png",
-    "tags": [
-      "one piece"
-    ],
+    "tags": ["one piece"],
     "metadata": {
       "width": 5160,
       "height": 2160,
@@ -4827,9 +4261,7 @@
   },
   "wide-girl.png": {
     "filename": "wide-girl.png",
-    "tags": [
-      "nebula"
-    ],
+    "tags": ["nebula"],
     "metadata": {
       "width": 3440,
       "height": 1440,
@@ -4841,9 +4273,7 @@
   },
   "yh.png": {
     "filename": "yh.png",
-    "tags": [
-      "girl"
-    ],
+    "tags": ["girl"],
     "metadata": {
       "width": 3440,
       "height": 1440,
@@ -4855,9 +4285,7 @@
   },
   "wide_lines.png": {
     "filename": "wide_lines.png",
-    "tags": [
-      "dark"
-    ],
+    "tags": ["dark"],
     "metadata": {
       "width": 5120,
       "height": 2160,
@@ -4869,9 +4297,7 @@
   },
   "wide_tokyonight_lines.png": {
     "filename": "wide_tokyonight_lines.png",
-    "tags": [
-      "lines"
-    ],
+    "tags": ["lines"],
     "metadata": {
       "width": 5120,
       "height": 2160,
@@ -4883,9 +4309,7 @@
   },
   "wide_alien_planet.jpeg": {
     "filename": "wide_alien_planet.jpeg",
-    "tags": [
-      "lines"
-    ],
+    "tags": ["lines"],
     "metadata": {
       "width": 4608,
       "height": 1920,
@@ -4909,9 +4333,7 @@
   },
   "ultrawide_island.png": {
     "filename": "ultrawide_island.png",
-    "tags": [
-      "waves"
-    ],
+    "tags": ["waves"],
     "metadata": {
       "width": 3440,
       "height": 1440,
@@ -4923,9 +4345,7 @@
   },
   "wide_tokyonight_skyline.jpg": {
     "filename": "wide_tokyonight_skyline.jpg",
-    "tags": [
-      "island"
-    ],
+    "tags": ["island"],
     "metadata": {
       "width": 3840,
       "height": 1080,
@@ -4934,5 +4354,17 @@
       "file_size_mb": 0.26
     },
     "github_raw_url": "https://raw.githubusercontent.com/AlexandrosLiaskos/Awesome_Wallpapers/main/images/wide_tokyonight_skyline.jpg"
+  },
+  "idkWhatToCallThisLol.png": {
+    "filename": "idkWhatToCallThisLol.png",
+    "tags": ["mountains"],
+    "metadata": {
+      "width": 1920,
+      "height": 1080,
+      "aspect_ratio": 1.77778,
+      "file_size": 387572,
+      "file_size_mb": 0.37
+    },
+    "github_raw_url": "https://raw.githubusercontent.com/KigoryGH/Awesome_Wallpapers/main/images/idkWhatToCallThisLol.png"
   }
 }
