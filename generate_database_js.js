@@ -8,7 +8,7 @@ const jsPath = path.join(__dirname, 'wallpapers_database.js');
 
 const rawJson = fs.readFileSync(jsonPath, 'utf8').trim();
 JSON.parse(rawJson); // Validate JSON syntax
-const jsContent = `window.WALLPAPERS_DATA = ${rawJson};\n`;
+const jsContent = `window.WALLPAPERS_DATA = JSON.parse(${JSON.stringify(rawJson)});\n`;
 
 fs.writeFileSync(jsPath, jsContent, 'utf8');
 console.log('Successfully generated wallpapers_database.js from wallpapers_database.json');
