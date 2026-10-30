@@ -1,69 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Awesome Wallpapers</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="wallpapers_database.js"></script>
     <style>
         :root {
             --neon-teal: rgb(0, 255, 200);
             --dark-bg: rgb(10, 20, 20);
         }
-        
+
         body {
             background-color: var(--dark-bg);
             color: white;
         }
-        
+
         .neon-text {
             color: var(--neon-teal);
             text-shadow: 0 0 2px var(--neon-teal);
         }
-        
+
         .neon-border {
             border-color: var(--neon-teal);
             box-shadow: 0 0 3px var(--neon-teal);
         }
-        
+
         .search-dropdown {
             background-color: rgba(10, 20, 20, 0.95);
             border: 1px solid var(--neon-teal);
         }
-        
+
         .selected-item {
             background-color: rgba(0, 255, 200, 0.2);
         }
-        
+
         .smooth-scroll {
             scroll-behavior: smooth;
         }
-        
+
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1rem;
             padding: 1rem;
         }
-        
+
         .wallpaper-card {
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .wallpaper-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0, 255, 200, 0.2);
         }
-        
+
         .info-panel {
             transition: max-height 0.3s ease, opacity 0.3s ease;
             max-height: 0;
             opacity: 0;
             overflow: hidden;
         }
-        
+
         .info-panel.expanded {
             max-height: 500px;
             opacity: 1;
@@ -82,39 +84,39 @@
             .layout-container {
                 display: flex;
             }
-            
+
             .side-panel {
                 position: fixed;
                 width: 33.333333%;
                 height: 100vh;
                 overflow-y: auto;
             }
-            
+
             .main-panel {
                 margin-left: 33.333333%;
                 width: 66.666667%;
             }
-            
+
             .mobile-info-panel {
                 display: none;
             }
         }
-        
+
         /* Mobile Layout */
         @media (max-width: 768px) {
             .layout-container {
                 display: block;
             }
-            
+
             .side-panel {
                 display: none;
             }
-            
+
             .main-panel {
                 margin-left: 0 !important;
                 width: 100% !important;
             }
-            
+
             .image-grid {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
@@ -152,29 +154,21 @@
         }
     </style>
 </head>
+
 <body>
     <div id="app" class="min-h-screen">
         <!-- Search Bar -->
         <div class="fixed top-0 left-0 right-0 bg-opacity-90 bg-gray-900 p-4 z-50">
             <div class="max-w-4xl mx-auto relative">
-                <input 
-                    type="text" 
-                    v-model="searchQuery"
-                    @keydown.down="selectNextResult"
-                    @keydown.up="selectPreviousResult"
-                    @keydown.enter="selectResult"
+                <input type="text" v-model="searchQuery" @keydown.down="selectNextResult"
+                    @keydown.up="selectPreviousResult" @keydown.enter="selectResult"
                     placeholder="Search by title or use @ for tags..."
-                    class="w-full p-2 bg-gray-800 border-2 neon-border rounded-lg focus:outline-none"
-                >
+                    class="w-full p-2 bg-gray-800 border-2 neon-border rounded-lg focus:outline-none">
                 <!-- Search Results Dropdown -->
                 <div v-if="showDropdown" class="search-dropdown absolute w-full mt-2 rounded-lg overflow-hidden z-50">
-                    <div 
-                        v-for="(result, index) in searchResults" 
-                        :key="index"
-                        @click="selectWallpaperFromSearch(result)"
-                        :class="['p-2 cursor-pointer hover:bg-gray-700 transition-colors duration-200', 
-                                {'selected-item': index === selectedResultIndex}]"
-                    >
+                    <div v-for="(result, index) in searchResults" :key="index"
+                        @click="selectWallpaperFromSearch(result)" :class="['p-2 cursor-pointer hover:bg-gray-700 transition-colors duration-200', 
+                                {'selected-item': index === selectedResultIndex}]">
                         <div class="font-bold">{{ getFilenameWithoutExtension(result.filename) }}</div>
                         <div class="text-sm text-gray-400">
                             Tags: {{ result.tags.join(', ') }}
@@ -187,13 +181,13 @@
         <!-- Main Content -->
         <div class="layout-container pt-20">
             <!-- Side Panel -->
-            <div class="side-panel w-1/3 h-screen overflow-y-auto fixed left-0 p-4 bg-opacity-90 bg-gray-900 smooth-scroll">
-                <div v-for="wallpaper in sortedWallpapers" :key="wallpaper.filename" 
-                     class="mb-4 p-4 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-all duration-300"
-                     :class="{'neon-border': selectedWallpaper?.filename === wallpaper.filename}"
-                     :id="'list-' + wallpaper.filename"
-                     class="selected-list-item"
-                     @click="selectWallpaperFromList(wallpaper)">
+            <div
+                class="side-panel w-1/3 h-screen overflow-y-auto fixed left-0 p-4 bg-opacity-90 bg-gray-900 smooth-scroll">
+                <div v-for="wallpaper in sortedWallpapers" :key="wallpaper.filename"
+                    class="mb-4 p-4 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-all duration-300"
+                    :class="{'neon-border': selectedWallpaper?.filename === wallpaper.filename}"
+                    :id="'list-' + wallpaper.filename" class="selected-list-item"
+                    @click="selectWallpaperFromList(wallpaper)">
                     <div class="flex justify-between items-start">
                         <div>
                             <h3 class="font-bold text-white">{{ getFilenameWithoutExtension(wallpaper.filename) }}</h3>
@@ -205,7 +199,7 @@
                             {{ wallpaper.metadata.file_size_mb }}MB
                         </div>
                     </div>
-                    
+
                     <div :class="['info-panel', {'expanded': expandedPanels[wallpaper.filename]}]">
                         <div class="mt-4 text-sm text-gray-300">
                             <div class="grid grid-cols-2 gap-2">
@@ -216,9 +210,8 @@
                                 <div>File Type:</div>
                                 <div>{{ getFileExtension(wallpaper.filename) }}</div>
                             </div>
-                            <a :href="wallpaper.github_raw_url" 
-                               target="_blank"
-                               class="block mt-4 text-center p-2 rounded-lg border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-900 transition-colors duration-200">
+                            <a :href="wallpaper.github_raw_url" target="_blank"
+                                class="block mt-4 text-center p-2 rounded-lg border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-900 transition-colors duration-200">
                                 Download Wallpaper
                             </a>
                         </div>
@@ -229,19 +222,17 @@
             <!-- Main Preview Panel -->
             <div class="main-panel min-h-screen p-4">
                 <div class="image-grid">
-                    <div v-for="wallpaper in wallpapers" 
-                         :key="wallpaper.filename"
-                         class="wallpaper-card rounded-lg overflow-hidden cursor-pointer"
-                         :class="{'selected-preview': selectedWallpaper?.filename === wallpaper.filename}"
-                         :id="'preview-' + wallpaper.filename"
-                         @click="selectWallpaperFromPreview(wallpaper)">
-                        <img :src="wallpaper.github_raw_url" 
-                             :alt="getFilenameWithoutExtension(wallpaper.filename)"
-                             class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
-                             loading="lazy">
+                    <div v-for="wallpaper in wallpapers" :key="wallpaper.filename"
+                        class="wallpaper-card rounded-lg overflow-hidden cursor-pointer"
+                        :class="{'selected-preview': selectedWallpaper?.filename === wallpaper.filename}"
+                        :id="'preview-' + wallpaper.filename" @click="selectWallpaperFromPreview(wallpaper)">
+                        <img :src="wallpaper.preview_url" :alt="getFilenameWithoutExtension(wallpaper.filename)"
+                            class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                            @error="onImageError(wallpaper)" loading="lazy">
 
                         <!-- Mobile Info Panel -->
-                        <div :class="['mobile-info-panel', {'expanded': selectedWallpaper?.filename === wallpaper.filename}]">
+                        <div
+                            :class="['mobile-info-panel', {'expanded': selectedWallpaper?.filename === wallpaper.filename}]">
                             <div class="mobile-info-content">
                                 <div class="text-sm text-gray-300">
                                     <h3 class="font-bold text-white text-lg mb-2">
@@ -258,9 +249,8 @@
                                         <div>File Type:</div>
                                         <div>{{ getFileExtension(wallpaper.filename) }}</div>
                                     </div>
-                                    <a :href="wallpaper.github_raw_url" 
-                                       target="_blank"
-                                       class="block mt-4 text-center p-2 rounded-lg border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-900 transition-colors duration-200">
+                                    <a :href="wallpaper.github_raw_url" target="_blank"
+                                        class="block mt-4 text-center p-2 rounded-lg border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-900 transition-colors duration-200">
                                         Download Wallpaper
                                     </a>
                                 </div>
@@ -294,12 +284,24 @@
 
                 const isMobile = () => window.innerWidth <= 768
 
-                // Load wallpapers data
-                fetch('wallpapers_database.json')
-                    .then(response => response.json())
-                    .then(data => {
-                        wallpapers.value = Object.values(data)
-                    })
+                // Load wallpapers data (works via file:// using wallpapers_database.js; falls back to fetch)
+                const useLocalImages = data => {
+                    // Use images from the local cloned repo for previews, keeping remote URL for downloads and fallback
+                    wallpapers.value = Object.values(data).map(w => ({
+                        ...w,
+                        remote_url: w.github_raw_url,
+                        github_raw_url: w.github_raw_url,
+                        preview_url: 'images/' + encodeURIComponent(w.filename)
+                    }))
+                }
+
+                if (window.WALLPAPERS_DATA) {
+                    useLocalImages(window.WALLPAPERS_DATA)
+                } else {
+                    fetch('wallpapers_database.json')
+                        .then(response => response.json())
+                        .then(useLocalImages)
+                }
 
                 const sortedWallpapers = computed(() => {
                     if (!selectedWallpaper.value) return wallpapers.value
@@ -316,18 +318,18 @@
                     const query = searchQuery.value.toLowerCase()
                     if (query.startsWith('@')) {
                         const tagQuery = query.slice(1)
-                        return wallpapers.value.filter(w => 
+                        return wallpapers.value.filter(w =>
                             w.tags.some(tag => tag.toLowerCase().includes(tagQuery))
                         )
                     }
 
-                    return wallpapers.value.filter(w => 
+                    return wallpapers.value.filter(w =>
                         getFilenameWithoutExtension(w.filename).toLowerCase().includes(query) ||
                         w.tags.some(tag => tag.toLowerCase().includes(query))
                     )
                 })
 
-                const showDropdown = computed(() => 
+                const showDropdown = computed(() =>
                     searchQuery.value.length > 0 && searchResults.value.length > 0
                 )
 
@@ -335,7 +337,7 @@
                 const selectWallpaperFromList = async (wallpaper) => {
                     selectedWallpaper.value = wallpaper
                     expandedPanels.value = { [wallpaper.filename]: true }
-                    
+
                     await nextTick()
                     const previewElement = document.getElementById('preview-' + wallpaper.filename)
                     if (previewElement) {
@@ -355,7 +357,7 @@
 
                     selectedWallpaper.value = wallpaper;
                     expandedPanels.value = { [wallpaper.filename]: true };
-                    
+
                     if (!isMobile()) {
                         await nextTick();
                         const listElement = document.getElementById('list-' + wallpaper.filename);
@@ -370,7 +372,7 @@
                     selectedWallpaper.value = wallpaper
                     expandedPanels.value = { [wallpaper.filename]: true }
                     searchQuery.value = ''
-                    
+
                     await nextTick()
                     const previewElement = document.getElementById('preview-' + wallpaper.filename)
                     if (previewElement) {
@@ -407,7 +409,15 @@
                     selectedResultIndex.value = 0
                 })
 
+                // Failover: if the local preview image is missing, use the remote URL
+                const onImageError = (wallpaper) => {
+                    if (wallpaper.remote_url && wallpaper.preview_url !== wallpaper.remote_url) {
+                        wallpaper.preview_url = wallpaper.remote_url
+                    }
+                }
+
                 return {
+                    onImageError,
                     wallpapers,
                     selectedWallpaper,
                     searchQuery,
@@ -429,4 +439,5 @@
         }).mount('#app')
     </script>
 </body>
+
 </html>
