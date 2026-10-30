@@ -226,7 +226,7 @@
                         class="wallpaper-card rounded-lg overflow-hidden cursor-pointer"
                         :class="{'selected-preview': selectedWallpaper?.filename === wallpaper.filename}"
                         :id="'preview-' + wallpaper.filename" @click="selectWallpaperFromPreview(wallpaper)">
-                        <img :src="wallpaper.github_raw_url" :alt="getFilenameWithoutExtension(wallpaper.filename)"
+                        <img :src="wallpaper.preview_url" :alt="getFilenameWithoutExtension(wallpaper.filename)"
                             class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
                             @error="onImageError(wallpaper)" loading="lazy">
 
@@ -286,11 +286,12 @@
 
                 // Load wallpapers data (works via file:// using wallpapers_database.js; falls back to fetch)
                 const useLocalImages = data => {
-                    // Use images from the local cloned repo instead of remote URLs
+                    // Use images from the local cloned repo for previews, keeping remote URL for downloads and fallback
                     wallpapers.value = Object.values(data).map(w => ({
                         ...w,
                         remote_url: w.github_raw_url,
-                        github_raw_url: 'images/' + encodeURIComponent(w.filename)
+                        github_raw_url: w.github_raw_url,
+                        preview_url: 'images/' + encodeURIComponent(w.filename)
                     }))
                 }
 
@@ -408,10 +409,10 @@
                     selectedResultIndex.value = 0
                 })
 
-                // Failover: if the local image is missing, use the remote URL (image and links)
+                // Failover: if the local preview image is missing, use the remote URL
                 const onImageError = (wallpaper) => {
-                    if (wallpaper.remote_url && wallpaper.github_raw_url !== wallpaper.remote_url) {
-                        wallpaper.github_raw_url = wallpaper.remote_url
+                    if (wallpaper.remote_url && wallpaper.preview_url !== wallpaper.remote_url) {
+                        wallpaper.preview_url = wallpaper.remote_url
                     }
                 }
 

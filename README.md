@@ -71,7 +71,11 @@ Contributions are welcome! If you have wallpapers to add or improvements to sugg
 1.  Fork the repository.
 2.  Add your wallpaper(s) to the `images/` directory (if applicable, otherwise just update JSON).
 3.  Update `wallpapers_database.json` with the new wallpaper details (filename, tags, metadata, raw URL). Ensure metadata is accurate.
-4.  Create a pull request with your changes.
+4.  Regenerate `wallpapers_database.js` from `wallpapers_database.json`:
+    ```bash
+    node generate_database_js.js
+    ```
+5.  Create a pull request with your changes.
 
 Please ensure added wallpapers are of high quality and adhere to general community standards (no offensive content).
 
