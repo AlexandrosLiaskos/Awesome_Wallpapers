@@ -6,6 +6,7 @@
     <title>Awesome Wallpapers</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="wallpapers_database.js"></script>
     <style>
         :root {
             --neon-teal: rgb(0, 255, 200);
@@ -294,12 +295,22 @@
 
                 const isMobile = () => window.innerWidth <= 768
 
-                // Load wallpapers data
-                fetch('wallpapers_database.json')
-                    .then(response => response.json())
-                    .then(data => {
-                        wallpapers.value = Object.values(data)
-                    })
+                // Load wallpapers data (works via file:// using wallpapers_database.js; falls back to fetch)
+                const useLocalImages = data => {
+                    // Use images from the local cloned repo instead of remote URLs
+                    wallpapers.value = Object.values(data).map(w => ({
+                        ...w,
+                        github_raw_url: 'images/' + encodeURIComponent(w.filename)
+                    }))
+                }
+
+                if (window.WALLPAPERS_DATA) {
+                    useLocalImages(window.WALLPAPERS_DATA)
+                } else {
+                    fetch('wallpapers_database.json')
+                        .then(response => response.json())
+                        .then(useLocalImages)
+                }
 
                 const sortedWallpapers = computed(() => {
                     if (!selectedWallpaper.value) return wallpapers.value
