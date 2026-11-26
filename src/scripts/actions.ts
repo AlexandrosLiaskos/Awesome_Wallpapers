@@ -17,7 +17,7 @@ function original(label: HTMLElement): string {
  * click while the message is showing restarts the wait rather than mistaking
  * the message for the label.
  */
-function flash(label: HTMLElement, message: string, duration: number): void {
+function flash(label: HTMLElement, message: string, duration: number, onReset?: () => void): void {
   const text = original(label);
   label.textContent = message;
   clearTimeout(resets.get(label));
@@ -25,6 +25,7 @@ function flash(label: HTMLElement, message: string, duration: number): void {
     label,
     setTimeout(() => {
       label.textContent = text;
+      onReset?.();
     }, duration),
   );
 }
@@ -34,8 +35,11 @@ async function copy(button: HTMLElement): Promise<void> {
   original(label);
   try {
     await navigator.clipboard.writeText(button.dataset.copy ?? '');
-    flash(label, 'Copied', 1200);
+    // Marks the button while it says "Copied", so the page can show a tick.
+    button.setAttribute('data-copied', '');
+    flash(label, 'Copied', 1200, () => button.removeAttribute('data-copied'));
   } catch {
+    button.removeAttribute('data-copied');
     flash(label, 'Copy failed', 1200);
   }
 }

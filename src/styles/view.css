@@ -155,16 +155,55 @@
   cursor: copy;
 }
 
-.view__palette button:hover {
+.view__palette button:hover,
+.view__palette button:focus-visible {
   color: var(--text);
 }
 
+.view__palette button:focus-visible {
+  outline: none;
+}
+
 .view__swatch {
+  position: relative;
   display: block;
   height: 44px;
   margin-bottom: 6px;
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 4px;
+  background: var(--swatch);
+  color: var(--ink);
+  transition: box-shadow 0.15s;
+}
+
+.view__palette button:hover .view__swatch,
+.view__palette button:focus-visible .view__swatch {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
+}
+
+/* A copy icon in the corner of every colour, clearer on hover; a tick once copied. */
+.view__copy {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: flex;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.view__palette button:hover .view__copy,
+.view__palette button:focus-visible .view__copy,
+.view__palette button[data-copied] .view__copy {
+  opacity: 1;
+}
+
+.view__copy svg:last-child,
+.view__palette button[data-copied] .view__copy svg:first-child {
+  display: none;
+}
+
+.view__palette button[data-copied] .view__copy svg:last-child {
+  display: block;
 }
 
 .view__actions {
