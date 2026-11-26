@@ -1,0 +1,33 @@
+{
+  "name": "awesome-wallpapers",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A fast, searchable gallery of aesthetic wallpapers.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "media": "node scripts/build-media.ts",
+    "dev": "npm run media && astro dev",
+    "build": "npm run media && astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "validate": "node scripts/validate.ts",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.6",
+    "@fontsource-variable/newsreader": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "astro": "^7.4.13",
+    "sharp": "^0.35.5",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.2"
+  }
+}
