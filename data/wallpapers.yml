@@ -1,0 +1,1418 @@
+# One entry per file in images/. Width, height, file size and colours are
+# worked out from the file itself, so they are not written here.
+#
+#   file:     the filename in images/, exactly as it is
+#   title:    what the wallpaper is called on the site
+#   tags:     two to five slugs from tags.yml
+#   featured: true puts it on the first screen (optional)
+#   credit:   the artist, as name and url (optional)
+#   source:   where it was collected from, if not the default collection (optional)
+
+- file: 36592_serial_experiments_lain.png
+  title: Serial Experiments Lain
+  tags: [anime, monochrome]
+
+- file: 3squares.png
+  title: Three Squares
+  tags: [minimal, geometric]
+
+- file: 4k-ai-mountain.jpg
+  title: Mountain Overlook
+  tags: [landscape, mountains, forest, illustration]
+
+- file: 4k-keyboard.jpg
+  title: Mechanical Keyboards
+  tags: [tech, photo]
+
+- file: a_cartoon_of_a_house_on_a_cliff.png
+  title: House on a Cliff
+  tags: [anime, landscape]
+
+- file: abandoned.jpg
+  title: Abandoned
+  tags: [photo, dark]
+
+- file: abstract.jpg
+  title: Teal Smoke
+  tags: [abstract, dark]
+
+- file: acrylic.jpg
+  title: Acrylic Strokes
+  tags: [abstract, pastel]
+
+- file: alfa.png
+  title: Alfa
+  tags: [minimal, geometric]
+
+- file: alien_planet.jpeg
+  title: Alien Planet
+  tags: [sci-fi, illustration, colorful]
+
+- file: android-dark-lines.jpg
+  title: Dark Ribbons
+  tags: [abstract, minimal, dark]
+
+- file: android-sakura.jpg
+  title: Sakura Dusk
+  tags: [landscape, flowers, sunset]
+  featured: true
+
+- file: anime_cafe_tokyonight.png
+  title: Corner Café
+  tags: [anime, city, cozy, tokyo-night]
+
+- file: anime_skyline.png
+  title: Evening Wires
+  tags: [anime, sunset, city, sky]
+
+- file: anime-chick.jpg
+  title: Graffiti Girl
+  tags: [anime, city]
+
+- file: anime-eye-nord.png
+  title: Eyes
+  tags: [anime, minimal, nord]
+
+- file: anime-nord.png
+  title: Red Split
+  tags: [anime, minimal, nord]
+
+- file: anime-pond.png
+  title: Lily Pond
+  tags: [water, pastel, illustration]
+
+- file: anime-water.png
+  title: Night Pool
+  tags: [anime, water, night, cozy]
+
+- file: Antman.jpg
+  title: Ant-Man
+  tags: [comics, minimal]
+
+- file: arch_purple.png
+  title: Arch Purple
+  tags: [linux, minimal]
+
+- file: arch-chan_to.png
+  title: Arch-chan
+  tags: [linux, anime]
+
+- file: arch-nord-dark.png
+  title: Arch Nord Dark
+  tags: [linux, minimal, nord]
+
+- file: arch-nord-light.png
+  title: Arch Nord Light
+  tags: [linux, minimal, nord]
+
+- file: arch-peace.png
+  title: Peace, Arch, Love
+  tags: [linux, minimal]
+
+- file: art-lake.png
+  title: Lake Cabin
+  tags: [landscape, forest, water, illustration]
+
+- file: astronaut-balloons.jpg
+  title: Planet Balloons
+  tags: [astronaut, space, minimal]
+
+- file: astronaut-mobile.png
+  title: Astronaut Sketch
+  tags: [astronaut, space, monochrome]
+
+- file: astronaut-nord.png
+  title: Spacewalk
+  tags: [astronaut, space, nord]
+  featured: true
+
+- file: astronaut-planet.jpg
+  title: Red Sun Astronaut
+  tags: [astronaut, space, retro, minimal]
+
+- file: astronaut-rocket.jpg
+  title: Rocket Keeper
+  tags: [astronaut, space, minimal, dark]
+
+- file: astronaut.jpg
+  title: Jellyfish Astronaut
+  tags: [astronaut, space, dark]
+
+- file: aurora_v02.png
+  title: Aurora
+  tags: [landscape, mountains, sky, illustration]
+  featured: true
+
+- file: australia.jpg
+  title: Burning Coast
+  tags: [landscape, sunset, water, illustration]
+  featured: true
+
+- file: autumn_leaves.jpg
+  title: Autumn Leaves
+  tags: [photo, minimal]
+
+- file: awesome.png
+  title: Awesome
+  tags: [typography, minimal]
+
+- file: beach_landscape.png
+  title: Rocky Shore
+  tags: [photo, landscape, water]
+
+- file: beautiful.jpg
+  title: Tree Above the Clouds
+  tags: [landscape, fantasy, flowers, illustration]
+
+- file: beige_tree.png
+  title: Red Tree Triptych
+  tags: [minimal, illustration]
+
+- file: berserkdrac.png
+  title: Berserk
+  tags: [anime, typography, minimal]
+
+- file: bici.jpg
+  title: Ride Home
+  tags: [anime, sunset, city]
+
+- file: Bix57su7.png
+  title: Riverside Village
+  tags: [landscape, illustration]
+
+- file: black_car_girl.jpg
+  title: Girl and Car
+  tags: [anime, cars, monochrome]
+
+- file: black-panther-neon.jpg
+  title: Black Panther Neon
+  tags: [comics, neon, dark]
+
+- file: black-panther.jpg
+  title: Black Panther
+  tags: [comics, neon, dark]
+
+- file: black-white-girl.png
+  title: Monochrome Girl
+  tags: [anime, monochrome, dark]
+
+- file: black.jpg
+  title: Shards
+  tags: [minimal, abstract]
+
+- file: blue_demon.png
+  title: Blue Demon
+  tags: [anime, fantasy, dark]
+
+- file: blue-red-4k.png
+  title: Blue and Red Smoke
+  tags: [abstract, colorful]
+
+- file: bunny.png
+  title: Bunny Studies
+  tags: [animals, minimal, illustration]
+
+- file: cabin.png
+  title: Forest Cabin
+  tags: [photo, forest, cozy]
+
+- file: california.jpg
+  title: San Francisco
+  tags: [photo, city]
+
+- file: camp_day.png
+  title: Camp
+  tags: [minimal, forest]
+
+- file: cat_anime-girl.png
+  title: Quiet Street
+  tags: [anime, city]
+
+- file: cat.jpg
+  title: Peeking Cat
+  tags: [animals, minimal]
+
+- file: catppuccin-rainbow-arch.png
+  title: Rainbow Arch
+  tags: [linux, catppuccin, minimal, pastel]
+
+- file: catpuccin_landscape.png
+  title: Catppuccin Lake
+  tags: [catppuccin, landscape, mountains, night, minimal]
+  featured: true
+
+- file: catpuccin_samurai.png
+  title: Wave Swordsman
+  tags: [catppuccin, anime, samurai, japan]
+
+- file: catpuccin_w.png
+  title: Catppuccin Cat
+  tags: [catppuccin, minimal, animals, pastel]
+
+- file: chinese.png
+  title: Calligraphy
+  tags: [minimal, typography]
+
+- file: circuits.png
+  title: Circuit Maze
+  tags: [minimal, tech, geometric]
+
+- file: classic-arch.png
+  title: Classic Arch
+  tags: [linux, typography, monochrome]
+
+- file: cliff-edge.jpg
+  title: Cliff Edge
+  tags: [landscape, sunset, minimal]
+
+- file: coffee.jpg
+  title: Coffee Low
+  tags: [minimal, dark]
+
+- file: colorful-planets.jpg
+  title: Colorful Planets
+  tags: [space, minimal, illustration]
+
+- file: colors.jpg
+  title: Crystal Nebula
+  tags: [abstract, colorful, space]
+
+- file: Computerized_Art_3440x1440_7.jpg
+  title: Lonely Island
+  tags: [landscape, water, minimal]
+
+- file: cool_rocks.png
+  title: Dark Rocks
+  tags: [photo, dark, monochrome]
+
+- file: cron.png
+  title: Cron
+  tags: [linux, minimal]
+
+- file: cute-town-dark.png
+  title: Jungle Village at Night
+  tags: [landscape, fantasy, night, illustration]
+
+- file: cute-town.png
+  title: Jungle Village
+  tags: [landscape, fantasy, illustration]
+
+- file: cyberpunk_car.png
+  title: Synthwave Drive
+  tags: [retro, cars, neon, sunset]
+  featured: true
+
+- file: dark_forest.png
+  title: Dark Forest
+  tags: [forest, night, dark]
+
+- file: dark_pixelart.png
+  title: White Stag
+  tags: [pixel-art, dark, animals]
+
+- file: dark_skulls.png
+  title: Neon Skulls
+  tags: [dark, colorful]
+
+- file: debian.png
+  title: Debian
+  tags: [linux, minimal]
+
+- file: deer-forest.jpg
+  title: Deer at Dusk
+  tags: [landscape, sunset, forest, animals, minimal]
+  featured: true
+
+- file: demon.jpg
+  title: Oni Mask
+  tags: [japan, minimal]
+
+- file: Doodle_Space_Nord.png
+  title: Doodle Space
+  tags: [sci-fi, city, illustration, nord]
+
+- file: dopesmoker_gruvbox.png
+  title: Dopesmoker
+  tags: [gruvbox, sci-fi, illustration]
+
+- file: earth.png
+  title: Earth and Moon
+  tags: [space, minimal]
+
+- file: em-rofi.webp
+  title: Rocket Trail
+  tags: [anime, night, sky, city]
+
+- file: estrategy-minimal.png
+  title: War, Glory, Strategy
+  tags: [minimal, typography, dark]
+
+- file: everforest_one_piece.png
+  title: One Piece Crew
+  tags: [everforest, anime, minimal]
+
+- file: everforest_robin.png
+  title: Robin
+  tags: [everforest, anime]
+
+- file: falltree.jpg
+  title: Pink Canopy
+  tags: [illustration, landscape]
+
+- file: fantasy-woods.jpg
+  title: Autumn Stream
+  tags: [forest, landscape, illustration, fantasy]
+
+- file: fedora_snake.png
+  title: Fedora Snake
+  tags: [linux, minimal]
+
+- file: Fedora1.png
+  title: Fedora ASCII
+  tags: [linux, minimal, typography]
+
+- file: field.jpeg
+  title: Flower Field
+  tags: [cars, sunset, flowers, landscape]
+
+- file: fire-skull.jpg
+  title: Fire Skull
+  tags: [dark, minimal, illustration]
+
+- file: fishing_stars.jpg
+  title: Fishing Under the Stars
+  tags: [landscape, night, fantasy, illustration]
+
+- file: flower_tokyo.png
+  title: Lily
+  tags: [flowers, photo]
+
+- file: forest-bridge.jpg
+  title: Forest Bridge
+  tags: [landscape, minimal, forest, mountains]
+
+- file: forest.png
+  title: Enchanted Forest
+  tags: [forest, fantasy, night, illustration]
+  featured: true
+
+- file: fox.png
+  title: Ramen Fox
+  tags: [animals, illustration, japan]
+
+- file: fractal.png
+  title: Fractal
+  tags: [abstract, dark]
+
+- file: futuristicAncientTree.png
+  title: Ancient Tree
+  tags: [landscape, fantasy, mountains, illustration]
+
+- file: gas-station.jpg
+  title: Gas Station
+  tags: [photo, night, dark]
+
+- file: glass-sphere.jpg
+  title: Glass Sphere
+  tags: [space, minimal, colorful]
+
+- file: glasses.png
+  title: Pixel Glasses
+  tags: [minimal, pixel-art]
+
+- file: golden-mountains.png
+  title: Golden Mountains
+  tags: [minimal, mountains, dark]
+
+- file: goldfish.jpg
+  title: Goldfish
+  tags: [minimal, animals, dark, water]
+
+- file: got_bw.jpg
+  title: Ghost of Tsushima
+  tags: [gaming, samurai, japan, monochrome]
+  featured: true
+
+- file: got_red.jpg
+  title: Ghost of Tsushima Red
+  tags: [gaming, samurai, japan, sunset]
+
+- file: gradient-pb.png
+  title: Pink Blue Gradient
+  tags: [gradient, minimal, pastel]
+
+- file: gray-background.png
+  title: Quiet Circles
+  tags: [minimal, abstract, dark]
+
+- file: green-girl.jpg
+  title: Robot Garden
+  tags: [anime, sci-fi]
+
+- file: green-sun.jpg
+  title: Green Sun
+  tags: [minimal, dark]
+
+- file: Groot.jpg
+  title: Groot
+  tags: [comics, movies-tv]
+
+- file: gruvbox_code.png
+  title: Gruvbox Code
+  tags: [gruvbox, minimal, tech]
+
+- file: gruvbox_forest-4.png
+  title: Forest Road
+  tags: [gruvbox, forest, photo]
+
+- file: gruvbox_retrocity.png
+  title: Retro City
+  tags: [gruvbox, pixel-art, city]
+
+- file: gruvbox_room.png
+  title: Attic Room
+  tags: [gruvbox, cozy, illustration]
+
+- file: gruvbox_witcher.png
+  title: The Witcher
+  tags: [gruvbox, gaming, illustration]
+
+- file: guy_sleeping_colored.png
+  title: Afternoon Nap
+  tags: [anime, landscape, forest]
+
+- file: hands.jpg
+  title: Hands
+  tags: [monochrome, dark]
+
+- file: haskell.png
+  title: Haskell
+  tags: [tech, minimal, dark]
+
+- file: hello-worlds.png
+  title: Hello World
+  tags: [tech, typography, minimal]
+
+- file: hill-house.png
+  title: Hill House
+  tags: [landscape, sunset, illustration]
+
+- file: holy-arch-nordic.png
+  title: Holy Arch
+  tags: [linux, nord, minimal]
+
+- file: home127-dark.jpg
+  title: No Place Like 127.0.0.1
+  tags: [typography, tech, minimal, dark]
+
+- file: home127-light.jpg
+  title: No Place Like 127.0.0.1 (Gold)
+  tags: [typography, tech, minimal]
+
+- file: horror_cult.jpg
+  title: The Cult
+  tags: [monochrome, dark, fantasy, illustration]
+
+- file: ibmbios8x8_intel.png
+  title: Chip
+  tags: [tech, minimal, dark]
+
+- file: ign_colorful.png
+  title: Liquid Marble
+  tags: [abstract, colorful]
+
+- file: ign_megumin_dark.png
+  title: Megumin
+  tags: [anime, dark, fantasy]
+
+- file: ink_wave.png
+  title: Ink Wave
+  tags: [abstract, minimal]
+
+- file: interstellar_wallpaper.png
+  title: Interstellar
+  tags: [movies-tv, night, dark]
+
+- file: japan_anime_city.jpg
+  title: Rainy Crossing
+  tags: [anime, city, japan]
+  featured: true
+
+- file: japan_torii.png
+  title: Torii Gate
+  tags: [anime, japan, forest]
+
+- file: japan-purple-blur.png
+  title: Purple Alley
+  tags: [japan, city, retro, neon]
+
+- file: japan.png
+  title: Shrine in the Rain
+  tags: [japan, night, landscape, illustration]
+
+- file: japan2.jpg
+  title: Yokai Parade
+  tags: [japan, samurai, fantasy, illustration]
+
+- file: japan3.jpg
+  title: Winter Torii
+  tags: [japan, landscape, illustration]
+  featured: true
+
+- file: japanese-house.png
+  title: Garden Veranda
+  tags: [anime, japan, cozy]
+
+- file: Jurassic-dino.jpg
+  title: Jurassic
+  tags: [movies-tv, animals, minimal]
+
+- file: katana.jpg
+  title: Katana
+  tags: [anime, samurai, dark]
+
+- file: kiryu_black.png
+  title: Kiryu Dragon
+  tags: [gaming, japan, monochrome, dark]
+
+- file: Kratos-gow-red.jpg
+  title: God of War
+  tags: [gaming, minimal, illustration]
+
+- file: lake.jpg
+  title: Still Lake
+  tags: [landscape, sunset, water, minimal]
+
+- file: lana_silhouette.png
+  title: Cyan Sun
+  tags: [minimal, city, neon, dark]
+
+- file: landscape2.jpg
+  title: Twilight Woods
+  tags: [landscape, forest, fantasy, illustration]
+
+- file: leave-planet.jpg
+  title: I Want to Be Leaving
+  tags: [space, astronaut, minimal, typography]
+
+- file: lets_go_home.png
+  title: Let's Go Home
+  tags: [anime, city, sky, sunset]
+  featured: true
+
+- file: light-ring.jpg
+  title: Light Ring
+  tags: [sci-fi, minimal, neon, dark]
+
+- file: lightning.jpg
+  title: Lightning
+  tags: [minimal, sky]
+
+- file: linux-penguin.jpg
+  title: Tux
+  tags: [linux, minimal, dark]
+
+- file: literal-wallpaper.png
+  title: Literally Wallpaper
+  tags: [typography, minimal, dark]
+
+- file: lofi_cat.png
+  title: Lofi Cat
+  tags: [cozy, animals, illustration, night]
+  featured: true
+
+- file: lofi-cafe_gray.jpg
+  title: Lofi Coffee
+  tags: [cozy, japan, city, night]
+
+- file: Luffy_from_One_Piece_5160x2160.jpeg
+  title: Luffy
+  tags: [anime, illustration]
+  featured: true
+
+- file: man-colors.jpg
+  title: Neon Diamond
+  tags: [geometric, minimal, dark, neon]
+
+- file: manga-samurai.png
+  title: Red Sun Samurai
+  tags: [samurai, japan, minimal, dark]
+
+- file: manga.png
+  title: Sakura Gate
+  tags: [pixel-art, japan, flowers, landscape]
+
+- file: mecha-nostalgia.png
+  title: Console Nostalgia
+  tags: [retro, gaming, tech, illustration]
+
+- file: minim_blocks.png
+  title: Blocks
+  tags: [minimal, geometric]
+
+- file: minim-helmet.png
+  title: Doom Mask
+  tags: [minimal, dark]
+
+- file: minim.jpg
+  title: Into the Woods
+  tags: [minimal, forest, illustration]
+
+- file: minimal_c.png
+  title: C
+  tags: [tech, minimal, dark]
+
+- file: minimal_gradient.png
+  title: Gradient Dunes
+  tags: [gradient, abstract, colorful]
+
+- file: minimal_landscape.jpg
+  title: Snow Peaks
+  tags: [landscape, mountains, night, minimal]
+  featured: true
+
+- file: minimal_nord_guy.png
+  title: Hanging On
+  tags: [minimal, nord]
+
+- file: minimal_python.png
+  title: Python Snippet
+  tags: [tech, minimal, dark]
+
+- file: minimal-purple.jpg
+  title: Bright Idea
+  tags: [minimal, dark]
+
+- file: minimal-triangles.jpg
+  title: Painted Triangles
+  tags: [geometric, colorful, abstract]
+
+- file: Mint1.png
+  title: Mint ASCII
+  tags: [linux, typography, minimal]
+
+- file: mobile-girl.jpg
+  title: Red Moon Bather
+  tags: [anime, minimal, dark]
+
+- file: mobile-gradient.png
+  title: Mint Waves
+  tags: [gradient, minimal, pastel]
+
+- file: mobile-spiral.jpg
+  title: Grey Vortex
+  tags: [abstract, monochrome, dark]
+
+- file: mocha_steampunk.jpg
+  title: Steampunk Skies
+  tags: [catppuccin, sci-fi, fantasy, illustration]
+
+- file: moon.png
+  title: Moon
+  tags: [space, minimal]
+
+- file: mountains.png
+  title: Starlit Range
+  tags: [landscape, mountains, night, illustration]
+
+- file: mushroom-purple.png
+  title: Glowing Mushroom
+  tags: [fantasy, forest, night, illustration]
+
+- file: my-neighbor-totoro-sunflowers.png
+  title: Sunflowers and Clouds
+  tags: [anime, flowers, sky, movies-tv]
+
+- file: naruto_2.png
+  title: Naruto Seal
+  tags: [anime, minimal]
+
+- file: nature.jpg
+  title: Waterfall
+  tags: [photo, forest, water, landscape]
+
+- file: needing-space.jpg
+  title: I Need My Space
+  tags: [space, typography, illustration]
+
+- file: neocity.png
+  title: Neo City
+  tags: [city, sci-fi, colorful, illustration]
+
+- file: neon-car2.png
+  title: Neon Street
+  tags: [cars, neon, city, night, cyberpunk]
+
+- file: neon-circle.jpg
+  title: Neon Circle
+  tags: [neon, retro, dark]
+
+- file: neon-lights.jpg
+  title: Neon Shopfront
+  tags: [photo, neon, night, city]
+
+- file: neon-shacks-nord.png
+  title: Shacks
+  tags: [nord, city, illustration, monochrome]
+
+- file: neosamurai.webp
+  title: Neo Samurai
+  tags: [cyberpunk, samurai, city, neon]
+
+- file: Nepal_5160x2160.png
+  title: Nepal
+  tags: [photo, mountains, landscape]
+
+- file: nix.png
+  title: Nix
+  tags: [linux, minimal, dark]
+
+- file: nixos-declarative.jpg
+  title: NixOS
+  tags: [linux, minimal]
+
+- file: nord_car_live.gif
+  title: Night Garage
+  tags: [nord, pixel-art, cars, city, night]
+
+- file: nord_dark_city.png
+  title: City Lights
+  tags: [nord, city, night, dark]
+
+- file: nord_dots.png
+  title: Nord Dots
+  tags: [nord, minimal]
+
+- file: nord_mask.png
+  title: Gas Mask
+  tags: [nord, sci-fi, illustration]
+
+- file: nord_minimal_cat.png
+  title: Corner Cat
+  tags: [nord, minimal, animals]
+
+- file: nord_minimal_girl.png
+  title: Stripes
+  tags: [nord, anime, minimal]
+
+- file: nord_purple_waves.png
+  title: Great Wave Outline
+  tags: [nord, japan, minimal]
+
+- file: nord-chainsaw.png
+  title: Chainsaw Man
+  tags: [nord, anime, dark]
+
+- file: nord-princess-zelda.jpg
+  title: Princess Zelda
+  tags: [nord, gaming, fantasy]
+
+- file: nord-shards.jpg
+  title: Shard Swirl
+  tags: [nord, abstract, dark]
+
+- file: nord-street.png
+  title: Neon Alley
+  tags: [nord, city, cyberpunk, night, neon]
+
+- file: nordic.png
+  title: Nordic Stripes
+  tags: [nord, minimal]
+
+- file: ocean_with_cloud.png
+  title: Ocean Cloud
+  tags: [pixel-art, water, sky, minimal]
+
+- file: odysee.jpg
+  title: Odyssey
+  tags: [landscape, sunset, fantasy, minimal]
+
+- file: oled-mountains.jpg
+  title: Alpenglow
+  tags: [photo, mountains, landscape]
+
+- file: one-piece-luffy.jpg
+  title: Luffy Unleashed
+  tags: [anime, colorful]
+
+- file: onepiece.png
+  title: Straw Hat Jolly Roger
+  tags: [anime, minimal]
+
+- file: orange-cube.jpg
+  title: Orange Cube
+  tags: [geometric, abstract, colorful]
+
+- file: pacman-black.png
+  title: Pac-Man
+  tags: [gaming, retro, minimal, dark]
+
+- file: pacman-nord.png
+  title: Pac-Man Outline
+  tags: [gaming, retro, minimal, nord]
+
+- file: pastel-car.png
+  title: Pastel Drive
+  tags: [cars, pastel, sunset, anime]
+  featured: true
+
+- file: pastel-city.png
+  title: Pastel City
+  tags: [city, pastel, pixel-art, sunset]
+
+- file: pastel-window.png
+  title: Lakeside Studio
+  tags: [cozy, illustration, landscape]
+  featured: true
+
+- file: pink-mecha.png
+  title: Pink Mecha
+  tags: [anime, sci-fi]
+
+- file: pixel_art_beach.jpeg
+  title: Pixel Shrine
+  tags: [pixel-art, japan, water]
+
+- file: pixel_big_city.png
+  title: Big City
+  tags: [pixel-art, city]
+  featured: true
+
+- file: pixel-city.png
+  title: Pixel Night City
+  tags: [pixel-art, city, night]
+
+- file: pixel-earth.png
+  title: Pixel Earth
+  tags: [pixel-art, space, minimal]
+
+- file: pixelart_forest.jpg
+  title: Grey Mist
+  tags: [forest, minimal, monochrome]
+
+- file: pixelart_pagoda.jpg
+  title: Pixel Pagoda
+  tags: [pixel-art, japan, landscape, flowers]
+  featured: true
+
+- file: pixelart-colors.png
+  title: Market Town
+  tags: [pixel-art, city, colorful]
+
+- file: pixiv_73483903.png
+  title: Pink Forest
+  tags: [anime, fantasy, forest]
+
+- file: plain-wallpaper.png
+  title: Sunset Bands
+  tags: [abstract, gradient, colorful]
+
+- file: plane_sunset.png
+  title: Runway Sunset
+  tags: [sunset, minimal, illustration]
+
+- file: planet_minimal.png
+  title: Black Hole
+  tags: [space, minimal, dark]
+
+- file: planet_with_sunrise.png
+  title: Planetrise
+  tags: [space, landscape, sci-fi, illustration]
+  featured: true
+
+- file: planets.png
+  title: Cartoon Cosmos
+  tags: [space, colorful, illustration]
+
+- file: plant.png
+  title: White Blossoms
+  tags: [flowers, photo]
+
+- file: platforms.png
+  title: Platforms
+  tags: [minimal, geometric, colorful]
+
+- file: polar_catppuccin.png
+  title: Polar Bear
+  tags: [catppuccin, minimal, animals, neon]
+
+- file: pond_shed.png
+  title: Pond House
+  tags: [japan, forest, water]
+
+- file: puppy.jpg
+  title: Space Pup
+  tags: [space, animals, minimal, pixel-art]
+
+- file: purple_car_girl.png
+  title: Girl and Car (Purple)
+  tags: [anime, cars]
+
+- file: purple_plane_landscape.png
+  title: Low Pass
+  tags: [illustration, sky, landscape]
+
+- file: purple-bomb.png
+  title: Pastel Bloom
+  tags: [pastel, illustration, minimal]
+
+- file: purple-crystal.png
+  title: Gentoo Glass
+  tags: [linux, minimal]
+
+- file: purple-girl.png
+  title: Purple Window
+  tags: [anime, city, cozy]
+
+- file: python-dev.png
+  title: Python Hello World
+  tags: [tech, minimal, typography]
+
+- file: python-minim.png
+  title: Zen of Python
+  tags: [tech, minimal, typography]
+
+- file: rad_samurai.jpg
+  title: Rad Samurai
+  tags: [samurai, japan, illustration, colorful]
+
+- file: rbaOz2Xi.png
+  title: Falling Stars
+  tags: [landscape, sky, night]
+
+- file: red-forest.jpg
+  title: Red Forest
+  tags: [forest, landscape]
+
+- file: retro_city.gif
+  title: Retro City Loop
+  tags: [pixel-art, city, retro]
+
+- file: retro_market.png
+  title: Retro Market
+  tags: [city, japan, illustration, retro]
+
+- file: retro2_live.gif
+  title: Retro Arcade
+  tags: [pixel-art, gaming, retro]
+
+- file: rick-tokyonight.png
+  title: Rick
+  tags: [movies-tv, tokyo-night, minimal]
+
+- file: rick.jpg
+  title: Peace Among Worlds
+  tags: [movies-tv, minimal, dark]
+
+- file: river.png
+  title: Forest Stream
+  tags: [forest, landscape, water]
+
+- file: rm-rf.jpg
+  title: sudo rm -rf
+  tags: [tech, typography, minimal, linux]
+
+- file: robot.jpg
+  title: Robot on the Beach
+  tags: [sci-fi, landscape, sky, illustration]
+
+- file: rocket.png
+  title: Liftoff
+  tags: [space, retro, minimal]
+
+- file: room.jpg
+  title: Glow Room
+  tags: [cozy, illustration, neon]
+
+- file: room2.jpg
+  title: Neon Room
+  tags: [cozy, neon, night, tech]
+
+- file: routine.jpg
+  title: Eat Sleep Code Repeat
+  tags: [tech, typography, minimal, dark]
+
+- file: ruins_live.gif
+  title: Ruins
+  tags: [fantasy, landscape]
+
+- file: s4vitar_old.png
+  title: S4vitar Logo
+  tags: [minimal, dark]
+
+- file: s4vitar.png
+  title: Oni Hood
+  tags: [dark, japan, illustration]
+
+- file: saturn-rings.jpg
+  title: Saturn Rise
+  tags: [landscape, space, sunset]
+
+- file: shape-abstract.jpg
+  title: Diagonals
+  tags: [geometric, minimal, abstract]
+
+- file: shiny_purple.png
+  title: Purple Burst
+  tags: [abstract, neon, dark]
+
+- file: shiny-colors.png
+  title: Sparkles
+  tags: [abstract, dark, minimal]
+
+- file: shougan_castle.png
+  title: Shogun Castle
+  tags: [japan, landscape, illustration]
+
+- file: skyline.png
+  title: Skyline Garage
+  tags: [cars, illustration]
+
+- file: smooth_blue.png
+  title: Smooth Blue
+  tags: [minimal, pastel, abstract]
+
+- file: smooth_pink.png
+  title: Smooth Pink
+  tags: [minimal, pastel, abstract]
+
+- file: spider-man-miles.jpg
+  title: Miles Morales
+  tags: [comics, colorful, movies-tv]
+
+- file: Spider-man.jpg
+  title: Spider-Man
+  tags: [comics, dark, movies-tv]
+
+- file: staircase.jpg
+  title: Neon Staircase
+  tags: [photo, neon, dark]
+
+- file: steampunk_portal.png
+  title: Steampunk Portal
+  tags: [sci-fi, fantasy, illustration, space]
+
+- file: sunset_city.png
+  title: Sunset City
+  tags: [city, sunset, illustration]
+
+- file: sunset_live.gif
+  title: Sunset for Two
+  tags: [pixel-art, sunset, retro]
+
+- file: sunset-xfksfuywx.png
+  title: Painted Sunset
+  tags: [sunset, sky, illustration]
+
+- file: sushi_dark.png
+  title: Sushi
+  tags: [japan, minimal, dark, illustration]
+
+- file: tech.png
+  title: Circuit Traces
+  tags: [tech, minimal, dark]
+
+- file: tiger-gray.jpg
+  title: Grey Tiger
+  tags: [animals, monochrome, dark]
+
+- file: TokyoSimplistic.jpg
+  title: Tokyo Simplistic
+  tags: [city, japan, minimal, night]
+  featured: true
+
+- file: towashi.jpg
+  title: Towashi
+  tags: [city, fantasy, japan, illustration]
+
+- file: town.jpg
+  title: Lantern Alley
+  tags: [city, japan, illustration, night]
+
+- file: train_and_lake.png
+  title: Crossing by the Lake
+  tags: [anime, landscape, sky, water]
+
+- file: tree-house.png
+  title: Tree House
+  tags: [anime, landscape, fantasy]
+
+- file: tree-nature-castleinsky.png
+  title: Laputa Garden
+  tags: [anime, forest, movies-tv]
+
+- file: trees.png
+  title: Hidden Cabin
+  tags: [forest, photo, dark]
+
+- file: Trex-moon.jpg
+  title: T-Rex Moon
+  tags: [animals, minimal, night]
+
+- file: Trex.jpg
+  title: Retro Rex
+  tags: [animals, retro, dark]
+
+- file: trigonometry.png
+  title: Trigonometry
+  tags: [tech, typography]
+
+- file: tux-magenta-pink.png
+  title: Tux Pink
+  tags: [linux, minimal, gradient, pastel]
+
+- file: two-astronauts.png
+  title: Two Astronauts
+  tags: [astronaut, space, minimal]
+
+- file: ubuntu-black-4k.png
+  title: Ubuntu Dark
+  tags: [linux, minimal, dark]
+
+- file: ubuntu-magenta-blue.png
+  title: Ubuntu Blue
+  tags: [linux, minimal, gradient, pastel]
+
+- file: ubuntu-magenta-pink.png
+  title: Ubuntu Pink
+  tags: [linux, minimal, gradient, pastel]
+
+- file: ultrawide_island.png
+  title: Island
+  tags: [landscape, water, minimal]
+
+- file: underwater.png
+  title: Underwater
+  tags: [animals, minimal, water, illustration]
+
+- file: vader.png
+  title: Darth Vader
+  tags: [movies-tv, minimal, retro]
+
+- file: van.png
+  title: Van Life
+  tags: [cars, sunset, landscape, illustration]
+  featured: true
+
+- file: various-arch-1-4k.png
+  title: Arch Family
+  tags: [linux, minimal, dark]
+
+- file: various-arch-2-4k.png
+  title: Arch Family II
+  tags: [linux, minimal, dark]
+
+- file: various-os-1-4k.png
+  title: Distro Row
+  tags: [linux, minimal, dark]
+
+- file: various-os-2-4k.png
+  title: Distro Row II
+  tags: [linux, minimal, dark]
+
+- file: various-os-3-4k.png
+  title: Four Platforms
+  tags: [tech, minimal, dark]
+
+- file: venom-crystal.jpg
+  title: Venom
+  tags: [comics, dark, movies-tv]
+
+- file: venom.jpg
+  title: Venom Minimal
+  tags: [comics, minimal, dark]
+
+- file: virus-nord.png
+  title: Viruses
+  tags: [nord, minimal, colorful]
+
+- file: void-black-4k.png
+  title: Void Dark
+  tags: [linux, minimal, dark]
+
+- file: void-black3.png
+  title: Void Dark II
+  tags: [linux, minimal, dark]
+
+- file: void-magenta-blue.png
+  title: Void Blue
+  tags: [linux, minimal, gradient, pastel]
+
+- file: void-magenta-pink.png
+  title: Void Pink
+  tags: [linux, minimal, gradient, pastel]
+
+- file: wall-gruv.png
+  title: Infinite Loop
+  tags: [gruvbox, retro, minimal]
+
+- file: wallhaven-0qrgwr.png
+  title: Timberwolf Blueprint
+  tags: [gaming, sci-fi, tech]
+
+- file: wallhaven-28rjj6.png
+  title: Paris, Texas
+  tags: [retro, neon, night, illustration]
+  featured: true
+
+- file: wallhaven-76d5xv.png
+  title: Triangle Forest
+  tags: [forest, minimal, geometric]
+
+- file: wallhaven-9mjw78.png
+  title: Comet
+  tags: [anime, sky, night, space]
+  featured: true
+
+- file: wallhaven-e7m8zl.jpg
+  title: Moonlit Duel
+  tags: [gaming, dark, fantasy, illustration]
+
+- file: wallhaven-j8ym1p.png
+  title: Pixel Spider-Man
+  tags: [comics, pixel-art, minimal]
+
+- file: wallhaven-lmxwdl.jpg
+  title: Castle Valley
+  tags: [photo, landscape, forest]
+
+- file: wallhaven-nmr788.jpg
+  title: Thrones
+  tags: [movies-tv, minimal, dark]
+
+- file: wallhaven-q21vkl.jpg
+  title: Sakura Shrine
+  tags: [anime, japan, flowers, landscape]
+  featured: true
+
+- file: wallhaven-rrpvd7.png
+  title: Orbit Diagram
+  tags: [space, minimal, geometric]
+
+- file: wallhaven-x67oxo.png
+  title: Teal District
+  tags: [city, cyberpunk, sci-fi, illustration]
+
+- file: wallhaven-z8pdqo.jpg
+  title: Geometry
+  tags: [minimal, geometric, monochrome]
+
+- file: wallhaven.png
+  title: Death and Life
+  tags: [japan, monochrome, flowers, typography]
+
+- file: wallpaper_nord_1.png
+  title: Tiny Shop
+  tags: [nord, japan, minimal, illustration]
+
+- file: wallpaper3-dark.png
+  title: Zigzag
+  tags: [abstract, minimal, dark]
+
+- file: wano_vector.png
+  title: Wano
+  tags: [anime, japan, minimal]
+
+- file: wave_black.png
+  title: Framed Wave
+  tags: [japan, minimal, dark]
+
+- file: waves_dracula_flipped.png
+  title: Dracula Waves
+  tags: [abstract, gradient, minimal]
+
+- file: waves_live.gif
+  title: Neon Sun
+  tags: [retro, neon, minimal, dark]
+
+- file: wavy_dark.png
+  title: Wavy Lines
+  tags: [abstract, monochrome, dark]
+
+- file: weeknd.png
+  title: Night Cinema
+  tags: [city, night, retro, neon]
+
+- file: white_yinyang.jpg
+  title: Compass
+  tags: [minimal, monochrome, geometric]
+
+- file: wide_alien_planet.jpeg
+  title: Alien Garden
+  tags: [sci-fi, illustration, colorful]
+
+- file: wide_lines.png
+  title: Five Lines
+  tags: [minimal, geometric]
+
+- file: wide_nebula.png
+  title: Blue Nebula
+  tags: [space, abstract]
+
+- file: wide_shiny_waves.png
+  title: Shining Waves
+  tags: [landscape, sunset, water]
+
+- file: wide_tokyonight_lines.png
+  title: Tokyo Night Lines
+  tags: [tokyo-night, minimal, geometric]
+
+- file: wide_tokyonight_skyline.jpg
+  title: Cloud Peaks
+  tags: [landscape, mountains, sky]
+
+- file: wide-girl.png
+  title: Hooded Blade
+  tags: [anime, samurai, minimal]
+
+- file: win-11.png
+  title: Windows Plus
+  tags: [tech, minimal, dark, typography]
+
+- file: windmill.jpg
+  title: Windmill
+  tags: [landscape, fantasy, illustration, mountains]
+
+- file: windows-black.png
+  title: Windows Dark
+  tags: [tech, minimal, dark]
+
+- file: windows-magenta-blue.png
+  title: Windows Blue
+  tags: [tech, minimal, gradient, pastel]
+
+- file: windows-magenta-pink.png
+  title: Windows Pink
+  tags: [tech, minimal, gradient, pastel]
+
+- file: windoze.jpg
+  title: Windows Spectrum
+  tags: [tech, colorful, gradient]
+
+- file: wolverine.jpg
+  title: Wolverine
+  tags: [comics, monochrome, dark]
+
+- file: yellow_kyoto.jpg
+  title: Yellow Kyoto
+  tags: [photo, japan, city]
+
+- file: yh.png
+  title: Bone Samurai
+  tags: [samurai, dark, illustration]
+
+- file: you-got-this.jpg
+  title: You've Got This
+  tags: [typography, illustration, minimal]
+
+- file: Z5hj_CoA.png
+  title: Megacity
+  tags: [city, cyberpunk, sci-fi, neon]
+
+- file: zorin-black-4k.png
+  title: Zorin Dark
+  tags: [linux, minimal, dark]
+
+- file: zorin-magenta-blue.png
+  title: Zorin Blue
+  tags: [linux, minimal, gradient, pastel]
