@@ -1,0 +1,133 @@
+---
+// One wallpaper, large, with its label. This is the whole wallpaper page, and
+// it is also what the gallery's viewer shows: the viewer fetches the page and
+// lifts this element out of it, so there is one source for both.
+import { tagLabel, wallpapers } from '../lib/data.ts';
+import { SHAPE_LABEL, SIZE_LABEL, formatBytes, numberInCollection } from '../lib/format.ts';
+import { media, url } from '../lib/site.ts';
+import { neighbours, sourceOf } from '../lib/site-data.ts';
+import { rawUrl } from '../lib/slug.ts';
+import type { Wallpaper } from '../lib/types.ts';
+import Icon from './Icon.astro';
+
+interface Props {
+  wallpaper: Wallpaper;
+}
+
+const { wallpaper } = Astro.props;
+const { slug, title, width, height, file } = wallpaper;
+const { prev, next } = neighbours(wallpapers, slug);
+const position = wallpapers.findIndex((w) => w.slug === slug);
+const original = rawUrl(file);
+const source = sourceOf(wallpaper);
+const size = formatBytes(wallpaper.bytes);
+const page = new URL(url(`/w/${slug}/`), Astro.site).href;
+const alt = `${title}: ${wallpaper.tags.map(tagLabel).join(', ')}`;
+// The size filter is a minimum, and there is no filter for the smallest class.
+const sizeLink = wallpaper.size === 'hd' ? undefined : url(`/?size=${wallpaper.size}`);
+---
+
+<article class="view" id="wp" data-slug={slug} data-title={title}>
+  <div class="view__glow" style={`background-image:url(${media('t', slug)})`} aria-hidden="true"></div>
+
+  <div class="view__stage">
+    {/* An animation is shown as the original file; everything else as the lighter preview. */}
+    <img
+      class="view__image"
+      src={wallpaper.animated ? original : media('p', slug)}
+      width={width}
+      height={height}
+      alt={alt}
+      decoding="async"
+    />
+    <a class="view__nav view__nav--prev" href={url(`/w/${prev.slug}/`)} rel="prev" aria-label={`Previous: ${prev.title}`} data-step="-1">
+      <Icon name="chevron-left" size={18} />
+    </a>
+    <a class="view__nav view__nav--next" href={url(`/w/${next.slug}/`)} rel="next" aria-label={`Next: ${next.title}`} data-step="1">
+      <Icon name="chevron-right" size={18} />
+    </a>
+  </div>
+
+  <div class="view__label">
+    <div class="view__top">
+      <span class="caption">{numberInCollection(position, wallpapers.length)}</span>
+      <a class="icon-btn" href={url('/')} aria-label="Back to the gallery" data-close>
+        <Icon name="close" />
+      </a>
+    </div>
+
+    <h1 class="view__title">{title}</h1>
+
+    <ul class="view__tags" aria-label="Tags">
+      {wallpaper.tags.map((tag) => <li><a class="chip" href={url(`/tags/${tag}/`)}>{tagLabel(tag)}</a></li>)}
+      <li>
+        {
+          sizeLink ? (
+            <a class="chip" href={sizeLink}>{SIZE_LABEL[wallpaper.size]}</a>
+          ) : (
+            <span class="chip">{SIZE_LABEL[wallpaper.size]}</span>
+          )
+        }
+      </li>
+      <li><a class="chip" href={url(`/?shape=${wallpaper.shape}`)}>{SHAPE_LABEL[wallpaper.shape]}</a></li>
+    </ul>
+
+    <dl class="view__specs">
+      <div><dt class="caption">Resolution</dt><dd>{width} × {height}</dd></div>
+      <div><dt class="caption">Aspect</dt><dd>{wallpaper.aspect}</dd></div>
+      <div><dt class="caption">Format</dt><dd>{wallpaper.format}{wallpaper.animated && ', animated'}</dd></div>
+      <div><dt class="caption">File size</dt><dd>{size}</dd></div>
+    </dl>
+
+    <div>
+      <p class="caption view__heading">
+        Palette<span class="needs-js"> · click to copy</span>
+      </p>
+      <ul class="view__palette">
+        {
+          wallpaper.palette.map((swatch) => (
+            <li>
+              <button type="button" data-copy={swatch.hex} aria-label={`Copy colour ${swatch.hex}`}>
+                <span class="view__swatch" style={`background:${swatch.hex}`} />
+                <span data-copy-text>{swatch.hex}</span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="view__actions">
+      <a class="btn btn--primary" href={original} data-download={file}>
+        <Icon name="download" />
+        <span data-download-text>Download · {wallpaper.format} · {size}</span>
+      </a>
+      <div class="view__row">
+        <button class="btn needs-js" type="button" data-copy={page}>
+          <Icon name="link" />
+          <span data-copy-text>Copy link</span>
+        </button>
+        <a class="btn" href={original} target="_blank" rel="noopener">
+          Open original <Icon name="external" size={14} />
+        </a>
+      </div>
+      <p class="view__credit">
+        {
+          wallpaper.credit && (
+            <>
+              Artwork by{' '}
+              {wallpaper.credit.url ? (
+                <a class="link" href={wallpaper.credit.url} rel="noopener">{wallpaper.credit.name}</a>
+              ) : (
+                wallpaper.credit.name
+              )}
+              .{' '}
+            </>
+          )
+        }
+        From the collection{' '}
+        {source.url ? <a class="link" href={source.url} rel="noopener">{source.name}</a> : source.name}.
+      </p>
+    </div>
+  </div>
+</article>

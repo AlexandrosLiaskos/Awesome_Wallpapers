@@ -599,6 +599,8 @@
   title: Let's Go Home
   tags: [anime, city, sky, sunset]
   featured: true
+  credit:
+    name: SeerLight
 
 - file: light-ring.jpg
   title: Light Ring

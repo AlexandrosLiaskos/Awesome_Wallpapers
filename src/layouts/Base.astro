@@ -7,6 +7,7 @@ import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/layout.css';
 import '../styles/wall.css';
+import '../styles/view.css';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE, media, url } from '../lib/site.ts';
@@ -62,6 +63,9 @@ const shareImage = new URL(image, Astro.site);
       <slot />
     </main>
     <Footer />
+
+    {/* Filled by scripts/viewer.ts with a wallpaper page's own markup. */}
+    <dialog class="viewer" id="viewer" aria-label="Wallpaper" data-base={url('/')}></dialog>
 
     <script>
       import '../scripts/main.ts';

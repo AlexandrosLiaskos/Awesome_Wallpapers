@@ -1,0 +1,58 @@
+---
+import Wall from '../../components/Wall.astro';
+import WallpaperView from '../../components/WallpaperView.astro';
+import Base from '../../layouts/Base.astro';
+import { tagLabel, wallpapers } from '../../lib/data.ts';
+import { SIZE_LABEL } from '../../lib/format.ts';
+import { media } from '../../lib/site.ts';
+import { related } from '../../lib/site-data.ts';
+import { rawUrl } from '../../lib/slug.ts';
+import type { Wallpaper } from '../../lib/types.ts';
+
+export function getStaticPaths() {
+  return wallpapers.map((wallpaper) => ({ params: { slug: wallpaper.slug }, props: { wallpaper } }));
+}
+
+interface Props {
+  wallpaper: Wallpaper;
+}
+
+const { wallpaper } = Astro.props;
+const { title, width, height } = wallpaper;
+const tagList = wallpaper.tags.map(tagLabel).join(', ');
+const description = `${title}, a free ${SIZE_LABEL[wallpaper.size]} wallpaper at ${width}×${height} (${wallpaper.format}). Tags: ${tagList}.`;
+const alike = related(wallpapers, wallpaper.slug, 8);
+
+// Describes the image to search engines. No licence is stated: the artwork belongs to its artist.
+const structured = {
+  '@context': 'https://schema.org',
+  '@type': 'ImageObject',
+  name: title,
+  contentUrl: rawUrl(wallpaper.file),
+  thumbnailUrl: new URL(media('p', wallpaper.slug), Astro.site).href,
+  width,
+  height,
+  keywords: tagList,
+  ...(wallpaper.credit ? { creditText: wallpaper.credit.name } : {}),
+};
+---
+
+<Base title={`${title} · ${width}×${height} wallpaper`} description={description} image={media('og', wallpaper.slug)}>
+  <script
+    type="application/ld+json"
+    slot="head"
+    is:inline
+    set:html={JSON.stringify(structured).replace(/</g, '\\u003c')}
+  />
+
+  <WallpaperView wallpaper={wallpaper} />
+
+  {
+    alike.length > 0 && (
+      <section class="more">
+        <h2 class="more__title">More like this</h2>
+        <Wall wallpapers={alike} />
+      </section>
+    )
+  }
+</Base>
