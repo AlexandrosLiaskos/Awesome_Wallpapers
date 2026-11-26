@@ -1,0 +1,52 @@
+name: Validate
+
+# Checks every pull request: the catalog, the tests, the types, and that the site builds.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      # Two commits deep, so the files this pull request adds can be told apart from the rest.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # New files meet stricter rules (size, filename) than files already in the collection.
+      - name: Validate the catalog
+        run: |
+          mapfile -d '' -t added < <(git diff -z --name-only --diff-filter=A HEAD^1 HEAD -- images/)
+          npm run validate -- --new "${added[@]}"
+
+      - run: npm test
+
+      - run: npm run check
+
+      - name: Restore generated images
+        uses: actions/cache@v6
+        with:
+          path: |
+            .cache
+            public/m
+          key: media-v1-${{ hashFiles('images/**', 'scripts/lib/media.ts') }}
+          restore-keys: media-v1-
+
+      - run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
