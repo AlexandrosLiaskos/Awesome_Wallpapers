@@ -39,13 +39,14 @@ export function chooseThreshold(scores: number[], truth: boolean[], minPrecision
 }
 
 /**
- * The tags whose similarity reaches their threshold, the clearest first (similarity minus
- * threshold), at most max. A tag with a null threshold is never suggested.
+ * The tags whose score reaches their threshold, the clearest first (score minus threshold), at
+ * most max. Scores are per tag and on the same scale as the thresholds: the probes' log-odds for
+ * data/tagger.json, or zero-shot similarities. A tag with a null threshold is never suggested.
  */
-export function suggestTags(similarity: Record<string, number>, thresholds: Record<string, number | null>, max = MAX_SUGGESTED): string[] {
+export function suggestTags(scores: Record<string, number>, thresholds: Record<string, number | null>, max = MAX_SUGGESTED): string[] {
   const passing: { slug: string; margin: number }[] = [];
   for (const [slug, threshold] of Object.entries(thresholds)) {
-    const score = similarity[slug];
+    const score = scores[slug];
     if (threshold === null || score === undefined || score < threshold) continue;
     passing.push({ slug, margin: score - threshold });
   }
@@ -64,6 +65,18 @@ export function subjectPrompts(tags: Tag[], overrides: Record<string, string> = 
     if (!known.has(slug)) throw new Error(`there is a prompt for "${slug}", which is not a subject tag in data/tags.yml`);
   }
   return Object.fromEntries(subjects.map((tag) => [tag.slug, overrides[tag.slug] ?? `a ${tag.label} wallpaper`]));
+}
+
+/** What the evaluation records in data/tagger.json about its cross-validated run. */
+export interface SubjectsGate {
+  precision: number;
+  recall: number;
+  passed: boolean;
+}
+
+/** Whether machine subject tags may be assigned: only when the evaluation ran and its gate passed. */
+export function subjectsUsable(tagger: { subjectsGate?: SubjectsGate }): boolean {
+  return tagger.subjectsGate?.passed === true;
 }
 
 function norm(vector: Float32Array): number {

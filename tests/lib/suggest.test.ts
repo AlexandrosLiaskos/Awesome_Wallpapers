@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chooseThreshold, similarities, subjectPrompts, suggestTags } from '../../src/lib/suggest.ts';
+import { chooseThreshold, similarities, subjectPrompts, subjectsUsable, suggestTags } from '../../src/lib/suggest.ts';
 import type { Tag } from '../../src/lib/types.ts';
 
 describe('chooseThreshold', () => {
@@ -91,5 +91,16 @@ describe('similarities', () => {
     expect(result.same).toBeCloseTo(1);
     expect(result.across).toBeCloseTo(0);
     expect(result.between).toBeCloseTo(Math.SQRT1_2);
+  });
+});
+
+describe('subjectsUsable', () => {
+  it('is true only when the cross-validated gate passed', () => {
+    expect(subjectsUsable({ subjectsGate: { precision: 0.83, recall: 0.4, passed: true } })).toBe(true);
+    expect(subjectsUsable({ subjectsGate: { precision: 0.73, recall: 0.15, passed: false } })).toBe(false);
+  });
+
+  it('is false when the gate was never run', () => {
+    expect(subjectsUsable({})).toBe(false);
   });
 });
