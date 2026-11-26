@@ -4,6 +4,10 @@ import { looksIdentical } from '../../scripts/lib/similar.ts';
 
 const png = (svg: string) => sharp(Buffer.from(svg)).png().toBuffer();
 
+// The merge compares the thumbnails the media step made of each copy, so the
+// tests do too: 300 px high, WebP at quality 72.
+const thumbnail = (image: Buffer) => sharp(image).resize({ height: 300 }).webp({ quality: 72 }).toBuffer();
+
 /** A gradient with three shapes, in the colours given. */
 function artwork(colours: string[]): string {
   const [from, to, circle, rect, triangle] = colours;
@@ -28,20 +32,28 @@ describe('looksIdentical', () => {
   it('accepts the same image at half the size, saved as JPEG at quality 70', async () => {
     const original = await png(artwork(['#2e3440', '#5e81ac', '#bf616a', '#88c0d0', '#ebcb8b']));
     const copy = await sharp(original).resize(800, 450).jpeg({ quality: 70 }).toBuffer();
-    expect(await looksIdentical(original, copy)).toBe(true);
-    expect(await looksIdentical(copy, original)).toBe(true);
+    const [a, b] = await Promise.all([thumbnail(original), thumbnail(copy)]);
+    expect(await looksIdentical(a, b)).toBe(true);
+    expect(await looksIdentical(b, a)).toBe(true);
   });
 
   it('rejects two different centred shapes on the same pink background', async () => {
     // Each covers about 8% of the picture: a circle of radius 191 and a triangle of 532 by 460.
-    const circle = await png(logo('<circle cx="800" cy="450" r="191" fill="#3b1f4a"/>'));
-    const triangle = await png(logo('<polygon points="800,195 1066,655 534,655" fill="#3b1f4a"/>'));
+    const circle = await thumbnail(await png(logo('<circle cx="800" cy="450" r="191" fill="#3b1f4a"/>')));
+    const triangle = await thumbnail(await png(logo('<polygon points="800,195 1066,655 534,655" fill="#3b1f4a"/>')));
+    expect(await looksIdentical(circle, triangle)).toBe(false);
+  });
+
+  it('rejects two different small marks on the same plain background, like Tux and Windows', async () => {
+    // Each covers about 2% of the picture: a circle of radius 96 and a triangle of 266 by 216.
+    const circle = await thumbnail(await png(logo('<circle cx="800" cy="450" r="96" fill="#3b1f4a"/>')));
+    const triangle = await thumbnail(await png(logo('<polygon points="800,342 933,558 667,558" fill="#3b1f4a"/>')));
     expect(await looksIdentical(circle, triangle)).toBe(false);
   });
 
   it('rejects a recolouring: the same shapes in another palette', async () => {
-    const nord = await png(artwork(['#2e3440', '#5e81ac', '#bf616a', '#88c0d0', '#ebcb8b']));
-    const gruvbox = await png(artwork(['#282828', '#458588', '#cc241d', '#689d6a', '#d79921']));
+    const nord = await thumbnail(await png(artwork(['#2e3440', '#5e81ac', '#bf616a', '#88c0d0', '#ebcb8b'])));
+    const gruvbox = await thumbnail(await png(artwork(['#282828', '#458588', '#cc241d', '#689d6a', '#d79921'])));
     expect(await looksIdentical(nord, gruvbox)).toBe(false);
   });
 

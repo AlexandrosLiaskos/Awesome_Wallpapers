@@ -7,9 +7,13 @@ import sharp from 'sharp';
 const EDGE = 32;
 /** The site background, as in media.ts: transparent pixels are composed onto it there too. */
 const BACKGROUND = '#0a0d0c';
-/** Most pixels must be this close in RGB; a few may differ (compression, a resampled edge). */
-const MAX_DISTANCE = 24;
-const PERCENTILE = 0.95;
+/**
+ * Every pixel must be this close in RGB. A small logo on a plain background
+ * covers too few pixels for a percentile to notice, so no pixel may differ
+ * more. The thumbnails of our own wallpapers and of their half-size JPEG
+ * copies differ by at most 19.2.
+ */
+const MAX_PIXEL_DISTANCE = 32;
 
 async function reduce(image: Buffer): Promise<Uint8Array> {
   const { data, info } = await sharp(image, { pages: 1 })
@@ -27,17 +31,16 @@ async function reduce(image: Buffer): Promise<Uint8Array> {
 }
 
 /**
- * Whether two images show the same picture: both reduced to 32×32 RGB, and at
- * least 95% of the pixels at most 24 apart (Euclidean RGB distance).
+ * Whether two images show the same picture: both reduced to 32×32 RGB, and
+ * every pixel at most 32 apart (Euclidean RGB distance). Meant for the
+ * thumbnails of the media step: a full-size original compared directly with a
+ * JPEG copy can differ by a little more where a thin, saturated shape meets a
+ * dark one (34 in a test image whose thumbnails differ by 7).
  */
 export async function looksIdentical(a: Buffer, b: Buffer): Promise<boolean> {
   const [x, y] = await Promise.all([reduce(a), reduce(b)]);
-  const distances = new Float64Array(EDGE * EDGE);
-  for (let i = 0; i < distances.length; i++) {
-    const j = i * 3;
-    distances[i] = Math.hypot(x[j] - y[j], x[j + 1] - y[j + 1], x[j + 2] - y[j + 2]);
+  for (let j = 0; j < EDGE * EDGE * 3; j += 3) {
+    if (Math.hypot(x[j] - y[j], x[j + 1] - y[j + 1], x[j + 2] - y[j + 2]) > MAX_PIXEL_DISTANCE) return false;
   }
-  distances.sort();
-  // Nearest rank: the smallest distance that at least 95% of the pixels do not exceed.
-  return distances[Math.ceil(PERCENTILE * distances.length) - 1] <= MAX_DISTANCE;
+  return true;
 }
