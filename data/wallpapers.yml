@@ -489,6 +489,13 @@
   title: Haskell
   tags: [tech, minimal, dark]
 
+- file: hazy-hills.png
+  title: Hazy Hills
+  tags: [landscape, photo, mountains, pastel]
+  source:
+    name: "KigoryGH, pull request #1"
+    url: https://github.com/AlexandrosLiaskos/Awesome_Wallpapers/pull/1
+
 - file: hello-worlds.png
   title: Hello World
   tags: [tech, typography, minimal]
