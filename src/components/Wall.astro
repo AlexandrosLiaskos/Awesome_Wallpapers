@@ -23,7 +23,8 @@ const shown = wallpapers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 const inPlace = filterable && page === 1;
 
 // Before the compact index arrives, or if it never does, the browser filters the
-// cards on the page with this.
+// cards on the page with this. A listing that fits on one page needs nothing else,
+// and the browser does not load the index for it.
 const index: Indexed[] = inPlace
   ? shown.map((w) => ({
       slug: w.slug,

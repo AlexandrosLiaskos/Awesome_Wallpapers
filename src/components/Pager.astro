@@ -5,8 +5,9 @@ interface Props {
   prev?: string;
   next?: string;
   /**
-   * On a first page, scrolling replaces the pager once scripts run. It comes
-   * back if the browser cannot load the rest of the listing.
+   * On a first page, gallery.ts hides the pager once it has installed scrolling,
+   * and shows it again if the browser cannot load the rest of the listing.
+   * Without that script the pager stays.
    */
   scroll?: boolean;
 }

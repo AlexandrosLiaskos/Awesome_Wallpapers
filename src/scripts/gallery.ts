@@ -1,9 +1,10 @@
-// The filterable wall of a listing. Its first page holds PAGE_SIZE cards; after
-// the first paint the browser loads the compact index of the whole catalog, and
-// from then on search, filters, sort, the count and the viewer's order cover the
-// listing's whole scope. Cards further down are added as the visitor scrolls.
-// If the index cannot be loaded, everything keeps working on the cards that are
-// on the page, and the pager to the later pages comes back.
+// The filterable wall of a listing. Its first page holds PAGE_SIZE cards. When
+// the listing has more, the browser loads the compact index of the whole catalog
+// after the first paint, and from then on search, filters, sort, the count and
+// the viewer's order cover the listing's whole scope; cards further down are
+// added as the visitor scrolls. If the index cannot be loaded, everything keeps
+// working on the cards that are on the page, and the pager to the later pages
+// comes back.
 
 import { cardHtml, type CardData, type CompactIndex } from '../lib/card.ts';
 import {
@@ -46,7 +47,7 @@ function indexed(card: CardData): Indexed {
 
 /** Runs once the page has settled, without holding up the first screen. */
 function whenIdle(task: () => void): void {
-  if ('requestIdleCallback' in window) requestIdleCallback(task, { timeout: 1500 });
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(task, { timeout: 1500 });
   else setTimeout(task, 1500);
 }
 
@@ -103,11 +104,15 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
   const search = document.querySelector<HTMLInputElement>('[data-search]');
   const count = document.querySelector<HTMLElement>('[data-count]');
   const empty = document.querySelector<HTMLElement>('[data-empty]');
-  const pager = document.querySelector<HTMLElement>('[data-pager]');
+  const pager = document.querySelector<HTMLElement>('[data-pager][data-scroll]');
   const sentinel = document.querySelector<HTMLElement>('[data-wall-more]');
   // On a tag's own page the chips are ordinary links and the search goes to the full gallery.
   const inPlace = bar?.dataset.mode === 'filter';
   const total = Number(wall.dataset.total) || wall.children.length;
+  // The rest of the listing comes from the index and is shown by scrolling. A listing
+  // whose cards are all on the page needs neither: the index would change no result.
+  const scrolls =
+    scope !== null && total > wall.children.length && sentinel !== null && typeof IntersectionObserver === 'function';
 
   // Until the index arrives (or if it never does) the cards on the page are all there is.
   const embedded = document.querySelector('[data-wall-index]');
@@ -159,17 +164,17 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
     watch();
   }
 
-  const observer =
-    sentinel &&
-    new IntersectionObserver(
-      (records) => {
-        if (!records.some((record) => record.isIntersecting)) return;
-        // Near the end of the first page before the index is in: fetch it now; it adds the rest when it arrives.
-        if (scope && !catalog && !failed) void loadIndex();
-        else more();
-      },
-      { rootMargin: '1500px' },
-    );
+  const observer = scrolls
+    ? new IntersectionObserver(
+        (records) => {
+          if (!records.some((record) => record.isIntersecting)) return;
+          // Near the end of the first page before the index is in: fetch it now; it adds the rest when it arrives.
+          if (!catalog && !failed) void loadIndex();
+          else more();
+        },
+        { rootMargin: '1500px' },
+      )
+    : null;
 
   /** Asks the observer again, since it reports only changes and the sentinel may still be in range after a batch. */
   function watch(): void {
@@ -224,7 +229,7 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
   let loading: Promise<void> | null = null;
 
   function loadIndex(): Promise<void> {
-    if (!scope) return Promise.resolve();
+    if (!scrolls || !scope) return Promise.resolve();
     loading ??= fetch(url('/api/index.json'))
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -245,7 +250,7 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
         () => {
           // The browser has already reported the failed request; the page goes on with its own cards.
           failed = true;
-          if (pager) pager.dataset.shown = '';
+          if (pager) pager.hidden = false;
           render();
         },
       );
@@ -255,7 +260,7 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
   function changed(): void {
     render();
     toStart();
-    // Filters on the first page alone would miss most matches, so the index is wanted now.
+    // Filters on the first page alone would miss most matches of a longer listing, so the index is wanted now.
     void loadIndex();
   }
 
@@ -305,13 +310,11 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
   }
 
   render();
+  if (!scrolls) return;
 
-  if (!scope) {
-    // Nothing to load the rest from: the pager stays the way to it.
-    if (pager) pager.dataset.shown = '';
-  } else if (serializeState(state) !== '') {
-    void loadIndex(); // The address asks for filters or a sort, which need the whole scope.
-  } else {
-    whenIdle(() => void loadIndex());
-  }
+  // Scrolling is installed (render() started the observer), so it takes over from the
+  // pager. Until this line runs, for instance if the script fails, the pager stays.
+  if (pager) pager.hidden = true;
+  if (serializeState(state) !== '') void loadIndex(); // The address asks for filters or a sort, which need the whole scope.
+  else whenIdle(() => void loadIndex());
 }

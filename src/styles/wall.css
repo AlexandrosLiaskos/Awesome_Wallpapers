@@ -165,11 +165,6 @@ html.js .wall:not([data-ready]) {
   justify-self: start;
 }
 
-/* On a first page, scrolling replaces the pager; gallery.ts shows it again if the rest cannot load. */
-html.js .pager[data-scroll]:not([data-shown]) {
-  display: none;
-}
-
 /* ---------- filter bar ---------- */
 
 .filters {
