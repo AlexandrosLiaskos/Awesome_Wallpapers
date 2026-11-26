@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { SITE } from '../../src/lib/site.ts';
-import { byTag, neighbours, related, sourceOf, stats, tagsWithCounts } from '../../src/lib/site-data.ts';
+import {
+  bySource,
+  byTag,
+  collectionIdsOf,
+  listedCollections,
+  neighbours,
+  related,
+  sourceOf,
+  stats,
+  tagsWithCounts,
+} from '../../src/lib/site-data.ts';
 import type { Tag, Wallpaper } from '../../src/lib/types.ts';
 
 function wallpaper(slug: string, tags: string[], over: Partial<Wallpaper> = {}): Wallpaper {
@@ -105,5 +115,92 @@ describe('sourceOf', () => {
   it('prefers the source written on the entry', () => {
     const own = { name: 'Someone', url: 'https://example.com' };
     expect(sourceOf(wallpaper('x', [], { source: own }))).toEqual(own);
+  });
+});
+
+describe('bySource', () => {
+  const catalog: Wallpaper[] = [
+    wallpaper('n1', ['nord'], { sourceId: 'nordic' }),
+    wallpaper('d1', ['city']),
+    wallpaper('g1', ['gruvbox'], { sourceId: 'gruvbox', alsoIn: ['nordic'] }),
+    wallpaper('n2', ['nord'], { sourceId: 'nordic' }),
+    wallpaper('d2', ['night'], { alsoIn: ['gruvbox'] }),
+    wallpaper('hills', ['city'], { source: { name: 'Someone', url: 'https://example.com' } }),
+  ];
+  const slugs = (list: Wallpaper[]) => list.map((w) => w.slug);
+
+  it('keeps the catalog order', () => {
+    expect(slugs(bySource(catalog, 'nordic'))).toEqual(['n1', 'g1', 'n2']);
+  });
+
+  it('puts a wallpaper that is also in another collection on both pages', () => {
+    expect(slugs(bySource(catalog, 'gruvbox'))).toEqual(['g1', 'd2']);
+    expect(slugs(bySource(catalog, 'nordic'))).toContain('g1');
+  });
+
+  it('gives the own wallpapers to the default collection, unless their entry names another source', () => {
+    expect(slugs(bySource(catalog, SITE.defaultSource.id))).toEqual(['d1', 'd2']);
+    expect(bySource(catalog, 'own')).toEqual([]);
+  });
+
+  it('returns nothing for a collection without wallpapers', () => {
+    expect(bySource(catalog, 'rose-pine')).toEqual([]);
+  });
+});
+
+describe('collectionIdsOf', () => {
+  it('lists where the wallpaper comes from, then the collections it is also in', () => {
+    expect(collectionIdsOf(wallpaper('x', [], { sourceId: 'gruvbox', alsoIn: ['nordic'] }))).toEqual(['gruvbox', 'nordic']);
+    expect(collectionIdsOf(wallpaper('y', [], { alsoIn: ['nordic'] }))).toEqual([SITE.defaultSource.id, 'nordic']);
+  });
+
+  it('is empty for an own wallpaper from a source that is not a collection', () => {
+    expect(collectionIdsOf(wallpaper('z', [], { source: { name: 'Someone' } }))).toEqual([]);
+  });
+});
+
+describe('listedCollections', () => {
+  const known = [
+    { id: SITE.defaultSource.id, name: 'aesthetic-wallpapers', repo: 'D3Ext/aesthetic-wallpapers' },
+    { id: 'nordic', name: 'Nordic Wallpapers', repo: 'linuxdotexe/nordic-wallpapers' },
+    { id: 'rose-pine', name: 'Rosé Pine Wallpapers', repo: 'rose-pine/wallpapers' },
+    { id: 'gruvbox', name: 'Gruvbox Wallpapers', repo: 'AngelJumbo/gruvbox-wallpapers' },
+  ];
+  const catalog: Wallpaper[] = [
+    wallpaper('n1', ['nord'], { sourceId: 'nordic', featured: true }),
+    wallpaper('d1', ['city']),
+    wallpaper('g1', ['gruvbox'], { sourceId: 'gruvbox' }),
+    wallpaper('n2', ['nord'], { sourceId: 'nordic', alsoIn: ['gruvbox'] }),
+    wallpaper('g2', ['gruvbox'], { sourceId: 'gruvbox', featured: true }),
+    wallpaper('g3', ['gruvbox'], { sourceId: 'gruvbox' }),
+  ];
+
+  it('puts the collections with the most wallpapers first, counting those listed via alsoIn', () => {
+    const listed = listedCollections(catalog, known);
+    expect(listed.map((c) => [c.id, c.wallpapers.length])).toEqual([
+      ['gruvbox', 4],
+      ['nordic', 2],
+      [SITE.defaultSource.id, 1],
+    ]);
+    expect(listed[0].wallpapers.map((w) => w.slug)).toEqual(['g1', 'n2', 'g2', 'g3']);
+  });
+
+  it('leaves out a collection without wallpapers', () => {
+    expect(listedCollections(catalog, known).map((c) => c.id)).not.toContain('rose-pine');
+  });
+
+  it('keeps the given order between collections of the same size', () => {
+    const even = [wallpaper('a', [], { sourceId: 'nordic' }), wallpaper('b', [], { sourceId: 'rose-pine' })];
+    expect(listedCollections(even, known).map((c) => c.id)).toEqual(['nordic', 'rose-pine']);
+  });
+
+  it('covers a collection with its first featured wallpaper, else its first', () => {
+    const covers = Object.fromEntries(listedCollections(catalog, known).map((c) => [c.id, c.cover.slug]));
+    expect(covers).toEqual({ gruvbox: 'g2', nordic: 'n1', [SITE.defaultSource.id]: 'd1' });
+  });
+
+  it('keeps the name and repository it was given', () => {
+    const [first] = listedCollections(catalog, known);
+    expect(first).toMatchObject({ name: 'Gruvbox Wallpapers', repo: 'AngelJumbo/gruvbox-wallpapers' });
   });
 });

@@ -3,11 +3,18 @@ import { usedTags, wallpapers } from '../lib/data.ts';
 import { url } from '../lib/site.ts';
 
 interface Props {
-  /** The tag whose page this is. Without it the tag chips filter the wall in place. */
+  /** The tag whose page this is; its chip is marked. */
   current?: string;
+  /**
+   * Whether the tag chips are links to the tag pages, and the search goes to the
+   * full gallery. That is the case on a tag's page and on a collection's page;
+   * on the whole catalog's listing they filter the wall in place.
+   */
+  links?: boolean;
 }
 
 const { current } = Astro.props;
+const links = Astro.props.links ?? Boolean(current);
 
 // Every palette, then the most used subjects; the rest are on the tags page.
 const SUBJECTS_SHOWN = 14;
@@ -48,9 +55,9 @@ const COLOURS = [
 ];
 ---
 
-<div class="filters" data-filters data-mode={current ? 'links' : 'filter'}>
+<div class="filters" data-filters data-mode={links ? 'links' : 'filter'}>
   <nav class="filters__tags" aria-label="Tags">
-    <a class="chip" href={url('/')} data-tag="" aria-current={current ? undefined : 'true'}>
+    <a class="chip" href={url('/')} data-tag="" aria-current={links ? undefined : 'true'}>
       All <span class="chip__count">{wallpapers.length}</span>
     </a>
     {

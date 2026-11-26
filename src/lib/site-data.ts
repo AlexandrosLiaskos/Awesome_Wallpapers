@@ -3,8 +3,48 @@ import type { Attribution, Tag, Wallpaper } from './types.ts';
 
 export type CountedTag = Tag & { count: number };
 
+/** A collection as /sources/ lists it. */
+export interface CollectionInfo {
+  /** Its address under /sources/. */
+  id: string;
+  name: string;
+  /** owner/name on GitHub. */
+  repo: string;
+}
+
+/** A collection with its wallpapers in catalog order and the one shown on its card. */
+export interface ListedCollection extends CollectionInfo {
+  wallpapers: Wallpaper[];
+  cover: Wallpaper;
+}
+
 export function byTag(list: Wallpaper[], tag: string): Wallpaper[] {
   return list.filter((wallpaper) => wallpaper.tags.includes(tag));
+}
+
+/**
+ * The collections that hold this wallpaper, by their ids under /sources/: the
+ * one it comes from, then those it is also in. An own wallpaper comes from the
+ * default collection unless its entry names another source, which has no page.
+ */
+export function collectionIdsOf(wallpaper: Wallpaper): string[] {
+  if (wallpaper.sourceId !== 'own') return [wallpaper.sourceId, ...wallpaper.alsoIn];
+  return wallpaper.source ? wallpaper.alsoIn : [SITE.defaultSource.id, ...wallpaper.alsoIn];
+}
+
+export function bySource(list: Wallpaper[], id: string): Wallpaper[] {
+  return list.filter((wallpaper) => collectionIdsOf(wallpaper).includes(id));
+}
+
+/** The collections that have wallpapers in the catalog, the largest first; equal ones keep their order. */
+export function listedCollections(list: Wallpaper[], collections: CollectionInfo[]): ListedCollection[] {
+  return collections
+    .map(({ id, name, repo }) => {
+      const wallpapers = bySource(list, id);
+      return { id, name, repo, wallpapers, cover: wallpapers.find((w) => w.featured) ?? wallpapers[0] };
+    })
+    .filter((collection) => collection.wallpapers.length > 0)
+    .sort((a, b) => b.wallpapers.length - a.wallpapers.length);
 }
 
 /** Tags in use: palettes first, then subjects, each group by how many wallpapers carry the tag. */

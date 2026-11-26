@@ -160,6 +160,8 @@
   font: 400 clamp(38px, 6.2vw, 76px) / 1 var(--serif);
   letter-spacing: -0.015em;
   text-wrap: balance;
+  /* A collection's name may be one long word. */
+  overflow-wrap: break-word;
 }
 
 .intro__title em {
@@ -205,6 +207,31 @@
   .stats {
     display: none;
   }
+
+  /* A collection's numbers stay, in a row under its intro. */
+  .stats--always {
+    display: grid;
+    justify-content: start;
+    text-align: left;
+  }
+
+  .stats--always dd {
+    font-size: 26px;
+  }
+}
+
+/* ---------- collection page ---------- */
+
+.collection-intro__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin-top: 22px;
+}
+
+.collection-intro__owner {
+  color: var(--muted);
 }
 
 /* ---------- footer ---------- */

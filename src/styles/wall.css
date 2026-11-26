@@ -415,3 +415,72 @@ html.js .wall:not([data-ready]) {
   font-size: 13px;
   line-height: 1.45;
 }
+
+/* ---------- collection index ---------- */
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: var(--gap);
+  padding: 8px var(--pad) 0;
+}
+
+.collection-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  gap: 6px;
+  min-height: 260px;
+  padding: 18px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  isolation: isolate;
+}
+
+.collection-card img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease);
+}
+
+.collection-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to top, rgb(4 8 7 / 0.94) 30%, rgb(4 8 7 / 0.5) 75%, rgb(4 8 7 / 0.2));
+}
+
+.collection-card:hover img {
+  transform: scale(1.04);
+}
+
+.collection-card__name {
+  font: 400 30px/1.1 var(--serif);
+  overflow-wrap: anywhere;
+}
+
+.collection-card__facts {
+  color: var(--accent);
+  font: 500 12px/1.5 var(--mono);
+}
+
+/* Each fact wraps as a whole: "1,889 stars", never "1,889" and "stars". */
+.collection-card__facts span {
+  white-space: nowrap;
+}
+
+.collection-card__text {
+  max-width: 60ch;
+  color: #c9d3d0;
+  font-size: 13px;
+  line-height: 1.45;
+}

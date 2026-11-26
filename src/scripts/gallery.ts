@@ -106,7 +106,7 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
   const empty = document.querySelector<HTMLElement>('[data-empty]');
   const pager = document.querySelector<HTMLElement>('[data-pager][data-scroll]');
   const sentinel = document.querySelector<HTMLElement>('[data-wall-more]');
-  // On a tag's own page the chips are ordinary links and the search goes to the full gallery.
+  // On a tag's or a collection's page the chips are ordinary links and the search goes to the full gallery.
   const inPlace = bar?.dataset.mode === 'filter';
   const total = Number(wall.dataset.total) || wall.children.length;
   // The rest of the listing comes from the index and is shown by scrolling. A listing

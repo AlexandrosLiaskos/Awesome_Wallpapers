@@ -34,11 +34,11 @@ const card = (i: number): CardData => ({
   colors: ['blue'],
   colour: '#123456',
   animated: false,
-  source: 'own',
+  sources: ['aesthetic-wallpapers'],
 });
 
-/** A first page of a nord listing with `onPage` cards rendered out of `total`. */
-function listing(total: number, onPage: number): void {
+/** A first page of a listing (the nord tag unless `scope` says otherwise) with `onPage` cards rendered out of `total`. */
+function listing(total: number, onPage: number, scope = 'tag:nord'): void {
   const items = Array.from({ length: onPage }, (_, i) => `<li class="wall__item" data-slug="w${i}"></li>`).join('');
   const embedded = Array.from({ length: onPage }, (_, i) => {
     const { slug, title, tags, size, shape, colors } = card(i);
@@ -49,7 +49,7 @@ function listing(total: number, onPage: number): void {
       <fieldset data-facet="size"><button type="button" data-value="4k">4K+</button></fieldset>
       <span data-count></span>
     </div>
-    <ul class="wall" data-wall data-filterable data-scope="tag:nord" data-page="1" data-total="${total}">${items}</ul>
+    <ul class="wall" data-wall data-filterable data-scope="${scope}" data-page="1" data-total="${total}">${items}</ul>
     <div data-wall-more></div>
     <script type="application/json" data-wall-index>${JSON.stringify(embedded)}</script>
     ${total > onPage ? '<nav class="pager" data-pager data-scroll></nav>' : ''}`;
@@ -120,5 +120,23 @@ describe('initGallery on a first page', () => {
     idle!();
     await vi.waitFor(() => expect(document.querySelector('[data-count]')!.textContent).toBe('120 of 300 wallpapers'));
     expect(pager().hidden).toBe(false);
+  });
+
+  it('keeps the wallpapers of a collection, including those that are also in it', async () => {
+    // Every third card is only in Gruvbox Wallpapers; the others are in Nordic Wallpapers, some via "also in".
+    const sources = [['nordic'], ['gruvbox', 'nordic'], ['gruvbox']];
+    const items = Array.from({ length: 300 }, (_, i) => ({ ...card(i), sources: sources[i % 3] }));
+    fetchIndex.mockImplementation(async () => new Response(JSON.stringify({ labels: {}, items })));
+    listing(200, 120, 'source:nordic');
+    initGallery(() => {});
+    idle!();
+    // The page's own cards include w2, which only the index can tell is not in the collection.
+    await vi.waitFor(() => expect(document.querySelector('[data-slug="w2"]')).toBeNull());
+    expect(document.querySelector('[data-count]')!.textContent).toBe('200 wallpapers');
+    const onWall = [...document.querySelectorAll<HTMLElement>('[data-wall] > li')];
+    const shown = onWall.map((item) => Number(item.dataset.slug!.slice(1)));
+    expect(shown).toHaveLength(120);
+    expect(shown.filter((i) => i % 3 === 2)).toEqual([]);
+    expect(shown.slice(0, 4)).toEqual([0, 1, 3, 4]);
   });
 });

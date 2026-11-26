@@ -19,26 +19,35 @@ export function pageCount(total: number, size: number = PAGE_SIZE): number {
   return Math.max(1, Math.ceil(total / size));
 }
 
-/** Which wallpapers a listing shows: the whole catalog or one tag. */
-export type WallScope = { kind: 'all' } | { kind: 'tag'; tag: string };
+/** Which wallpapers a listing shows: the whole catalog, one tag or one collection. */
+export type WallScope = { kind: 'all' } | { kind: 'tag'; tag: string } | { kind: 'source'; source: string };
 
 /** The scope as the wall's data-scope attribute. */
 export function scopeKey(scope: WallScope): string {
-  return scope.kind === 'tag' ? `tag:${scope.tag}` : 'all';
+  if (scope.kind === 'tag') return `tag:${scope.tag}`;
+  if (scope.kind === 'source') return `source:${scope.source}`;
+  return 'all';
 }
 
 /** Reads a data-scope attribute; null for anything this version does not know. */
 export function parseScope(key: string): WallScope | null {
   if (key === 'all') return { kind: 'all' };
-  const tag = /^tag:(.+)$/.exec(key)?.[1];
-  return tag ? { kind: 'tag', tag } : null;
+  const [, kind, value] = /^(tag|source):(.+)$/.exec(key) ?? [];
+  if (kind === 'tag') return { kind: 'tag', tag: value };
+  if (kind === 'source') return { kind: 'source', source: value };
+  return null;
 }
 
 /** The address of the scope's first page, without the base path. */
 export function scopePath(scope: WallScope): string {
-  return scope.kind === 'tag' ? `/tags/${scope.tag}/` : '/';
+  if (scope.kind === 'tag') return `/tags/${scope.tag}/`;
+  if (scope.kind === 'source') return `/sources/${scope.source}/`;
+  return '/';
 }
 
-export function inScope(wallpaper: { tags: string[] }, scope: WallScope): boolean {
-  return scope.kind === 'all' || wallpaper.tags.includes(scope.tag);
+/** `sources` are the collections that hold the wallpaper (see `collectionIdsOf`). */
+export function inScope(wallpaper: { tags: string[]; sources: string[] }, scope: WallScope): boolean {
+  if (scope.kind === 'tag') return wallpaper.tags.includes(scope.tag);
+  if (scope.kind === 'source') return wallpaper.sources.includes(scope.source);
+  return true;
 }

@@ -4,11 +4,14 @@ export const SITE = {
   name: 'Awesome Wallpapers',
   description: 'A fast, searchable gallery of aesthetic wallpapers. Free to download, no ads, no tracking.',
   repo: 'https://github.com/AlexandrosLiaskos/Awesome_Wallpapers',
-  /** Where a wallpaper comes from unless its entry says otherwise. */
+  /** Where a wallpaper comes from unless its entry says otherwise. It is also listed under Collections. */
   defaultSource: {
     name: 'D3Ext/aesthetic-wallpapers',
     url: 'https://github.com/D3Ext/aesthetic-wallpapers',
-  } satisfies Attribution,
+    repo: 'D3Ext/aesthetic-wallpapers',
+    /** Its address under /sources/; no collection in data/sources.yml may take it. */
+    id: 'aesthetic-wallpapers',
+  } satisfies Attribution & { repo: string; id: string },
 };
 
 // The base path of the site ("/" on its own domain, and outside Astro, in tests).

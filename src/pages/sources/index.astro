@@ -1,0 +1,62 @@
+---
+import Base from '../../layouts/Base.astro';
+import { collections } from '../../lib/data.ts';
+import { getRepoStats } from '../../lib/repo-stats.ts';
+import { media, url } from '../../lib/site.ts';
+
+const plural = (n: number, one: string) => `${n.toLocaleString('en')} ${n === 1 ? one : `${one}s`}`;
+
+// The collections are already ordered, the largest first.
+const cards = await Promise.all(
+  collections.map(async (collection) => {
+    const { stars, description } = await getRepoStats(collection.repo);
+    const { cover } = collection;
+    const facts = [
+      `by ${collection.repo.split('/')[0]}`,
+      plural(collection.wallpapers.length, 'wallpaper'),
+      ...(stars === null ? [] : [plural(stars, 'star')]),
+    ];
+    return { collection, cover, description, facts, width: Math.round((300 * cover.width) / cover.height) };
+  }),
+);
+---
+
+<Base
+  title="Collections"
+  description={`Browse the wallpapers by the collection on GitHub they come from: ${collections.map((c) => c.name).join(', ')}.`}
+>
+  <section class="intro">
+    <div>
+      <h1 class="intro__title">Browse by <em>collection.</em></h1>
+      <p class="intro__text">
+        The wallpapers on this site come from these collections on GitHub. Each collection has a page with its
+        wallpapers and a link to its repository.
+      </p>
+    </div>
+    <dl class="stats">
+      <div><dt class="caption">collections</dt><dd>{collections.length}</dd></div>
+    </dl>
+  </section>
+
+  <ul class="collection-grid">
+    {
+      cards.map(({ collection, cover, description, facts, width }) => (
+        <li>
+          <a class="collection-card" href={url(`/sources/${collection.id}/`)}>
+            <img src={media('t', cover.slug)} width={width} height="300" alt="" loading="lazy" decoding="async" />
+            <span class="collection-card__name">{collection.name}</span>
+            <span class="collection-card__facts">
+              {facts.map((fact, i) => (
+                <>
+                  {i > 0 && ' · '}
+                  <span>{fact}</span>
+                </>
+              ))}
+            </span>
+            {description && <span class="collection-card__text">{description}</span>}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

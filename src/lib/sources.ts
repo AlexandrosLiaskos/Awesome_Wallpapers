@@ -1,4 +1,5 @@
 import { parse } from 'yaml';
+import { SITE } from './site.ts';
 
 export interface Source {
   id: string;
@@ -17,6 +18,8 @@ export interface Source {
 export const MAX_SOURCE_BYTES = 100 * 1024 * 1024;
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 const STATUSES = ['active', 'paused', 'removed'];
+// "own" marks the files in images/, and the default collection's page uses its id.
+const RESERVED_IDS = ['own', SITE.defaultSource.id];
 // Same shape as catalog slugs: ids and short names end up in addresses and file names.
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 // GitHub's own limits: owner letters, digits and single hyphens; repo letters, digits, ".", "_" and "-".
@@ -65,6 +68,7 @@ export function parseSources(yamlText: string, knownTagSlugs: string[]): Source[
     const id = text('id');
     const whereId = `${where} (${id})`;
     if (!SLUG.test(id)) throw new Error(`${whereId}: "id" may only use lower-case letters, digits and hyphens`);
+    if (RESERVED_IDS.includes(id)) throw new Error(`${whereId}: the id "${id}" is reserved`);
     const short = text('short');
     if (!SLUG.test(short)) throw new Error(`${whereId}: "short" may only use lower-case letters, digits and hyphens`);
     const repo = text('repo');

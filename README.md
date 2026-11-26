@@ -26,23 +26,37 @@
 
 A gallery for people who care how their desktop looks: Nord, Gruvbox and Catppuccin setups, anime backdrops, pixel art, minimal logos, landscapes worth a second monitor.
 
-The gallery is this repository's work. The wallpapers are not: they were collected by [D3Ext](https://github.com/D3Ext) in [aesthetic-wallpapers](https://github.com/D3Ext/aesthetic-wallpapers) and belong to the artists who made them. [NOTICE.md](NOTICE.md) has the details, including how to have a wallpaper credited or removed.
+The gallery is this repository's work. The wallpapers are not: they belong to the artists who made them. The ones in `images/` were collected by [D3Ext](https://github.com/D3Ext) in [aesthetic-wallpapers](https://github.com/D3Ext/aesthetic-wallpapers). The gallery also indexes [Nordic Wallpapers](https://github.com/linuxdotexe/nordic-wallpapers), [Rosé Pine Wallpapers](https://github.com/rose-pine/wallpapers) and [Gruvbox Wallpapers](https://github.com/AngelJumbo/gruvbox-wallpapers). Their originals are not copied here; each one is downloaded from its collection's repository. [NOTICE.md](NOTICE.md) has the details, including how to have a wallpaper credited or removed.
 
 ## Features
 
 - **Search and filters.** Search by name or tag, then narrow by size (FHD to 4K+), shape (desktop, ultrawide, phone) and dominant colour. A filtered view has its own address, so it can be shared.
 - **A page for every wallpaper**, with its resolution, aspect ratio, format, file size and a five-colour palette. Click a colour to copy its hex code.
 - **A page for every tag**, from [Nord](https://wallpapers.liaskos.eu/tags/nord/) to [pixel art](https://wallpapers.liaskos.eu/tags/pixel-art/).
+- **A page for every collection**, with a link to its repository.
 - **Keyboard friendly.** `/` to search, `←` `→` to move between wallpapers, `Esc` to close.
 - **Light.** The gallery shows small thumbnails. An original is fetched only when you download it, or when you open one of the few animated wallpapers.
 - **Private.** No analytics and no cookies. Two requests go elsewhere: an original file, from GitHub, when you ask for it, and a count of page visits on the maintainer's server, which stores only the total.
 - **Works without JavaScript.** Browsing, tag pages and downloads are plain links. Scripts add search, filters and the viewer.
 
+## Collections
+
+The wallpapers come from these collections on GitHub. Each one has a page in the gallery, under [Collections](https://wallpapers.liaskos.eu/sources/).
+
+| Collection | Maintainer | In this repository |
+| --- | --- | --- |
+| [aesthetic-wallpapers](https://github.com/D3Ext/aesthetic-wallpapers) | D3Ext | the files, in `images/` |
+| [Nordic Wallpapers](https://github.com/linuxdotexe/nordic-wallpapers) | linuxdotexe | an index |
+| [Rosé Pine Wallpapers](https://github.com/rose-pine/wallpapers) | rose-pine | an index |
+| [Gruvbox Wallpapers](https://github.com/AngelJumbo/gruvbox-wallpapers) | AngelJumbo | an index |
+
+For an indexed collection this repository keeps a title, tags and measurements for each file, in `data/sources/`. The gallery shows small previews, and Download fetches the original from the collection's repository. The list is kept in [`data/sources.yml`](data/sources.yml). A maintainer who would rather not be listed can [open an issue](https://github.com/AlexandrosLiaskos/Awesome_Wallpapers/issues/new/choose), and the collection is removed.
+
 ## Get the wallpapers
 
 **From the gallery.** Open a wallpaper and press Download.
 
-**All of them, with git.** A sparse clone fetches only the `images` folder:
+**The ones in this repository, with git.** A sparse clone fetches only the `images` folder:
 
 ```sh
 git clone --depth 1 --filter=blob:none --sparse https://github.com/AlexandrosLiaskos/Awesome_Wallpapers.git
@@ -98,6 +112,8 @@ The first run builds a thumbnail and a preview for every wallpaper, which takes 
 images/              the original files
 data/wallpapers.yml  a title and tags for each file, written by hand
 data/tags.yml        the tags that may be used
+data/sources.yml     the collections on GitHub that are indexed
+data/sources/        the files of each collection that were reviewed and approved
         │
         ▼
 scripts/build-media.ts   measures every image, extracts its colours,

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseTags } from '../../src/lib/catalog.ts';
+import { SITE } from '../../src/lib/site.ts';
 import { folderTags, isWanted, parseSources, type Source } from '../../src/lib/sources.ts';
 
 const known = ['nord', 'anime', 'gaming', 'minimal', 'photo'];
@@ -69,6 +70,13 @@ describe('parseSources', () => {
   it('rejects a bad status and a bad id', () => {
     expect(() => parseSources(entry.replace('active', 'gone'), known)).toThrow(/status/);
     expect(() => parseSources(entry.replace('id: nordic', 'id: Nordic'), known)).toThrow(/id/);
+  });
+
+  it('reserves "own" and the id of the collection the own wallpapers come from', () => {
+    expect(SITE.defaultSource.id).toBe('aesthetic-wallpapers');
+    for (const id of ['own', SITE.defaultSource.id]) {
+      expect(() => parseSources(entry.replace('id: nordic', `id: ${id}`), known)).toThrow(/reserved/);
+    }
   });
 });
 

@@ -1,6 +1,7 @@
 // One card, one function: the server renders the first cards with it and the
 // browser renders the rest from the compact index, so both give the same markup.
 
+import { collectionIdsOf } from './site-data.ts';
 import type { ColorBucket, Shape, SizeClass, Wallpaper } from './types.ts';
 
 /** What a card and the filters need to know about a wallpaper. */
@@ -16,8 +17,8 @@ export interface CardData {
   /** The first palette colour, empty when the wallpaper has none. */
   colour: string;
   animated: boolean;
-  /** The collection's id, `own` for a file in this repository. */
-  source: string;
+  /** The collections that hold it, by their ids under /sources/ (see `collectionIdsOf`). */
+  sources: string[];
 }
 
 /** The body of /api/index.json. */
@@ -47,7 +48,7 @@ export function toCardData(w: Wallpaper): CardData {
     colors: w.colors,
     colour: w.palette[0]?.hex ?? '',
     animated: w.animated,
-    source: w.sourceId,
+    sources: collectionIdsOf(w),
   };
 }
 
