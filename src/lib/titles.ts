@@ -13,13 +13,14 @@ function isNoise(token: string): boolean {
 function isGibberish(token: string): boolean {
   return (
     (/[a-z]/i.test(token) && /\d/.test(token)) ||
-    (/^[\u0000-\u007f]+$/.test(token) && !/^[A-Z]{2,4}$/.test(token) && !/[aeiouy]/i.test(token)) ||
-    /[a-z][A-Z]/.test(token)
+    (/^[\u0000-\u007f]+$/.test(token) && token.length >= 3 && !/^[A-Z]{2,4}$/.test(token) && !/[aeiouy]/i.test(token)) ||
+    (/[a-z][A-Z]/.test(token) && token.length <= 4)
   );
 }
 
 function capitalise(word: string, first: boolean): string {
-  if (/^[A-Z]{2,4}$/.test(word)) return word;
+  // Short all-capital words (NYC) and mixed-case brands (McLaren, iPhone) keep their own casing.
+  if (/^[A-Z]{2,4}$/.test(word) || /[a-z][A-Z]/.test(word)) return word;
   const lower = word.toLowerCase();
   if (!first && SMALL_WORDS.has(lower)) return lower;
   return lower.charAt(0).toUpperCase() + lower.slice(1);
@@ -30,7 +31,7 @@ export function titleFromPath(path: string): string | null {
   const base = path.split(/[\\/]/).pop() ?? '';
   const name = base.replace(/\.[A-Za-z0-9]{1,5}$/, '');
   // Dashes of any kind are separators so a title never carries an em dash.
-  const tokens = name.split(/[\s_.,()[\]\-–—]+/).filter((t) => t && !isNoise(t) && !isGibberish(t));
+  const tokens = name.split(/[\s_.,()[\]\-\u2013\u2014]+/).filter((t) => t && !isNoise(t) && !isGibberish(t));
   if (tokens.length === 0) return null;
   return tokens.map((t, i) => capitalise(t, i === 0)).join(' ');
 }

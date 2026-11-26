@@ -47,6 +47,13 @@ describe('titleFromPath', () => {
     expect(titleFromPath('photo-1506905925346-21bda4d32df4.jpg')).toBeNull();
   });
 
+  it('keeps mixed-case words and short consonant-only words', () => {
+    expect(titleFromPath('McLaren_Senna.jpg')).toBe('McLaren Senna');
+    expect(titleFromPath('iPhone_Forest.jpg')).toBe('iPhone Forest');
+    expect(titleFromPath('Mr_Smith.jpg')).toBe('Mr Smith');
+    expect(titleFromPath('X_Wing.jpg')).toBe('X Wing');
+  });
+
   it('never produces an em dash', () => {
     expect(titleFromPath('sunset—beach.png')).toBe('Sunset Beach');
   });
