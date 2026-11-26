@@ -88,6 +88,19 @@ describe('bucketsOf', () => {
     expect(bucketsOf(palette)).toEqual(['red']);
   });
 
+  it('files a wallpaper under dark or light only when that covers most of it', () => {
+    const accent = [
+      { hex: '#0a0d0c', share: 0.35 },
+      { hex: '#3b82f6', share: 0.3 },
+    ];
+    const mostlyDark = [
+      { hex: '#0a0d0c', share: 0.7 },
+      { hex: '#3b82f6', share: 0.3 },
+    ];
+    expect(bucketsOf(accent)).toEqual(['blue']);
+    expect(bucketsOf(mostlyDark)).toEqual(['dark', 'blue']);
+  });
+
   it('returns nothing for an empty palette', () => {
     expect(bucketsOf([])).toEqual([]);
   });

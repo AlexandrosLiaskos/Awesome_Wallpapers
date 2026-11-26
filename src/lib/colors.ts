@@ -98,13 +98,23 @@ export function bucketOf(hex: string): ColorBucket {
   return 'pink';
 }
 
+/** Almost every wallpaper has some black or white in it, so those two must dominate to count. */
+const NEUTRAL_MIN_SHARE = 0.5;
+
 /**
- * The colour families a wallpaper is filed under: one per swatch that covers
- * at least `minShare` of the image, or the largest swatch if none does.
+ * The colour families a wallpaper is filed under: every family that covers at
+ * least `minShare` of the image (half of it for dark and light), or the family
+ * of the largest swatch if none does.
  */
 export function bucketsOf(palette: Swatch[], minShare = 0.12): ColorBucket[] {
   if (palette.length === 0) return [];
-  const prominent = palette.filter((swatch) => swatch.share >= minShare);
-  const chosen = prominent.length > 0 ? prominent : [palette[0]];
-  return [...new Set(chosen.map((swatch) => bucketOf(swatch.hex)))];
+  const shares = new Map<ColorBucket, number>();
+  for (const swatch of palette) {
+    const bucket = bucketOf(swatch.hex);
+    shares.set(bucket, (shares.get(bucket) ?? 0) + swatch.share);
+  }
+  const prominent = [...shares]
+    .filter(([bucket, share]) => share >= (bucket === 'dark' || bucket === 'light' ? NEUTRAL_MIN_SHARE : minShare))
+    .map(([bucket]) => bucket);
+  return prominent.length > 0 ? prominent : [bucketOf(palette[0].hex)];
 }
