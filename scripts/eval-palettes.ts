@@ -9,9 +9,9 @@
 // and at least MIN_TRUE_POSITIVES of them are. A palette with no such pair is written as null
 // and never assigned.
 
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import sharp from 'sharp';
 import { slugOf } from '../src/lib/catalog.ts';
 import {
   DELTA_E_GRID,
@@ -22,10 +22,9 @@ import {
   type PaletteSlug,
 } from '../src/lib/palettes.ts';
 import { loadCatalog } from './lib/load.ts';
+import { sampleForPalette } from './lib/palette-sample.ts';
 
 const MIN_PRECISION = 0.8;
-/** Long edge of the sample; nearest-neighbour keeps palette colours from blending into others. */
-const SAMPLE_EDGE = 256;
 const PREVIEW_DIR = join('public', 'm', 'p');
 const TAGGER_FILE = join('data', 'tagger.json');
 
@@ -70,27 +69,24 @@ function chooseSetting(byDeltaE: Map<number, Scored[]>): Result {
   return { ...(best ?? { setting: null, precision: 0, recall: 0, truePositives: 0, total }), bestPrecision };
 }
 
-async function sampleOf(slug: string): Promise<Uint8Array> {
-  // Through a Buffer, so libvips does not keep the file locked on Windows.
-  const { data } = await sharp(await readFile(join(PREVIEW_DIR, `${slug}.webp`)))
-    .flatten({ background: '#000000' })
-    .resize(SAMPLE_EDGE, SAMPLE_EDGE, { fit: 'inside', kernel: 'nearest' })
-    .removeAlpha()
-    .toColourspace('srgb')
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  return new Uint8Array(data);
-}
-
 const { entries, tags } = await loadCatalog();
 const paletteSlugs = new Set(tags.filter((tag) => tag.kind === 'palette').map((tag) => tag.slug));
 const slugs = Object.keys(PALETTES) as PaletteSlug[];
+
+// The calibration set must be the hand-tagged wallpapers only. data/wallpapers.yml holds just the
+// own files in images/ (files of indexed collections live in data/sources/<id>.json and carry
+// machine tags), so every entry has to exist in images/; anything else would make this circular.
+for (const entry of entries) {
+  if (!existsSync(join('images', entry.file))) {
+    throw new Error(`${entry.file} is not in images/: only hand-tagged own wallpapers may be used to calibrate palettes`);
+  }
+}
 
 const samples: { tags: Set<string>; rgb: Uint8Array }[] = [];
 for (const entry of entries) {
   const slug = slugOf(entry);
   try {
-    samples.push({ tags: new Set(entry.tags.filter((tag) => paletteSlugs.has(tag))), rgb: await sampleOf(slug) });
+    samples.push({ tags: new Set(entry.tags.filter((tag) => paletteSlugs.has(tag))), rgb: await sampleForPalette(await readFile(join(PREVIEW_DIR, `${slug}.webp`))) });
   } catch (error) {
     throw new Error(`no preview for ${entry.file} (${PREVIEW_DIR}/${slug}.webp); run npm run build first (${(error as Error).message})`);
   }
