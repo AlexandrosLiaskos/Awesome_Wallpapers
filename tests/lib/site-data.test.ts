@@ -6,6 +6,7 @@ import {
   collectionIdsOf,
   listedCollections,
   neighbours,
+  otherCollections,
   related,
   sourceOf,
   stats,
@@ -202,5 +203,23 @@ describe('listedCollections', () => {
   it('keeps the name and repository it was given', () => {
     const [first] = listedCollections(catalog, known);
     expect(first).toMatchObject({ name: 'Gruvbox Wallpapers', repo: 'AngelJumbo/gruvbox-wallpapers' });
+  });
+});
+
+describe('otherCollections', () => {
+  const own = { id: SITE.defaultSource.id };
+
+  it('is null when the catalog has only the default collection, or none', () => {
+    expect(otherCollections([own])).toBeNull();
+    expect(otherCollections([])).toBeNull();
+  });
+
+  it('names one other collection in words', () => {
+    expect(otherCollections([{ id: 'nordic' }, own])).toBe('one other collection');
+  });
+
+  it('counts the others, wherever the default collection is in the list', () => {
+    expect(otherCollections([{ id: 'gruvbox' }, own, { id: 'nordic' }, { id: 'rose-pine' }])).toBe('3 other collections');
+    expect(otherCollections([{ id: 'gruvbox' }, { id: 'nordic' }])).toBe('2 other collections');
   });
 });

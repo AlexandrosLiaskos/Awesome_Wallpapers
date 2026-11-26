@@ -8,7 +8,7 @@ import catalog from '../generated/catalog.json';
 import { parseTags } from './catalog.ts';
 import { attributionOf } from './indexed.ts';
 import { SITE } from './site.ts';
-import { listedCollections, tagsWithCounts } from './site-data.ts';
+import { listedCollections, otherCollections, tagsWithCounts } from './site-data.ts';
 import { parseSources } from './sources.ts';
 import type { Attribution, Wallpaper } from './types.ts';
 
@@ -32,12 +32,15 @@ const { defaultSource } = SITE;
 
 /**
  * The collections with wallpapers in the catalog, as /sources/ lists them: the
- * one the own wallpapers come from, named after its repository, and the indexed ones.
+ * one the own wallpapers come from and the indexed ones.
  */
 export const collections = listedCollections(wallpapers, [
-  { id: defaultSource.id, repo: defaultSource.repo, name: defaultSource.repo.split('/')[1] },
+  { id: defaultSource.id, repo: defaultSource.repo, name: defaultSource.title },
   ...sources.map((source) => ({ id: source.id, name: source.name, repo: source.repo })),
 ]);
+
+/** The collections named after the default one in the intro and the footer; null when there are none. */
+export const otherCollectionsText = otherCollections(collections);
 
 const labels = new Map(tags.map((tag) => [tag.slug, tag.label]));
 

@@ -11,7 +11,9 @@ export const SITE = {
     repo: 'D3Ext/aesthetic-wallpapers',
     /** Its address under /sources/; no collection in data/sources.yml may take it. */
     id: 'aesthetic-wallpapers',
-  } satisfies Attribution & { repo: string; id: string },
+    /** How its collection page names it: the title of its own README. */
+    title: 'Aesthetic Wallpapers',
+  } satisfies Attribution & { repo: string; id: string; title: string },
 };
 
 // The base path of the site ("/" on its own domain, and outside Astro, in tests).

@@ -47,6 +47,17 @@ export function listedCollections(list: Wallpaper[], collections: CollectionInfo
     .sort((a, b) => b.wallpapers.length - a.wallpapers.length);
 }
 
+/**
+ * The collections besides the default one, as the intro and the footer name
+ * them after it: "one other collection", "3 other collections". Null when
+ * the default collection is the only one.
+ */
+export function otherCollections(collections: { id: string }[]): string | null {
+  const others = collections.filter((collection) => collection.id !== SITE.defaultSource.id).length;
+  if (others === 0) return null;
+  return others === 1 ? 'one other collection' : `${others} other collections`;
+}
+
 /** Tags in use: palettes first, then subjects, each group by how many wallpapers carry the tag. */
 export function tagsWithCounts(list: Wallpaper[], tags: Tag[]): CountedTag[] {
   const counted = tags

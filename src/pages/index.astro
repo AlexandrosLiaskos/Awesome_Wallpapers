@@ -3,7 +3,7 @@ import FilterBar from '../components/FilterBar.astro';
 import Pager from '../components/Pager.astro';
 import Wall from '../components/Wall.astro';
 import Base from '../layouts/Base.astro';
-import { tags, wallpapers } from '../lib/data.ts';
+import { otherCollectionsText as others, tags, wallpapers } from '../lib/data.ts';
 import { SITE, url } from '../lib/site.ts';
 import { stats } from '../lib/site-data.ts';
 import { pageCount } from '../lib/wall-batches.ts';
@@ -31,7 +31,8 @@ const website = {
       <h1 class="intro__title">Wallpapers worth <em>staring&nbsp;at.</em></h1>
       <p class="intro__text">
         A fast, searchable gallery of {totals.total} aesthetic wallpapers. Free to download, no ads, no tracking. The
-        collection comes from <a class="link" href={SITE.defaultSource.url}>{SITE.defaultSource.name}</a>.
+        collection comes from <a class="link" href={SITE.defaultSource.url}>{SITE.defaultSource.name}</a>
+        {others && <>{' '}and <a class="link" href={url('/sources/')}>{others}</a> on GitHub</>}.
       </p>
     </div>
     <dl class="stats">

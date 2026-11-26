@@ -41,11 +41,11 @@ The gallery is this repository's work. The wallpapers are not: they belong to th
 
 ## Collections
 
-The wallpapers come from these collections on GitHub. Each one has a page in the gallery, under [Collections](https://wallpapers.liaskos.eu/sources/).
+The wallpapers come from these collections on GitHub. A collection gets its page in the gallery, under [Collections](https://wallpapers.liaskos.eu/sources/), once its first files are approved.
 
 | Collection | Maintainer | In this repository |
 | --- | --- | --- |
-| [aesthetic-wallpapers](https://github.com/D3Ext/aesthetic-wallpapers) | D3Ext | the files, in `images/` |
+| [Aesthetic Wallpapers](https://github.com/D3Ext/aesthetic-wallpapers) | D3Ext | the files, in `images/` |
 | [Nordic Wallpapers](https://github.com/linuxdotexe/nordic-wallpapers) | linuxdotexe | an index |
 | [Rosé Pine Wallpapers](https://github.com/rose-pine/wallpapers) | rose-pine | an index |
 | [Gruvbox Wallpapers](https://github.com/AngelJumbo/gruvbox-wallpapers) | AngelJumbo | an index |

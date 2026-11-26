@@ -1,4 +1,5 @@
 ---
+import { otherCollectionsText as others } from '../lib/data.ts';
 import { SITE, url } from '../lib/site.ts';
 
 const source = SITE.defaultSource;
@@ -8,7 +9,9 @@ const source = SITE.defaultSource;
   {/* Spaces around the links are written out: line breaks next to tags are not kept as spaces. */}
   <p>
     The wallpapers belong to their original artists and were collected from{' '}
-    <a class="link" href={source.url}>{source.name}</a>. Want one credited or removed?{' '}
+    <a class="link" href={source.url}>{source.name}</a>
+    {others && <>{' '}and <a class="link" href={url('/sources/')}>{others}</a></>}
+    {'. Want one credited or removed? '}
     <a class="link" href={`${SITE.repo}/issues/new/choose`}>Open an issue</a>. The code of this site is{' '}
     <a class="link" href={`${SITE.repo}/blob/main/LICENSE`}>MIT licensed</a>.
   </p>
