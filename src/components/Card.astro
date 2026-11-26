@@ -1,0 +1,38 @@
+---
+import { tagLabel } from '../lib/data.ts';
+import { media, url } from '../lib/site.ts';
+import type { Wallpaper } from '../lib/types.ts';
+
+interface Props {
+  wallpaper: Wallpaper;
+  /** Load at once instead of lazily; for the first few cards on a page. */
+  eager?: boolean;
+}
+
+const { wallpaper, eager = false } = Astro.props;
+const { slug, title, width, height } = wallpaper;
+const ratio = width / height;
+const thumbnail = media('t', slug);
+const alt = `${title}: ${wallpaper.tags.map(tagLabel).join(', ')}`;
+const badge = wallpaper.animated ? 'GIF' : wallpaper.size === '4k' ? '4K' : '';
+---
+
+<li class="wall__item" data-slug={slug} style={`--ar:${ratio.toFixed(4)};--c:${wallpaper.palette[0]?.hex ?? ''}`}>
+  <a class="card" href={url(`/w/${slug}/`)}>
+    <img
+      src={thumbnail}
+      srcset={`${thumbnail} 1x, ${media('t', slug, '@2x')} 2x`}
+      width={Math.round(300 * ratio)}
+      height="300"
+      alt={alt}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+    {badge && <span class="card__badge">{badge}</span>}
+    {/* The alt text already names the card, so the hover label is decoration. */}
+    <span class="card__label" aria-hidden="true">
+      <span class="card__title">{title}</span>
+      <span class="card__size">{width} × {height}</span>
+    </span>
+  </a>
+</li>

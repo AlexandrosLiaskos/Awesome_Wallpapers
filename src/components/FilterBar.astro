@@ -1,0 +1,131 @@
+---
+import { usedTags, wallpapers } from '../lib/data.ts';
+import { url } from '../lib/site.ts';
+
+interface Props {
+  /** The tag whose page this is. Without it the tag chips filter the wall in place. */
+  current?: string;
+}
+
+const { current } = Astro.props;
+
+// Every palette, then the most used subjects; the rest are on the tags page.
+const SUBJECTS_SHOWN = 14;
+const palettes = usedTags.filter((tag) => tag.kind === 'palette');
+const subjects = usedTags.filter((tag) => tag.kind === 'subject');
+const shownSubjects = subjects
+  .slice(0, SUBJECTS_SHOWN)
+  .concat(subjects.slice(SUBJECTS_SHOWN).filter((tag) => tag.slug === current));
+
+const SIZES = [
+  ['', 'Any'],
+  ['4k', '4K+'],
+  ['qhd', 'QHD+'],
+  ['fhd', 'FHD+'],
+];
+const SHAPES = [
+  ['', 'Any'],
+  ['desktop', 'Desktop'],
+  ['ultrawide', 'Ultrawide'],
+  ['phone', 'Phone'],
+];
+const SORTS = [
+  ['featured', 'Featured'],
+  ['resolution', 'Largest'],
+  ['name', 'A–Z'],
+];
+const COLOURS = [
+  ['red', 'Red', '#e5484d'],
+  ['orange', 'Orange', '#f59e0b'],
+  ['yellow', 'Yellow', '#eab308'],
+  ['green', 'Green', '#22c55e'],
+  ['teal', 'Teal', '#2dd4bf'],
+  ['blue', 'Blue', '#3b82f6'],
+  ['purple', 'Purple', '#a855f7'],
+  ['pink', 'Pink', '#ec4899'],
+  ['dark', 'Dark', '#1f2937'],
+  ['light', 'Light', '#e5e7eb'],
+];
+---
+
+<div class="filters" data-filters data-mode={current ? 'links' : 'filter'}>
+  <nav class="filters__tags" aria-label="Tags">
+    <a class="chip" href={url('/')} data-tag="" aria-current={current ? undefined : 'true'}>
+      All <span class="chip__count">{wallpapers.length}</span>
+    </a>
+    {
+      palettes.map((tag) => (
+        <a
+          class="chip"
+          href={url(`/tags/${tag.slug}/`)}
+          data-tag={tag.slug}
+          aria-current={tag.slug === current ? 'true' : undefined}
+        >
+          <span class="chip__swatch" style={`background:${tag.swatch}`} />
+          {tag.label} <span class="chip__count">{tag.count}</span>
+        </a>
+      ))
+    }
+    <span class="filters__divider" aria-hidden="true"></span>
+    {
+      shownSubjects.map((tag) => (
+        <a
+          class="chip"
+          href={url(`/tags/${tag.slug}/`)}
+          data-tag={tag.slug}
+          aria-current={tag.slug === current ? 'true' : undefined}
+        >
+          {tag.label} <span class="chip__count">{tag.count}</span>
+        </a>
+      ))
+    }
+    <a class="chip" href={url('/tags/')}>All tags…</a>
+  </nav>
+
+  <div class="filters__facets needs-js">
+    <fieldset class="facet" data-facet="size">
+      <legend class="caption">Size</legend>
+      <div class="segment">
+        {SIZES.map(([value, label]) => <button type="button" data-value={value} aria-pressed={value === ''}>{label}</button>)}
+      </div>
+    </fieldset>
+
+    <fieldset class="facet" data-facet="shape">
+      <legend class="caption">Shape</legend>
+      <div class="segment">
+        {SHAPES.map(([value, label]) => <button type="button" data-value={value} aria-pressed={value === ''}>{label}</button>)}
+      </div>
+    </fieldset>
+
+    <fieldset class="facet" data-facet="color">
+      <legend class="caption">Colour</legend>
+      <div class="dots">
+        {
+          COLOURS.map(([value, label, hex]) => (
+            <button
+              class="dot"
+              type="button"
+              data-value={value}
+              aria-label={label}
+              title={label}
+              aria-pressed="false"
+              style={`--dot:${hex}`}
+            />
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <fieldset class="facet" data-facet="sort">
+      <legend class="caption">Sort</legend>
+      <div class="segment">
+        {SORTS.map(([value, label]) => <button type="button" data-value={value} aria-pressed={value === 'featured'}>{label}</button>)}
+      </div>
+    </fieldset>
+
+    <p class="filters__status">
+      <span data-count aria-live="polite"></span>
+      <button class="filters__clear" type="button" data-clear hidden>Clear</button>
+    </p>
+  </div>
+</div>

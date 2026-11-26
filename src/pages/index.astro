@@ -1,4 +1,6 @@
 ---
+import FilterBar from '../components/FilterBar.astro';
+import Wall from '../components/Wall.astro';
 import Base from '../layouts/Base.astro';
 import { tags, wallpapers } from '../lib/data.ts';
 import { SITE } from '../lib/site.ts';
@@ -22,4 +24,7 @@ const totals = stats(wallpapers, tags);
       <div><dt class="caption">tags</dt><dd>{totals.tags}</dd></div>
     </dl>
   </section>
+
+  <FilterBar />
+  <Wall wallpapers={wallpapers} filterable eager={8} />
 </Base>

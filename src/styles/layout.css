@@ -136,6 +136,16 @@
   }
 }
 
+@media (max-width: 480px) {
+  .brand__name {
+    font-size: 21px;
+  }
+
+  .site-header {
+    column-gap: 10px;
+  }
+}
+
 /* ---------- page intro ---------- */
 
 .intro {
