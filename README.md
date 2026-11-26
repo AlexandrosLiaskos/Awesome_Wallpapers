@@ -34,8 +34,8 @@ The gallery is this repository's work. The wallpapers are not: they were collect
 - **A page for every wallpaper**, with its resolution, aspect ratio, format, file size and a five-colour palette. Click a colour to copy its hex code.
 - **A page for every tag**, from [Nord](https://alexandrosliaskos.github.io/Awesome_Wallpapers/tags/nord/) to [pixel art](https://alexandrosliaskos.github.io/Awesome_Wallpapers/tags/pixel-art/).
 - **Keyboard friendly.** `/` to search, `←` `→` to move between wallpapers, `Esc` to close.
-- **Light.** The gallery shows small thumbnails; an original is fetched only when you download it.
-- **Private.** No analytics, no cookies, and nothing loaded from other sites.
+- **Light.** The gallery shows small thumbnails. An original is fetched only when you download it, or when you open one of the few animated wallpapers.
+- **Private.** No analytics and no cookies. The only thing that comes from elsewhere is an original file, from GitHub, when you ask for it.
 - **Works without JavaScript.** Browsing, tag pages and downloads are plain links. Scripts add search, filters and the viewer.
 
 ## Get the wallpapers

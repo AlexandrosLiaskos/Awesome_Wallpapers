@@ -54,7 +54,13 @@ npm install
 npm run validate
 ```
 
-`validate` tells you what is wrong and with which file: a missing entry, an unknown tag, an image that is too small. The same check runs on every pull request.
+`validate` tells you what is wrong and with which file: a missing entry, an unknown tag, an image that is too small.
+
+The same check runs on every pull request, with two more rules for the files it adds: the 1920 px minimum and the filename format. To apply those yourself, name your files:
+
+```sh
+npm run validate -- --new images/night-city.png
+```
 
 To see the wallpaper in the gallery before you open the pull request, run `npm run dev`.
 
@@ -82,7 +88,7 @@ Where things are:
 
 | Path | Contents |
 | --- | --- |
-| `src/lib/` | Logic with no browser or file access: validation, classification, colours, layout, filtering. All of it is tested. |
+| `src/lib/` | Logic with no browser or file access: validation, classification, colours, layout and filtering, each with tests. |
 | `src/components/`, `src/pages/`, `src/styles/` | The pages and how they look. |
 | `src/scripts/` | What runs in the browser: wall layout, filters, the viewer, downloads. |
 | `scripts/` | What runs at build time: image processing and validation. |
