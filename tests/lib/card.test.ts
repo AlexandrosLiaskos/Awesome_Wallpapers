@@ -13,6 +13,7 @@ const card: CardData = {
   colors: ['blue'],
   colour: '#112233',
   animated: false,
+  source: 'own',
 };
 const labels = { neon: 'Neon', city: 'City' };
 const opts = { eager: false, base: '/', labels };
@@ -67,12 +68,17 @@ describe('toCardData', () => {
   it('keeps the first palette colour and leaves it empty without a palette', () => {
     const wallpaper = {
       slug: 'a', title: 'A', width: 10, height: 5, tags: ['x', 'y'], size: 'hd', shape: 'desktop',
-      colors: ['red'], animated: false, palette: [{ hex: '#ff0000', share: 0.5 }],
+      colors: ['red'], animated: false, palette: [{ hex: '#ff0000', share: 0.5 }], sourceId: 'nordic',
     } as unknown as Wallpaper;
     expect(toCardData(wallpaper).colour).toBe('#ff0000');
     expect(toCardData({ ...wallpaper, palette: [] }).colour).toBe('');
     expect(Object.keys(toCardData(wallpaper)).sort()).toEqual(
-      ['animated', 'colors', 'colour', 'height', 'shape', 'size', 'slug', 'tags', 'title', 'width'],
+      ['animated', 'colors', 'colour', 'height', 'shape', 'size', 'slug', 'source', 'tags', 'title', 'width'],
     );
+  });
+
+  it('names the collection the wallpaper comes from', () => {
+    const wallpaper = { slug: 'a', palette: [], sourceId: 'nordic' } as unknown as Wallpaper;
+    expect(toCardData(wallpaper).source).toBe('nordic');
   });
 });

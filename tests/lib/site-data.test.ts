@@ -19,6 +19,10 @@ function wallpaper(slug: string, tags: string[], over: Partial<Wallpaper> = {}):
     palette: [],
     colors: [],
     animated: false,
+    download: `https://example.com/${slug}.png`,
+    sourceId: 'own',
+    alsoIn: [],
+    phash: '0000000000000000',
     ...over,
   };
 }

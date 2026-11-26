@@ -4,7 +4,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildHomeOg, buildMedia, type MediaOptions } from '../../scripts/lib/media.ts';
+import { buildHomeOg, buildMedia, PIPELINE_VERSION, type MediaOptions } from '../../scripts/lib/media.ts';
+import { dHash } from '../../scripts/lib/phash.ts';
+import { hamming } from '../../src/lib/dedup.ts';
+import { rawUrl } from '../../src/lib/slug.ts';
 import type { Entry, Wallpaper } from '../../src/lib/types.ts';
 
 let root: string;
@@ -47,7 +50,15 @@ beforeAll(async () => {
   const { mkdir } = await import('node:fs/promises');
   await mkdir(opts.imagesDir, { recursive: true });
   await writeSolid('#336699');
-  await blank(1080, 2340, '#cc3344').jpeg().toFile(join(opts.imagesDir, 'tall.jpg'));
+  // Textured, so its fingerprint is not the all-zero hash of a flat image.
+  const tall = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2340">
+    <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#cc3344"/><stop offset="1" stop-color="#d04050"/>
+    </linearGradient></defs>
+    <rect width="1080" height="2340" fill="url(#g)"/>
+    <circle cx="300" cy="700" r="200" fill="#a02030"/>
+  </svg>`;
+  await sharp(Buffer.from(tall)).jpeg().toFile(join(opts.imagesDir, 'tall.jpg'));
   const frames = await Promise.all(['#112233', '#445566'].map((c) => blank(1920, 1080, c).png().toBuffer()));
   await sharp(frames, { join: { animated: true } }).gif().toFile(join(opts.imagesDir, 'loop.gif'));
   await blank(1920, 1080, { r: 0, g: 0, b: 0, alpha: 0 }).png().toFile(join(opts.imagesDir, 'clear.png'));
@@ -107,6 +118,22 @@ describe('buildMedia', () => {
       animated: false,
     });
     expect(find('tall')).toMatchObject({ shape: 'phone', size: 'fhd', format: 'JPG' });
+  });
+
+  it('marks own wallpapers as such and downloads them from this repository', () => {
+    expect(find('solid-blue')).toMatchObject({ sourceId: 'own', alsoIn: [], download: rawUrl('Solid Blue.png') });
+  });
+
+  it('fingerprints every wallpaper with a 16-hex-digit hash, kept in the cache', async () => {
+    for (const wallpaper of first.wallpapers) expect(wallpaper.phash, wallpaper.slug).toMatch(/^[0-9a-f]{16}$/);
+    const cache = JSON.parse(await readFile(opts.cacheFile, 'utf8'));
+    expect(cache['tall.jpg']).toMatchObject({ version: PIPELINE_VERSION, derived: { phash: find('tall').phash } });
+    expect(PIPELINE_VERSION).toBe(3);
+  });
+
+  it('hashes the same still frame as dHash does', async () => {
+    const bytes = await readFile(join(opts.imagesDir, 'tall.jpg'));
+    expect(hamming(find('tall').phash, await dHash(bytes))).toBe(0);
   });
 
   it('reads the palette of a solid image as that one colour', () => {

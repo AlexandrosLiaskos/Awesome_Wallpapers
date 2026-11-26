@@ -16,6 +16,8 @@ export interface CardData {
   /** The first palette colour, empty when the wallpaper has none. */
   colour: string;
   animated: boolean;
+  /** The collection's id, `own` for a file in this repository. */
+  source: string;
 }
 
 /** The body of /api/index.json. */
@@ -45,6 +47,7 @@ export function toCardData(w: Wallpaper): CardData {
     colors: w.colors,
     colour: w.palette[0]?.hex ?? '',
     animated: w.animated,
+    source: w.sourceId,
   };
 }
 

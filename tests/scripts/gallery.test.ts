@@ -34,6 +34,7 @@ const card = (i: number): CardData => ({
   colors: ['blue'],
   colour: '#123456',
   animated: false,
+  source: 'own',
 });
 
 /** A first page of a nord listing with `onPage` cards rendered out of `total`. */

@@ -65,6 +65,35 @@ export interface Wallpaper extends Entry {
   palette: Swatch[];
   colors: ColorBucket[];
   animated: boolean;
+  /** Where Download and "Open original" point: the original in its own repository. */
+  download: string;
+  /** The collection's id from `data/sources.yml`, or `own` for a file in `images/`. */
+  sourceId: string;
+  /** Ids of the other collections that hold the same image (see `mergeDuplicates`). */
+  alsoIn: string[];
+  /** Perceptual fingerprint, 16 hex digits (see `dHash`). */
+  phash: string;
+}
+
+/**
+ * A file of an indexed collection that was reviewed and approved, with what was
+ * measured from it. Kept in `data/sources/` so a build need not download it again.
+ */
+export interface ApprovedFile {
+  /** Path in the collection's repository. */
+  path: string;
+  /** Git blob SHA of the approved version. */
+  sha: string;
+  slug: string;
+  title: string;
+  tags: string[];
+  width: number;
+  height: number;
+  bytes: number;
+  animated: boolean;
+  palette: Swatch[];
+  phash: string;
+  featured?: boolean;
 }
 
 /** What validation needs to know about a file on disk. */

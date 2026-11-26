@@ -6,7 +6,6 @@ import { tagLabel, wallpapers } from '../../lib/data.ts';
 import { SIZE_LABEL } from '../../lib/format.ts';
 import { media } from '../../lib/site.ts';
 import { related } from '../../lib/site-data.ts';
-import { rawUrl } from '../../lib/slug.ts';
 import type { Wallpaper } from '../../lib/types.ts';
 
 export function getStaticPaths() {
@@ -28,7 +27,7 @@ const structured = {
   '@context': 'https://schema.org',
   '@type': 'ImageObject',
   name: title,
-  contentUrl: rawUrl(wallpaper.file),
+  contentUrl: wallpaper.download,
   thumbnailUrl: new URL(media('p', wallpaper.slug), Astro.site).href,
   width,
   height,

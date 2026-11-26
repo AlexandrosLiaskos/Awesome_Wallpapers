@@ -6,11 +6,13 @@ import sharp from 'sharp';
 import { slugOf } from '../../src/lib/catalog.ts';
 import { aspectLabel, formatOf, shapeOf, sizeClass } from '../../src/lib/classify.ts';
 import { bucketsOf, paletteFromRgb } from '../../src/lib/colors.ts';
+import { rawUrl } from '../../src/lib/slug.ts';
 import type { Entry, Swatch, Wallpaper } from '../../src/lib/types.ts';
+import { dHashOfFrame } from './phash.ts';
 import { mapLimit } from './scan.ts';
 
-/** Bump when sizes or qualities change, so every image is rebuilt. */
-export const PIPELINE_VERSION = 2;
+/** Bump when sizes, qualities or measurements change, so every image is rebuilt. */
+export const PIPELINE_VERSION = 3;
 
 export interface MediaOptions {
   /** The originals. */
@@ -35,6 +37,7 @@ interface Derived {
   bytes: number;
   animated: boolean;
   palette: Swatch[];
+  phash: string;
 }
 
 type Cache = Record<string, { sha1: string; version: number; derived: Derived }>;
@@ -60,6 +63,7 @@ async function derive(bytes: Buffer, outDir: string, slug: string): Promise<Deri
 
   const [thumb, thumb2x, preview, og] = outputsOf(outDir, slug);
   const sample = await frame().resize(64, 64, { fit: 'fill' }).removeAlpha().raw().toBuffer();
+  const phash = await dHashOfFrame(frame());
   await Promise.all([
     frame().resize({ height: THUMB_HEIGHT }).webp({ quality: 72 }).toFile(thumb),
     frame()
@@ -82,6 +86,7 @@ async function derive(bytes: Buffer, outDir: string, slug: string): Promise<Deri
       hex: swatch.hex,
       share: Math.round(swatch.share * 1000) / 1000,
     })),
+    phash,
   };
 }
 
@@ -149,6 +154,10 @@ export async function buildMedia(
       palette: derived.palette,
       colors: bucketsOf(derived.palette),
       animated: derived.animated,
+      download: rawUrl(entry.file),
+      sourceId: 'own',
+      alsoIn: [],
+      phash: derived.phash,
     };
   });
 
