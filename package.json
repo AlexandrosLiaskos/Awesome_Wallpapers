@@ -15,7 +15,7 @@
     "preview": "astro preview",
     "test": "vitest run",
     "validate": "node scripts/validate.ts",
-    "check": "astro check"
+    "check": "npm run media && astro check"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.6",
