@@ -78,7 +78,7 @@ The site is built with [Astro](https://astro.build) and needs Node.js 24 or newe
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Starts the site at `localhost:4321/Awesome_Wallpapers/` |
+| `npm run dev` | Starts the site at `localhost:4321/` |
 | `npm run build` | Builds the site into `dist/` |
 | `npm test` | Runs the tests |
 | `npm run check` | Type-checks the project |
