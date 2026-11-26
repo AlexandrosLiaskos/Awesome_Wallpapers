@@ -2,7 +2,10 @@
   "palettes": {
     "catppuccin": null,
     "everforest": null,
-    "gruvbox": null,
+    "gruvbox": {
+      "deltaE": 6,
+      "threshold": 0.9212
+    },
     "nord": null,
     "rose-pine": null,
     "tokyo-night": null

@@ -1,11 +1,29 @@
 /** The palettes that can be assigned by measurement. */
 export type PaletteSlug = 'nord' | 'gruvbox' | 'catppuccin' | 'tokyo-night' | 'everforest' | 'rose-pine';
 
-/** Colours within this CIE76 distance of a palette colour count as that palette's. */
+/** Default CIE76 distance within which a pixel counts as a palette colour (the calibration tries the grid below). */
 export const MAX_DELTA_E = 12;
+
+/** Distances the calibration tries for each palette. */
+export const DELTA_E_GRID = [4, 6, 8, 12];
+
+/**
+ * Pixels and palette colours with CIELAB chroma below this are near-neutral. Every scheme has dark
+ * greys, so they say nothing about which scheme an image uses and are left out on both sides.
+ */
+export const MIN_CHROMA = 8;
+
+/** Below this share of chromatic pixels an image carries no palette evidence, and every score is 0. */
+export const MIN_CHROMATIC_SHARE = 0.05;
+
+/** A calibrated threshold needs at least this many hand-tagged wallpapers at or above it. */
+export const MIN_TRUE_POSITIVES = 3;
 
 /** A wallpaper carries at most this many palette tags. */
 export const MAX_PALETTE_TAGS = 2;
+
+/** What the calibration stores per palette in data/tagger.json; null means it never reached the precision. */
+export type PaletteSetting = { deltaE: number; threshold: number } | null;
 
 /**
  * Each scheme's own colour list, copied from its official source (named above each list)
@@ -101,52 +119,61 @@ function hexToLab(hex: string): Lab {
   return rgbToLab(parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16));
 }
 
+const chromaOf = ([, a, b]: Lab): number => Math.hypot(a, b);
+
 // Palettes are module-level constants, so converting each once is enough.
 const labCache = new WeakMap<string[], Lab[]>();
 
-function labsOf(palette: string[]): Lab[] {
+function chromaticLabsOf(palette: string[]): Lab[] {
   let labs = labCache.get(palette);
   if (!labs) {
-    labs = palette.map(hexToLab);
+    labs = palette.map(hexToLab).filter((lab) => chromaOf(lab) >= MIN_CHROMA);
     labCache.set(palette, labs);
   }
   return labs;
 }
 
-/** Share of pixels (packed r, g, b bytes) within MAX_DELTA_E of any colour of the palette. */
-export function paletteCoverage(rgb: Uint8Array, palette: string[]): number {
+/**
+ * Among the chromatic pixels (packed r, g, b bytes), the share within deltaE of a chromatic
+ * colour of the palette. 0 when fewer than MIN_CHROMATIC_SHARE of the pixels are chromatic.
+ */
+export function paletteCoverage(rgb: Uint8Array, palette: string[], deltaE = MAX_DELTA_E): number {
   const pixelCount = Math.floor(rgb.length / 3);
   if (pixelCount === 0) return 0;
 
-  const labs = labsOf(palette);
-  const limit = MAX_DELTA_E * MAX_DELTA_E;
-  // Flat artwork repeats colours a lot, so each distinct one is matched once.
-  const seen = new Map<number, boolean>();
+  const labs = chromaticLabsOf(palette);
+  const limit = deltaE * deltaE;
+  // Flat artwork repeats colours a lot, so each distinct one is measured once: 0 neutral, 1 miss, 2 hit.
+  const seen = new Map<number, number>();
+  let chromatic = 0;
   let hits = 0;
   for (let i = 0; i < pixelCount * 3; i += 3) {
     const key = (rgb[i] << 16) | (rgb[i + 1] << 8) | rgb[i + 2];
-    let near = seen.get(key);
-    if (near === undefined) {
-      const [l, a, b] = rgbToLab(rgb[i], rgb[i + 1], rgb[i + 2]);
-      near = labs.some(([pl, pa, pb]) => (l - pl) ** 2 + (a - pa) ** 2 + (b - pb) ** 2 <= limit);
-      seen.set(key, near);
+    let kind = seen.get(key);
+    if (kind === undefined) {
+      const lab = rgbToLab(rgb[i], rgb[i + 1], rgb[i + 2]);
+      if (chromaOf(lab) < MIN_CHROMA) kind = 0;
+      else kind = labs.some(([pl, pa, pb]) => (lab[0] - pl) ** 2 + (lab[1] - pa) ** 2 + (lab[2] - pb) ** 2 <= limit) ? 2 : 1;
+      seen.set(key, kind);
     }
-    if (near) hits += 1;
+    if (kind > 0) chromatic += 1;
+    if (kind === 2) hits += 1;
   }
-  return hits / pixelCount;
+  if (chromatic / pixelCount < MIN_CHROMATIC_SHARE) return 0;
+  return hits / chromatic;
 }
 
 /**
- * Palette tags for an image, highest coverage first, at most two. A palette with no threshold
- * (null, or missing) never matches: the evaluation could not make it trustworthy.
+ * Palette tags for an image, highest coverage first, at most two. A palette whose setting is
+ * null or missing never matches: the calibration could not make it trustworthy.
  */
-export function paletteTags(rgb: Uint8Array, thresholds: Record<string, number | null>): string[] {
+export function paletteTags(rgb: Uint8Array, settings: Record<string, PaletteSetting | undefined>): string[] {
   const scored: { slug: string; coverage: number }[] = [];
   for (const slug of Object.keys(PALETTES) as PaletteSlug[]) {
-    const threshold = thresholds[slug];
-    if (typeof threshold !== 'number') continue;
-    const coverage = paletteCoverage(rgb, PALETTES[slug]);
-    if (coverage >= threshold) scored.push({ slug, coverage });
+    const setting = settings[slug];
+    if (!setting) continue;
+    const coverage = paletteCoverage(rgb, PALETTES[slug], setting.deltaE);
+    if (coverage >= setting.threshold) scored.push({ slug, coverage });
   }
   scored.sort((a, b) => b.coverage - a.coverage);
   return scored.slice(0, MAX_PALETTE_TAGS).map((item) => item.slug);
