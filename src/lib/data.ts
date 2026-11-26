@@ -13,6 +13,9 @@ export const usedTags = tagsWithCounts(wallpapers, tags);
 
 const labels = new Map(tags.map((tag) => [tag.slug, tag.label]));
 
+/** Tag slug to label, as the browser gets it in the compact index. */
+export const tagLabels: Record<string, string> = Object.fromEntries(labels);
+
 export function tagLabel(slug: string): string {
   return labels.get(slug) ?? slug;
 }

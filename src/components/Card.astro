@@ -1,6 +1,7 @@
 ---
-import { tagLabel } from '../lib/data.ts';
-import { media, url } from '../lib/site.ts';
+import { cardHtml, toCardData } from '../lib/card.ts';
+import { tagLabels } from '../lib/data.ts';
+import { url } from '../lib/site.ts';
 import type { Wallpaper } from '../lib/types.ts';
 
 interface Props {
@@ -10,31 +11,8 @@ interface Props {
 }
 
 const { wallpaper, eager = false } = Astro.props;
-const { slug, title, width, height } = wallpaper;
-const ratio = width / height;
-const thumbnail = media('t', slug);
-const thumbWidth = Math.round(300 * ratio);
-const alt = `${title}: ${wallpaper.tags.map(tagLabel).join(', ')}`;
-const badge = wallpaper.animated ? 'GIF' : wallpaper.size === '4k' ? '4K' : '';
+// The browser builds the other cards with the same function.
+const html = cardHtml(toCardData(wallpaper), { eager, base: url('/'), labels: tagLabels });
 ---
 
-<li class="wall__item" data-slug={slug} style={`--ar:${ratio.toFixed(4)};--c:${wallpaper.palette[0]?.hex ?? ''}`}>
-  <a class="card" href={url(`/w/${slug}/`)}>
-    <img
-      src={thumbnail}
-      srcset={`${thumbnail} ${thumbWidth}w, ${media('t', slug, '@2x')} ${thumbWidth * 2}w`}
-      sizes="(max-width: 640px) 50vw, (max-width: 1100px) 34vw, 25vw"
-      width={thumbWidth}
-      height="300"
-      alt={alt}
-      loading={eager ? 'eager' : 'lazy'}
-      decoding="async"
-    />
-    {badge && <span class="card__badge">{badge}</span>}
-    {/* The alt text already names the card, so the hover label is decoration. */}
-    <span class="card__label" aria-hidden="true">
-      <span class="card__title">{title}</span>
-      <span class="card__size">{width} × {height}</span>
-    </span>
-  </a>
-</li>
+<Fragment set:html={html} />
