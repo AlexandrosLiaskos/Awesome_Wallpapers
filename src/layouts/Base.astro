@@ -63,6 +63,7 @@ const shareImage = new URL(image, Astro.site);
     <slot name="head" />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <Header />
     <main id="main">
       <slot />

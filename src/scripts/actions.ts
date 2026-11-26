@@ -4,34 +4,54 @@
 
 import { saveAs } from './download.ts';
 
+const resets = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
+
+/** The label's own text, remembered the first time it is replaced. */
+function original(label: HTMLElement): string {
+  label.dataset.label ??= label.textContent ?? '';
+  return label.dataset.label;
+}
+
+/**
+ * Shows a message in place of a label, then puts the label back. A second
+ * click while the message is showing restarts the wait rather than mistaking
+ * the message for the label.
+ */
+function flash(label: HTMLElement, message: string, duration: number): void {
+  const text = original(label);
+  label.textContent = message;
+  clearTimeout(resets.get(label));
+  resets.set(
+    label,
+    setTimeout(() => {
+      label.textContent = text;
+    }, duration),
+  );
+}
+
 async function copy(button: HTMLElement): Promise<void> {
-  const text = button.dataset.copy ?? '';
   const label = button.querySelector<HTMLElement>('[data-copy-text]') ?? button;
-  const before = label.textContent;
+  original(label);
   try {
-    await navigator.clipboard.writeText(text);
-    label.textContent = 'Copied';
+    await navigator.clipboard.writeText(button.dataset.copy ?? '');
+    flash(label, 'Copied', 1200);
   } catch {
-    label.textContent = 'Copy failed';
+    flash(label, 'Copy failed', 1200);
   }
-  setTimeout(() => {
-    label.textContent = before;
-  }, 1200);
 }
 
 async function download(link: HTMLAnchorElement): Promise<void> {
   if (link.getAttribute('aria-busy') === 'true') return;
   const label = link.querySelector<HTMLElement>('[data-download-text]') ?? link;
-  const before = label.textContent;
+  const text = original(label);
 
   link.setAttribute('aria-busy', 'true');
+  clearTimeout(resets.get(label));
   label.textContent = 'Downloading…';
   const outcome = await saveAs(link.href, link.dataset.download ?? '');
   link.removeAttribute('aria-busy');
-  label.textContent = outcome === 'saved' ? 'Saved' : before;
-  setTimeout(() => {
-    label.textContent = before;
-  }, 1600);
+  if (outcome === 'saved') flash(label, 'Saved', 1600);
+  else label.textContent = text;
 }
 
 export function initActions(): void {

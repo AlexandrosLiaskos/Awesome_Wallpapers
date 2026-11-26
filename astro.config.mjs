@@ -6,7 +6,7 @@ export default defineConfig({
   site: 'https://alexandrosliaskos.github.io',
   base: '/Awesome_Wallpapers',
   trailingSlash: 'always',
-  integrations: [sitemap()],
+  integrations: [sitemap({ filter: (page) => !page.endsWith('/random/') })],
   // The stylesheet is small; inlining it saves every page a render-blocking request.
   build: { inlineStylesheets: 'always' },
 });

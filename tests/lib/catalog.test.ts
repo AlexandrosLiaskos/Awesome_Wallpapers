@@ -177,3 +177,37 @@ describe('validateCatalog', () => {
     expect(issue.message).toMatch(/title/);
   });
 });
+
+describe('what the data files may contain', () => {
+  const entryWith = (extra: string) => `- file: a.png\n  title: A\n  tags: [nord, city]\n${extra}`;
+
+  it('rejects a slug that is not lower-case kebab-case, since it becomes a path and an address', () => {
+    expect(() => parseEntries(entryWith('  slug: ../../escape'))).toThrow(/slug/);
+    expect(() => parseEntries(entryWith('  slug: Has Spaces'))).toThrow(/slug/);
+  });
+
+  it('accepts a well-formed slug', () => {
+    expect(parseEntries(entryWith('  slug: night-city-2'))[0].slug).toBe('night-city-2');
+  });
+
+  it('rejects a credit or source link that is not a web address', () => {
+    expect(() => parseEntries(entryWith('  credit:\n    name: X\n    url: "javascript:alert(1)"'))).toThrow(/url/);
+    expect(() => parseEntries(entryWith('  source:\n    name: X\n    url: ftp://example.com'))).toThrow(/url/);
+  });
+
+  it('accepts http and https links', () => {
+    const [entry] = parseEntries(entryWith('  credit:\n    name: X\n    url: https://example.com/x'));
+    expect(entry.credit).toEqual({ name: 'X', url: 'https://example.com/x' });
+  });
+
+  it('rejects a swatch that is not a six-digit hex colour', () => {
+    const tag = (swatch: string) => `- slug: x\n  label: X\n  kind: palette\n  description: d\n  swatch: "${swatch}"`;
+    expect(() => parseTags(tag('red'))).toThrow(/swatch/);
+    expect(() => parseTags(tag('#fff;background:url(x)'))).toThrow(/swatch/);
+    expect(parseTags(tag('#88C0D0'))[0].swatch).toBe('#88C0D0');
+  });
+
+  it('rejects a tag slug that is not lower-case kebab-case', () => {
+    expect(() => parseTags('- slug: Pixel Art\n  label: X\n  kind: subject\n  description: d')).toThrow(/slug/);
+  });
+});

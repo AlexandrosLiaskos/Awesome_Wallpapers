@@ -24,6 +24,7 @@
 
 .view__stage {
   position: relative;
+  touch-action: pan-y pinch-zoom;
   display: grid;
   place-items: center;
   min-height: 0;

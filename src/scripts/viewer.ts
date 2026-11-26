@@ -111,6 +111,10 @@ function step(direction: number): void {
 export function initViewer(): void {
   if (!dialog) return;
 
+  // After a reload the viewer is closed, but its marker is still on this history
+  // entry; left there, closing the viewer later would step back out of the page.
+  if (history.state?.viewer) history.replaceState(null, '', location.href);
+
   dialog.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
     const plain = !(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);

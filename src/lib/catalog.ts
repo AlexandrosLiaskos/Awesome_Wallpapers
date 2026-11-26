@@ -9,6 +9,11 @@ export const MIN_LONG_EDGE = 1280;
 /** Long edge a newly contributed wallpaper must reach. */
 export const MIN_LONG_EDGE_NEW = 1920;
 const NEW_FILENAME = /^[a-z0-9]+(-[a-z0-9]+)*\.(png|jpg|jpeg|webp|gif)$/;
+// Slugs become file paths and addresses, links become hrefs and swatches go into
+// style attributes, so each is held to the one shape that is safe there.
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const WEB_ADDRESS = /^https?:\/\/\S+$/;
+const HEX_COLOUR = /^#[0-9a-f]{6}$/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -34,7 +39,11 @@ function attribution(value: unknown, key: string, where: string): Attribution | 
   if (!isRecord(value) || typeof value.name !== 'string') {
     throw new Error(`${where}: "${key}" needs a "name"`);
   }
-  return typeof value.url === 'string' ? { name: value.name, url: value.url } : { name: value.name };
+  if (value.url === undefined) return { name: value.name };
+  if (typeof value.url !== 'string' || !WEB_ADDRESS.test(value.url)) {
+    throw new Error(`${where}: the "url" of "${key}" must start with http:// or https://`);
+  }
+  return { name: value.name, url: value.url };
 }
 
 /** Reads `data/wallpapers.yml`. Throws when the file is not shaped as documented. */
@@ -49,7 +58,12 @@ export function parseEntries(yamlText: string): Entry[] {
     }
     const entry: Entry = { file, title: text(item, 'title', whereFile), tags: tags as string[] };
     if (item.featured === true) entry.featured = true;
-    if (typeof item.slug === 'string') entry.slug = item.slug;
+    if (item.slug !== undefined) {
+      if (typeof item.slug !== 'string' || !SLUG.test(item.slug)) {
+        throw new Error(`${whereFile}: "slug" may only use lower-case letters, digits and hyphens`);
+      }
+      entry.slug = item.slug;
+    }
     const credit = attribution(item.credit, 'credit', whereFile);
     if (credit) entry.credit = credit;
     const source = attribution(item.source, 'source', whereFile);
@@ -64,6 +78,7 @@ export function parseTags(yamlText: string): Tag[] {
   return parseList(yamlText, 'tags').map((item, index) => {
     const where = `tags: entry ${index + 1}`;
     const slug = text(item, 'slug', where);
+    if (!SLUG.test(slug)) throw new Error(`${where}: "slug" may only use lower-case letters, digits and hyphens`);
     if (seen.has(slug)) throw new Error(`tags: "${slug}" is defined twice`);
     seen.add(slug);
     const kind = item.kind;
@@ -71,7 +86,12 @@ export function parseTags(yamlText: string): Tag[] {
       throw new Error(`${where} (${slug}): "kind" must be palette or subject`);
     }
     const tag: Tag = { slug, label: text(item, 'label', where), kind, description: text(item, 'description', where) };
-    if (typeof item.swatch === 'string') tag.swatch = item.swatch;
+    if (item.swatch !== undefined) {
+      if (typeof item.swatch !== 'string' || !HEX_COLOUR.test(item.swatch)) {
+        throw new Error(`${where} (${slug}): "swatch" must be a colour such as #88c0d0`);
+      }
+      tag.swatch = item.swatch;
+    }
     return tag;
   });
 }

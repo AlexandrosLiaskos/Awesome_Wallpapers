@@ -99,6 +99,33 @@ em {
   white-space: nowrap;
 }
 
+/* Appears when reached with the Tab key, and jumps past what a keyboard user would otherwise tab through. */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 500;
+  text-decoration: none;
+  translate: 0 -200%;
+}
+
+.skip-link:focus {
+  translate: 0;
+}
+
+.filters {
+  position: relative;
+}
+
+[tabindex='-1']:focus {
+  outline: none;
+}
+
 /* Small upper-case caption, used for anything that labels a measurement. */
 .caption {
   font-size: 12px;
@@ -219,7 +246,7 @@ html:not(.js) .needs-js {
 }
 
 .chip[aria-pressed='true'],
-.chip[aria-current='page'] {
+.chip[aria-current] {
   border-color: var(--text);
   background: var(--text);
   color: var(--bg);

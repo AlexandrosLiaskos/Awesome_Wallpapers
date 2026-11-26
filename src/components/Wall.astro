@@ -26,7 +26,7 @@ const index: Indexed[] = wallpapers.map((w) => ({
 const indexJson = JSON.stringify(index).replace(/</g, '\\u003c');
 ---
 
-<div class="wall-wrap">
+<div class="wall-wrap" id={filterable ? 'wallpapers' : undefined} tabindex={filterable ? -1 : undefined}>
   <ul class="wall" data-wall data-filterable={filterable ? '' : undefined}>
     {wallpapers.map((wallpaper, i) => <Card wallpaper={wallpaper} eager={i < eager} />)}
   </ul>
