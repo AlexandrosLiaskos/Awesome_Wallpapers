@@ -147,6 +147,29 @@ html.js .wall:not([data-ready]) {
   color: var(--muted);
 }
 
+/* ---------- pages of a listing ---------- */
+
+.pager {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 32px var(--pad) 8px;
+}
+
+.pager__prev {
+  justify-self: end;
+}
+
+.pager__next {
+  justify-self: start;
+}
+
+/* On a first page, scrolling replaces the pager; gallery.ts shows it again if the rest cannot load. */
+html.js .pager[data-scroll]:not([data-shown]) {
+  display: none;
+}
+
 /* ---------- filter bar ---------- */
 
 .filters {

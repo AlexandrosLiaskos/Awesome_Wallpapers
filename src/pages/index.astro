@@ -1,12 +1,16 @@
 ---
 import FilterBar from '../components/FilterBar.astro';
+import Pager from '../components/Pager.astro';
 import Wall from '../components/Wall.astro';
 import Base from '../layouts/Base.astro';
 import { tags, wallpapers } from '../lib/data.ts';
-import { SITE } from '../lib/site.ts';
+import { SITE, url } from '../lib/site.ts';
 import { stats } from '../lib/site-data.ts';
+import { pageCount } from '../lib/wall-batches.ts';
 
 const totals = stats(wallpapers, tags);
+const last = pageCount(wallpapers.length);
+const next = last > 1 ? url('/page/2/') : undefined;
 
 // Names the site in structured data. Google reads a site name only at the root of a
 // domain or subdomain, so for Google this takes effect if the gallery gets its own domain.
@@ -21,6 +25,7 @@ const website = {
 
 <Base description={SITE.description}>
   <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(website)} />
+  {next && <link rel="next" href={next} slot="head" />}
   <section class="intro">
     <div>
       <h1 class="intro__title">Wallpapers worth <em>staring&nbsp;at.</em></h1>
@@ -37,5 +42,6 @@ const website = {
   </section>
 
   <FilterBar />
-  <Wall wallpapers={wallpapers} filterable eager={8} />
+  <Wall wallpapers={wallpapers} filterable eager={8} scope={{ kind: 'all' }} />
+  <Pager current={1} last={last} next={next} scroll />
 </Base>
