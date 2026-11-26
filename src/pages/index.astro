@@ -8,7 +8,8 @@ import { stats } from '../lib/site-data.ts';
 
 const totals = stats(wallpapers, tags);
 
-// Names the site for search engines, which otherwise guess a name for it.
+// Names the site in structured data. Google reads a site name only at the root of a
+// domain or subdomain, so for Google this takes effect if the gallery gets its own domain.
 const website = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
