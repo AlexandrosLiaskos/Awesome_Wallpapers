@@ -1,20 +1,29 @@
-// The same image is often in more than one collection. It is shown once, as
-// its largest copy, crediting every collection that has it. A recolouring of
-// one artwork (a Nord and a Gruvbox version) keeps its shapes but not its
-// colours, so it needs both the fingerprint and the first swatch to match.
+// The same image is often in more than one collection. It is shown once,
+// crediting every collection that has it, and downloads as its largest copy.
 //
-// Only copies in different collections are merged. A 64-bit fingerprint does
-// not see a small logo in the middle of a plain background, so among our own
-// wallpapers it pairs up 18 that differ (Tux and Windows on the same pink); a
-// collection's own files are left as its maintainer arranged them.
+// The 64-bit fingerprint only shortlists pairs: it does not see a small logo in
+// the middle of a plain background (among our own wallpapers it pairs up 18
+// that differ, Tux and Windows on the same pink). A pair is a copy only when
+// the first swatches and the aspect ratios match too, and a comparison of the
+// pictures themselves (given by the caller) agrees. A recolouring of one
+// artwork, a Nord and a Gruvbox version, fails on the first swatch.
+//
+// Only copies in different collections merge: a collection's own files are left
+// as its maintainer arranged them, and two own wallpapers never merge.
 
 import type { Wallpaper } from './types.ts';
 
-/** Fingerprints at most this many bits apart show the same image. */
+/** Fingerprints at most this many bits apart may show the same image. */
 const MAX_BITS = 6;
 /** First swatches at most this far apart in RGB are the same colouring. */
 const MAX_COLOUR_DISTANCE = 24;
+/** Aspect ratios at most this far apart, relative to the wider one. */
+const MAX_ASPECT_DIFFERENCE = 0.03;
 const HASH = /^[0-9a-f]{16}$/;
+const OWN = 'own';
+
+/** Decides whether two shortlisted wallpapers show the same picture. It should not depend on the order. */
+export type Confirm = (a: Wallpaper, b: Wallpaper) => Promise<boolean>;
 
 function popcount(x: number): number {
   x -= (x >>> 1) & 0x55555555;
@@ -29,11 +38,12 @@ interface Halves {
   lo: number;
 }
 
-/** What two wallpapers are compared by: the hash, the first swatch and the collection. */
+/** What the shortlist compares: the hash, the first swatch, the shape and the collection. */
 interface Print extends Halves {
   r: number;
   g: number;
   b: number;
+  ratio: number;
   source: string;
 }
 
@@ -52,31 +62,40 @@ export function hamming(a: string, b: string): number {
 
 function printOf(wallpaper: Wallpaper): Print | undefined {
   const first = wallpaper.palette[0]?.hex;
-  if (!first || !HASH.test(wallpaper.phash)) return undefined;
+  if (!first || !HASH.test(wallpaper.phash) || !(wallpaper.height > 0)) return undefined;
   const value = parseInt(first.slice(1), 16);
   return {
     ...halves(wallpaper.phash),
     r: (value >> 16) & 255,
     g: (value >> 8) & 255,
     b: value & 255,
+    ratio: wallpaper.width / wallpaper.height,
     source: wallpaper.sourceId,
   };
 }
 
-function copies(a: Print, b: Print): boolean {
+/** The cheap checks besides the hash; a pair that passes them goes to the picture comparison. */
+function alike(a: Print, b: Print): boolean {
   if (a.source === b.source) return false;
-  const colour = (a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2;
-  return colour <= MAX_COLOUR_DISTANCE ** 2 && bitsApart(a, b) <= MAX_BITS;
+  if (Math.abs(a.ratio - b.ratio) > MAX_ASPECT_DIFFERENCE * Math.max(a.ratio, b.ratio)) return false;
+  return (a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2 <= MAX_COLOUR_DISTANCE ** 2;
+}
+
+/** The wallpapers that share one hash, in the order they are handled. */
+interface Group extends Halves {
+  members: number[];
+  /** Members before this one were handled already and need not be looked at again. */
+  next: number;
 }
 
 /**
  * The hash cut into its 8 bytes, each keyed by its position. Two hashes at most
  * 6 bits apart differ in at most 6 bytes, so they share at least one key, and
- * only wallpapers that share a key need comparing.
+ * only hashes that share a key need comparing.
  */
-function keysOf(print: Print): number[] {
+function keysOf(hash: Halves): number[] {
   const keys: number[] = [];
-  for (const [half, word] of [print.hi, print.lo].entries()) {
+  for (const [half, word] of [hash.hi, hash.lo].entries()) {
     for (let byte = 0; byte < 4; byte++) {
       keys.push(((half * 4 + byte) << 8) | ((word >>> (24 - byte * 8)) & 255));
     }
@@ -84,57 +103,109 @@ function keysOf(print: Print): number[] {
   return keys;
 }
 
+/** The own entry, as it stays on the site, described by the largest copy's file. */
+function ownWithLargest(own: Wallpaper, largest: Wallpaper): Wallpaper {
+  const { file, download, width, height, bytes, format, size, aspect, shape, animated } = largest;
+  return { ...own, file, download, width, height, bytes, format, size, aspect, shape, animated };
+}
+
+const OPEN = 0;
+const ABSORBED = 1;
+const KEPT = 2;
+
 /**
- * Merges copies of the same image found in different collections. The copy
- * with the most pixels is kept; on a tie an own wallpaper wins, then the one
- * earlier in the list. The kept copy lists the collections of the others in
- * `alsoIn`. Survivors keep their order.
+ * Merges copies of the same image found in different collections.
+ *
+ * The largest copy (most pixels; on a tie an own wallpaper, then the earlier
+ * one) is compared with every lesser copy on the shortlist. A group with an own
+ * wallpaper keeps that entry, its page, title, tags and credit, with the
+ * download and size of the largest copy; a group without one keeps the largest
+ * copy. Either way the kept entry lists the other collections in `alsoIn`, and
+ * survivors keep their order. A group takes in at most one own wallpaper.
  */
-export function mergeDuplicates(list: Wallpaper[]): Wallpaper[] {
+export async function mergeDuplicates(list: Wallpaper[], confirm: Confirm): Promise<Wallpaper[]> {
   const prints = list.map(printOf);
+  const pixels = (index: number) => list[index].width * list[index].height;
+  const isOwn = (index: number) => list[index].sourceId === OWN;
+  const preferred = list
+    .map((_, index) => index)
+    .sort((a, b) => pixels(b) - pixels(a) || Number(isOwn(b)) - Number(isOwn(a)) || a - b);
+  const rank = new Int32Array(list.length);
+  preferred.forEach((index, position) => (rank[index] = position));
+
+  // Plain images often share one hash exactly; grouping them keeps the buckets short.
+  const byHash = new Map<string, Group>();
+  for (const index of preferred) {
+    const print = prints[index];
+    if (!print) continue;
+    const group = byHash.get(list[index].phash);
+    if (group) group.members.push(index);
+    else byHash.set(list[index].phash, { hi: print.hi, lo: print.lo, members: [index], next: 0 });
+  }
+  const groups = [...byHash.values()];
   const buckets = new Map<number, number[]>();
-  prints.forEach((print, index) => {
-    if (!print) return;
-    for (const key of keysOf(print)) {
+  groups.forEach((group, g) => {
+    for (const key of keysOf(group)) {
       const bucket = buckets.get(key);
-      if (bucket) bucket.push(index);
-      else buckets.set(key, [index]);
+      if (bucket) bucket.push(g);
+      else buckets.set(key, [g]);
     }
   });
 
-  const pixels = (index: number) => list[index].width * list[index].height;
-  const own = (index: number) => (list[index].sourceId === 'own' ? 0 : 1);
-  const preferred = list.map((_, index) => index).sort((a, b) => pixels(b) - pixels(a) || own(a) - own(b) || a - b);
+  const state = new Uint8Array(list.length);
+  // Which copy last looked at each group, so a group sharing several keys is looked at once.
+  const lastSeen = new Int32Array(groups.length).fill(-1);
+  const replaced = new Map<number, Wallpaper>();
 
-  const absorbed = new Uint8Array(list.length);
-  // Which wallpaper last looked at each candidate, so a pair sharing several keys is compared once.
-  const lastSeen = new Int32Array(list.length).fill(-1);
-  const merged = new Map<number, Wallpaper>();
-
-  // Every better copy was handled first and, the comparison being symmetric,
-  // would already have taken this one in; so whatever it finds is a lesser copy.
-  for (const index of preferred) {
-    const print = prints[index];
-    if (absorbed[index] || !print) continue;
-    const found: number[] = [];
+  // Copies are handled from the largest down, and each is compared only with
+  // lesser ones: every pair is asked about at most once, and a copy never takes
+  // in a better one.
+  for (const largest of preferred) {
+    const print = prints[largest];
+    if (state[largest] !== OPEN || !print) continue;
+    const candidates: number[] = [];
     for (const key of keysOf(print)) {
-      for (const other of buckets.get(key)!) {
-        if (other === index || absorbed[other] || lastSeen[other] === index) continue;
-        lastSeen[other] = index;
-        if (copies(print, prints[other]!)) found.push(other);
+      for (const g of buckets.get(key)!) {
+        if (lastSeen[g] === largest) continue;
+        lastSeen[g] = largest;
+        const group = groups[g];
+        if (bitsApart(print, group) > MAX_BITS) continue;
+        const { members } = group;
+        while (group.next < members.length && rank[members[group.next]] <= rank[largest]) group.next++;
+        for (let m = group.next; m < members.length; m++) {
+          const other = members[m];
+          if (state[other] === OPEN && alike(print, prints[other]!)) candidates.push(other);
+        }
       }
     }
-    if (found.length === 0) continue;
+    if (candidates.length === 0) continue;
 
-    const alsoIn = new Set(list[index].alsoIn);
-    for (const other of found.sort((a, b) => a - b)) {
-      absorbed[other] = 1;
-      alsoIn.add(list[other].sourceId);
-      for (const id of list[other].alsoIn) alsoIn.add(id);
+    const answers = await Promise.all(candidates.map((other) => confirm(list[largest], list[other])));
+    let own = isOwn(largest) ? largest : -1;
+    const copies: number[] = [];
+    for (const other of candidates.filter((_, i) => answers[i]).sort((a, b) => rank[a] - rank[b])) {
+      if (isOwn(other)) {
+        // Another own wallpaper stays as it is, open to copies of its own.
+        if (own !== -1) continue;
+        own = other;
+      }
+      copies.push(other);
     }
-    alsoIn.delete(list[index].sourceId);
-    merged.set(index, { ...list[index], alsoIn: [...alsoIn] });
+    if (copies.length === 0) continue;
+
+    const kept = own === -1 ? largest : own;
+    const alsoIn = new Set(list[kept].alsoIn);
+    for (const member of [largest, ...copies]) {
+      if (member === kept) continue;
+      state[member] = ABSORBED;
+      alsoIn.add(list[member].sourceId);
+      for (const id of list[member].alsoIn) alsoIn.add(id);
+    }
+    state[kept] = KEPT;
+    alsoIn.delete(list[kept].sourceId);
+    const entry = kept === largest ? list[kept] : ownWithLargest(list[kept], list[largest]);
+    replaced.set(kept, { ...entry, alsoIn: [...alsoIn] });
   }
 
-  return list.flatMap((wallpaper, index) => (absorbed[index] ? [] : [merged.get(index) ?? wallpaper]));
+  return list.flatMap((wallpaper, index) => (state[index] === ABSORBED ? [] : [replaced.get(index) ?? wallpaper]));
 }

@@ -28,10 +28,18 @@ function wallpaper(slug: string, over: Partial<Wallpaper> = {}): Wallpaper {
   };
 }
 
+/** Stands in for the picture comparison, which the media step makes from thumbnails. */
+const same = async () => true;
+const different = async () => false;
+
 /** The hash with its lowest `n` bits flipped. */
 function flip(hash: string, n: number): string {
   const mask = (1n << BigInt(n)) - 1n;
   return (BigInt(`0x${hash}`) ^ mask).toString(16).padStart(16, '0');
+}
+
+function flipBit(hash: string, bit: number): string {
+  return (BigInt(`0x${hash}`) ^ (1n << BigInt(bit))).toString(16).padStart(16, '0');
 }
 
 describe('hamming', () => {
@@ -44,7 +52,7 @@ describe('hamming', () => {
 });
 
 describe('mergeDuplicates', () => {
-  it('merges near copies into the larger image and credits the other collection', () => {
+  it('merges near copies into the larger image and credits the other collection', async () => {
     const small = wallpaper('small', { phash: flip(HASH, 6) });
     // First swatches 23.3 apart in RGB.
     const large = wallpaper('large', {
@@ -53,79 +61,179 @@ describe('mergeDuplicates', () => {
       sourceId: 'gruvbox',
       palette: [{ hex: '#3a4050', share: 1 }],
     });
-    expect(mergeDuplicates([small, large])).toEqual([{ ...large, alsoIn: ['nordic'] }]);
+    expect(await mergeDuplicates([small, large], same)).toEqual([{ ...large, alsoIn: ['nordic'] }]);
   });
 
-  it('keeps images apart when the hashes differ in more than 6 bits', () => {
+  it('keeps images apart when the hashes differ in more than 6 bits', async () => {
     const list = [wallpaper('a'), wallpaper('b', { phash: flip(HASH, 7), sourceId: 'gruvbox' })];
-    expect(mergeDuplicates(list)).toEqual(list);
+    expect(await mergeDuplicates(list, same)).toEqual(list);
   });
 
-  it('keeps a recolouring apart: same shapes, first swatch 60 apart', () => {
+  it('keeps a recolouring apart: same shapes, first swatch 60 apart', async () => {
     const list = [wallpaper('nord'), wallpaper('gruvbox', { sourceId: 'gruvbox', palette: [{ hex: '#6a3440', share: 1 }] })];
-    expect(mergeDuplicates(list)).toEqual(list);
+    expect(await mergeDuplicates(list, same)).toEqual(list);
   });
 
-  it('keeps images apart when the first swatches are just over 24 apart', () => {
+  it('keeps images apart when the first swatches are just over 24 apart', async () => {
     const list = [wallpaper('a'), wallpaper('b', { sourceId: 'gruvbox', palette: [{ hex: '#2e3459', share: 1 }] })];
-    expect(mergeDuplicates(list)).toHaveLength(2);
+    expect(await mergeDuplicates(list, same)).toHaveLength(2);
   });
 
-  it('lets an own wallpaper win a tie', () => {
+  it('needs aspect ratios within 3%', async () => {
+    const a = wallpaper('a');
+    // 1920×1110 is 2.7% narrower than 16:9; 1920×1120 is 3.6% narrower.
+    const near = wallpaper('near', { sourceId: 'gruvbox', height: 1110 });
+    const far = wallpaper('far', { sourceId: 'gruvbox', height: 1120 });
+    expect(await mergeDuplicates([a, near], same)).toHaveLength(1);
+    expect(await mergeDuplicates([a, far], same)).toHaveLength(2);
+  });
+
+  it('keeps images apart when the pictures turn out different', async () => {
+    const list = [wallpaper('tux'), wallpaper('windows', { sourceId: 'gruvbox', width: 3840, height: 2160 })];
+    expect(await mergeDuplicates(list, different)).toEqual(list);
+  });
+
+  it('asks about shortlisted pairs from different collections only, the kept copy first', async () => {
+    const asked: string[] = [];
+    const confirm = async (a: Wallpaper, b: Wallpaper) => {
+      asked.push(`${a.slug}:${b.slug}`);
+      return true;
+    };
+    const list = [
+      wallpaper('a'),
+      wallpaper('b'),
+      wallpaper('c', { sourceId: 'gruvbox', width: 3840, height: 2160 }),
+      wallpaper('d', { sourceId: 'gruvbox', phash: 'f0f0f0f0f0f0f0f0' }),
+    ];
+    const merged = await mergeDuplicates(list, confirm);
+    expect(asked.sort()).toEqual(['c:a', 'c:b']);
+    expect(merged.map((w) => w.slug)).toEqual(['c', 'd']);
+  });
+
+  it('lets an own wallpaper win a tie', async () => {
     const indexed = wallpaper('indexed');
     const own = wallpaper('own', { sourceId: 'own' });
-    expect(mergeDuplicates([indexed, own])).toEqual([{ ...own, alsoIn: ['nordic'] }]);
+    expect(await mergeDuplicates([indexed, own], same)).toEqual([{ ...own, alsoIn: ['nordic'] }]);
   });
 
-  it('keeps the earlier of two equal indexed copies', () => {
+  it('keeps the earlier of two equal indexed copies', async () => {
     const first = wallpaper('first', { sourceId: 'gruvbox' });
     const second = wallpaper('second');
-    expect(mergeDuplicates([first, second])).toEqual([{ ...first, alsoIn: ['nordic'] }]);
+    expect(await mergeDuplicates([first, second], same)).toEqual([{ ...first, alsoIn: ['nordic'] }]);
   });
 
-  it('keeps the survivors in their input order', () => {
+  it('keeps the survivors in their input order', async () => {
     const list = [
       wallpaper('x', { phash: 'ffffffff00000000' }),
       wallpaper('copy'),
       wallpaper('y', { phash: '00000000ffffffff' }),
       wallpaper('best', { width: 2560, height: 1440, sourceId: 'gruvbox' }),
     ];
-    expect(mergeDuplicates(list).map((w) => w.slug)).toEqual(['x', 'y', 'best']);
+    expect((await mergeDuplicates(list, same)).map((w) => w.slug)).toEqual(['x', 'y', 'best']);
   });
 
-  it('gathers every collection once and never the kept one', () => {
+  it('gathers every collection once and never the kept one', async () => {
     const list = [
       wallpaper('a', { sourceId: 'nordic', alsoIn: ['gruvbox', 'rose-pine'] }),
       wallpaper('b', { sourceId: 'gruvbox', width: 3840, height: 2160 }),
       wallpaper('c', { sourceId: 'nordic', phash: flip(HASH, 3) }),
     ];
-    const [kept, ...rest] = mergeDuplicates(list);
+    const [kept, ...rest] = await mergeDuplicates(list, same);
     expect(rest).toEqual([]);
     expect(kept.slug).toBe('b');
     expect([...kept.alsoIn].sort()).toEqual(['nordic', 'rose-pine']);
   });
 
-  it('does not change the list it is given', () => {
-    const list = [wallpaper('a'), wallpaper('b', { width: 3840, height: 2160, sourceId: 'gruvbox' })];
+  it('does not change the list it is given', async () => {
+    const list = [wallpaper('a', { sourceId: 'own' }), wallpaper('b', { width: 3840, height: 2160, sourceId: 'gruvbox' })];
     const before = structuredClone(list);
-    mergeDuplicates(list);
+    await mergeDuplicates(list, same);
     expect(list).toEqual(before);
   });
 
-  it('leaves copies within one collection alone, own wallpapers included', () => {
+  it('leaves copies within one collection alone, own wallpapers included', async () => {
     // Different logos on the same background hash alike; inside one collection they are kept.
     const own = [wallpaper('tux', { sourceId: 'own' }), wallpaper('void', { sourceId: 'own', width: 3840, height: 2160 })];
-    expect(mergeDuplicates(own)).toEqual(own);
+    expect(await mergeDuplicates(own, same)).toEqual(own);
     const nordic = [wallpaper('a'), wallpaper('b', { phash: flip(HASH, 2) })];
-    expect(mergeDuplicates(nordic)).toEqual(nordic);
+    expect(await mergeDuplicates(nordic, same)).toEqual(nordic);
   });
 
-  it('never merges a wallpaper without a palette', () => {
+  it('never merges a wallpaper without a palette', async () => {
     const list = [wallpaper('a', { palette: [] }), wallpaper('b', { palette: [], sourceId: 'gruvbox' })];
-    expect(mergeDuplicates(list)).toEqual(list);
+    expect(await mergeDuplicates(list, same)).toEqual(list);
   });
 
-  it('finds every planted copy among 5,000 wallpapers in under a second', () => {
+  describe('with an own wallpaper in the group', () => {
+    const own = wallpaper('tux', {
+      sourceId: 'own',
+      file: 'tux.png',
+      title: 'Tux',
+      tags: ['linux', 'minimal'],
+      featured: true,
+      credit: { name: 'Artist' },
+      source: { name: 'D3Ext/aesthetic-wallpapers', url: 'https://github.com/D3Ext/aesthetic-wallpapers' },
+      bytes: 10,
+    });
+    const larger = wallpaper('tux-gruvbox', {
+      sourceId: 'gruvbox',
+      file: 'Tux 4K.jpg',
+      title: 'Tux 4K',
+      tags: ['gruvbox', 'linux'],
+      source: { name: 'Gruvbox Wallpapers', url: 'https://github.com/AngelJumbo/gruvbox-wallpapers' },
+      width: 3840,
+      height: 2160,
+      bytes: 999,
+      format: 'JPG',
+      size: '4k',
+      download: 'https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/main/Tux%204K.jpg',
+    });
+
+    it('keeps the own entry and takes the download and size of the larger copy', async () => {
+      const other = wallpaper('other', { phash: 'f0f0f0f0f0f0f0f0' });
+      const merged = await mergeDuplicates([other, larger, own], same);
+      expect(merged).toEqual([
+        other,
+        {
+          ...own,
+          file: 'Tux 4K.jpg',
+          download: larger.download,
+          width: 3840,
+          height: 2160,
+          bytes: 999,
+          format: 'JPG',
+          size: '4k',
+          aspect: '16:9',
+          shape: 'desktop',
+          animated: false,
+          alsoIn: ['gruvbox'],
+        },
+      ]);
+    });
+
+    it('keeps its own download when it is the larger copy', async () => {
+      const smaller = wallpaper('tux-nordic', { width: 1280, height: 720 });
+      expect(await mergeDuplicates([smaller, own], same)).toEqual([{ ...own, alsoIn: ['nordic'] }]);
+    });
+
+    it('credits every other collection and never "own"', async () => {
+      const nordic = wallpaper('tux-nordic', { width: 2560, height: 1440 });
+      const [kept, ...rest] = await mergeDuplicates([own, nordic, larger], same);
+      expect(rest).toEqual([]);
+      expect(kept).toMatchObject({ slug: 'tux', title: 'Tux', download: larger.download, width: 3840 });
+      expect([...kept.alsoIn].sort()).toEqual(['gruvbox', 'nordic']);
+    });
+
+    it('takes in one own wallpaper only, so two own wallpapers never merge', async () => {
+      const second = wallpaper('tux-again', { sourceId: 'own' });
+      const merged = await mergeDuplicates([own, second, larger], same);
+      expect(merged.map((w) => w.slug)).toEqual(['tux', 'tux-again']);
+      expect(merged[0]).toMatchObject({ download: larger.download, alsoIn: ['gruvbox'] });
+      expect(merged[1]).toEqual(second);
+    });
+  });
+
+  it('finds every planted copy among 5,000 wallpapers in under a second', async () => {
     // A fixed pseudo-random sequence (mulberry32), so the test is the same every run.
     let seed = 42;
     const next = () => {
@@ -147,14 +255,10 @@ describe('mergeDuplicates', () => {
       list.push({ ...original, slug: `copy${i}`, sourceId: 'gruvbox', width: 3840, height: 2160, phash });
     }
     const started = performance.now();
-    const merged = mergeDuplicates(list);
+    const merged = await mergeDuplicates(list, same);
     const elapsed = performance.now() - started;
     expect(merged).toHaveLength(4900);
     expect(merged.filter((w) => w.alsoIn.includes('nordic'))).toHaveLength(100);
     expect(elapsed).toBeLessThan(1000);
   });
 });
-
-function flipBit(hash: string, bit: number): string {
-  return (BigInt(`0x${hash}`) ^ (1n << BigInt(bit))).toString(16).padStart(16, '0');
-}
