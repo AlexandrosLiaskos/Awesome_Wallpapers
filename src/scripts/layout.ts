@@ -21,6 +21,9 @@ export function layoutWall(wall: HTMLElement): void {
   items.forEach((item, index) => {
     item.style.width = `${boxes[index].width}px`;
     item.style.height = `${boxes[index].height}px`;
+    // The exact width, so the browser picks the smallest thumbnail that is still sharp.
+    const image = item.querySelector('img');
+    if (image) image.sizes = `${Math.ceil(boxes[index].width)}px`;
   });
   wall.dataset.ready = '';
 }

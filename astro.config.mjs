@@ -7,4 +7,6 @@ export default defineConfig({
   base: '/Awesome_Wallpapers',
   trailingSlash: 'always',
   integrations: [sitemap()],
+  // The stylesheet is small; inlining it saves every page a render-blocking request.
+  build: { inlineStylesheets: 'always' },
 });

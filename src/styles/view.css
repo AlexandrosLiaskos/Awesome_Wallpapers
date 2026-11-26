@@ -30,11 +30,16 @@
   padding: 28px 64px;
 }
 
+.view__stage picture {
+  display: contents;
+}
+
+/* Sized from the aspect ratio, so the page does not jump when the image arrives. */
 .view__image {
-  width: auto;
-  max-width: 100%;
+  --max-height: calc(100dvh - var(--header-height) - 56px);
+  width: min(100%, calc(var(--max-height) * var(--ar)));
   height: auto;
-  max-height: calc(100dvh - var(--header-height) - 56px);
+  aspect-ratio: var(--ar);
   border-radius: 4px;
   box-shadow: 0 30px 90px rgb(0 0 0 / 0.6);
 }
@@ -199,7 +204,7 @@
   }
 
   .view__image {
-    max-height: 62dvh;
+    --max-height: 62dvh;
   }
 
   .view__nav {
@@ -246,7 +251,7 @@
 }
 
 .viewer .view__image {
-  max-height: calc(100dvh - 56px);
+  --max-height: calc(100dvh - 56px);
 }
 
 @media (min-width: 861px) {
@@ -257,7 +262,7 @@
 
 @media (max-width: 860px) {
   .viewer .view__image {
-    max-height: 62dvh;
+    --max-height: 62dvh;
   }
 }
 

@@ -5,7 +5,7 @@ import { getStars } from '../lib/stars.ts';
 import Icon from './Icon.astro';
 
 const stars = await getStars();
-const starLabel = stars === null ? 'Star on GitHub' : `Star on GitHub (${stars} stars)`;
+const starLabel = stars === null ? 'Star on GitHub' : `Star ${stars.toLocaleString('en')} on GitHub`;
 ---
 
 <header class="site-header">
@@ -30,7 +30,7 @@ const starLabel = stars === null ? 'Star on GitHub' : `Star on GitHub (${stars} 
   </form>
 
   <nav class="site-header__actions" aria-label="Site">
-    <a class="btn" href={url('/random/')} data-random>
+    <a class="btn" href={url('/random/')} aria-label="Random wallpaper" data-random>
       <Icon name="shuffle" />
       <span class="btn__text">Random</span>
     </a>

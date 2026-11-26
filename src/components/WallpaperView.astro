@@ -32,14 +32,18 @@ const sizeLink = wallpaper.size === 'hd' ? undefined : url(`/?size=${wallpaper.s
 
   <div class="view__stage">
     {/* An animation is shown as the original file; everything else as the lighter preview. */}
-    <img
-      class="view__image"
-      src={wallpaper.animated ? original : media('p', slug)}
-      width={width}
-      height={height}
-      alt={alt}
-      decoding="async"
-    />
+    <picture>
+      {!wallpaper.animated && <source media="(max-width: 860px)" srcset={media('t', slug, '@2x')} />}
+      <img
+        class="view__image"
+        src={wallpaper.animated ? original : media('p', slug)}
+        width={width}
+        height={height}
+        alt={alt}
+        style={`--ar:${(width / height).toFixed(4)}`}
+        fetchpriority="high"
+      />
+    </picture>
     <a class="view__nav view__nav--prev" href={url(`/w/${prev.slug}/`)} rel="prev" aria-label={`Previous: ${prev.title}`} data-step="-1">
       <Icon name="chevron-left" size={18} />
     </a>

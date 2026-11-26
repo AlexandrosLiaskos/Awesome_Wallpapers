@@ -13,6 +13,7 @@ const { wallpaper, eager = false } = Astro.props;
 const { slug, title, width, height } = wallpaper;
 const ratio = width / height;
 const thumbnail = media('t', slug);
+const thumbWidth = Math.round(300 * ratio);
 const alt = `${title}: ${wallpaper.tags.map(tagLabel).join(', ')}`;
 const badge = wallpaper.animated ? 'GIF' : wallpaper.size === '4k' ? '4K' : '';
 ---
@@ -21,8 +22,9 @@ const badge = wallpaper.animated ? 'GIF' : wallpaper.size === '4k' ? '4K' : '';
   <a class="card" href={url(`/w/${slug}/`)}>
     <img
       src={thumbnail}
-      srcset={`${thumbnail} 1x, ${media('t', slug, '@2x')} 2x`}
-      width={Math.round(300 * ratio)}
+      srcset={`${thumbnail} ${thumbWidth}w, ${media('t', slug, '@2x')} ${thumbWidth * 2}w`}
+      sizes="(max-width: 640px) 50vw, (max-width: 1100px) 34vw, 25vw"
+      width={thumbWidth}
       height="300"
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}

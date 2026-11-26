@@ -3,6 +3,8 @@ import '@fontsource/newsreader/latin-400.css';
 import '@fontsource/newsreader/latin-400-italic.css';
 import '@fontsource/ibm-plex-mono/latin-400.css';
 import '@fontsource/ibm-plex-mono/latin-500.css';
+import monoFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
+import serifFont from '@fontsource/newsreader/files/newsreader-latin-400-normal.woff2?url';
 import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/layout.css';
@@ -44,6 +46,9 @@ const shareImage = new URL(image, Astro.site);
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={shareImage} />
     <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preload" href={monoFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={serifFont} as="font" type="font/woff2" crossorigin />
 
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#0a0d0c" />
