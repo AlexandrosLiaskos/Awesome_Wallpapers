@@ -225,6 +225,21 @@
   max-width: 70ch;
 }
 
+.site-footer__visits {
+  flex-basis: 100%;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.site-footer__count {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.site-footer__note::before {
+  content: '· ';
+}
+
 .site-footer ul {
   display: flex;
   flex-wrap: wrap;

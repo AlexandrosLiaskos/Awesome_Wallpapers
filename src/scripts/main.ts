@@ -5,6 +5,7 @@ import { initActions } from './actions.ts';
 import { initGallery, visibleSlugs } from './gallery.ts';
 import { initWalls } from './layout.ts';
 import { initViewer, openViewer, prefetch } from './viewer.ts';
+import { initVisits } from './visits.ts';
 
 /** The slugs of the wall a card sits on, in the order shown. */
 function slugsAround(card: Element): string[] {
@@ -21,6 +22,7 @@ function slugOf(card: Element): string {
 initWalls();
 initViewer();
 initActions();
+void initVisits();
 initGallery((slug) => void openViewer(slug, visibleSlugs()));
 
 // A plain click on a card opens the viewer; a modified click still opens the page in a tab.

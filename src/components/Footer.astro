@@ -18,4 +18,11 @@ const source = SITE.defaultSource;
     <li><a class="link" href={url('/api/wallpapers.json')}>JSON</a></li>
     <li><a class="link" href={SITE.repo}>GitHub</a></li>
   </ul>
+  {/* Filled in by scripts/visits.ts; stays hidden if the counter cannot be reached. */}
+  <p class="site-footer__visits" data-visits hidden>
+    Recorded page visits <span class="site-footer__count" data-visits-count></span>{' '}
+    <span class="site-footer__note">
+      The counter uses no cookies and stores only the total.
+    </span>
+  </p>
 </footer>
