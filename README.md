@@ -35,7 +35,7 @@ The gallery is this repository's work. The wallpapers are not: they were collect
 - **A page for every tag**, from [Nord](https://wallpapers.liaskos.eu/tags/nord/) to [pixel art](https://wallpapers.liaskos.eu/tags/pixel-art/).
 - **Keyboard friendly.** `/` to search, `←` `→` to move between wallpapers, `Esc` to close.
 - **Light.** The gallery shows small thumbnails. An original is fetched only when you download it, or when you open one of the few animated wallpapers.
-- **Private.** No analytics and no cookies. The only thing that comes from elsewhere is an original file, from GitHub, when you ask for it.
+- **Private.** No analytics and no cookies. Two requests go elsewhere: an original file, from GitHub, when you ask for it, and a count of page visits on the maintainer's server, which stores only the total.
 - **Works without JavaScript.** Browsing, tag pages and downloads are plain links. Scripts add search, filters and the viewer.
 
 ## Get the wallpapers

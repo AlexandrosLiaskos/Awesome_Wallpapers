@@ -97,7 +97,7 @@ Where things are:
 A few principles the code follows:
 
 - Every page works without JavaScript. Scripts add to a page; they never hold it up.
-- Nothing is loaded from another site, and nothing tracks visitors.
+- Nothing tracks visitors. The only requests to other sites are the original files on GitHub and the visit counter, which stores only a total.
 - Original images are never modified. Everything derived from them is generated.
 - New logic comes with a test.
 
