@@ -8,6 +8,10 @@ updates:
     groups:
       npm:
         patterns: ['*']
+    ignore:
+      # @astrojs/check (npm run check) accepts TypeScript up to version 6.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: chore
 

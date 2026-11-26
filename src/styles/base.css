@@ -118,14 +118,6 @@ em {
   translate: 0;
 }
 
-.filters {
-  position: relative;
-}
-
-[tabindex='-1']:focus {
-  outline: none;
-}
-
 /* Small upper-case caption, used for anything that labels a measurement. */
 .caption {
   font-size: 12px;

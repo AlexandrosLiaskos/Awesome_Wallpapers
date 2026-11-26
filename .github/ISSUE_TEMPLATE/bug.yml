@@ -15,7 +15,7 @@ body:
     attributes:
       label: Where?
       description: The address of the page.
-      placeholder: https://alexandrosliaskos.github.io/Awesome_Wallpapers/...
+      placeholder: https://wallpapers.liaskos.eu/...
   - type: input
     id: browser
     attributes:

@@ -11,7 +11,7 @@ export const SITE = {
   } satisfies Attribution,
 };
 
-// The site is served from a sub-path on GitHub Pages; outside Astro (tests) the base is "/".
+// The base path of the site ("/" on its own domain, and outside Astro, in tests).
 const BASE = (import.meta.env?.BASE_URL ?? '/').replace(/\/$/, '');
 
 /** An internal address, with the base path in front. */

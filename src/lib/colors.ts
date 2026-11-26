@@ -98,6 +98,27 @@ export function bucketOf(hex: string): ColorBucket {
   return 'pink';
 }
 
+const DARK_INK = '#0a0d0c';
+const LIGHT_INK = '#ffffff';
+
+/** Relative luminance as defined by WCAG, 0 for black to 1 for white. */
+function luminance(hex: string): number {
+  const value = parseInt(hex.slice(1), 16);
+  const channel = (shift: number) => {
+    const c = ((value >> shift) & 255) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(16) + 0.7152 * channel(8) + 0.0722 * channel(0);
+}
+
+/** The colour, dark or white, that stands out more on the given background. */
+export function inkOn(background: string): typeof DARK_INK | typeof LIGHT_INK {
+  const l = luminance(background);
+  const againstWhite = 1.05 / (l + 0.05);
+  const againstDark = (l + 0.05) / (luminance(DARK_INK) + 0.05);
+  return againstDark >= againstWhite ? DARK_INK : LIGHT_INK;
+}
+
 /** Almost every wallpaper has some black or white in it, so those two must dominate to count. */
 const NEUTRAL_MIN_SHARE = 0.5;
 

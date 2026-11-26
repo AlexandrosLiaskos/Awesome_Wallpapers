@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bucketOf, bucketsOf, paletteFromRgb } from '../../src/lib/colors.ts';
+import { bucketOf, bucketsOf, inkOn, paletteFromRgb } from '../../src/lib/colors.ts';
 
 type Rgb = [number, number, number];
 
@@ -103,5 +103,18 @@ describe('bucketsOf', () => {
 
   it('returns nothing for an empty palette', () => {
     expect(bucketsOf([])).toEqual([]);
+  });
+});
+
+describe('inkOn', () => {
+  it.each([
+    ['#d4cab9', '#0a0d0c'],
+    ['#e7a848', '#0a0d0c'],
+    ['#ffffff', '#0a0d0c'],
+    ['#b7284a', '#ffffff'],
+    ['#244281', '#ffffff'],
+    ['#030306', '#ffffff'],
+  ] as const)('marks on %s are drawn in %s', (background, ink) => {
+    expect(inkOn(background)).toBe(ink);
   });
 });

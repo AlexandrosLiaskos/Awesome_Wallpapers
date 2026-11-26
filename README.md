@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://alexandrosliaskos.github.io/Awesome_Wallpapers/">
+  <a href="https://wallpapers.liaskos.eu/">
     <img src=".github/readme-hero.jpg" alt="Eight wallpapers from the collection, among them a neon roadside at dusk, a cottage in an enchanted forest, a deer by a lake at sunset and a shrine under a cherry tree." width="100%">
   </a>
 </p>
@@ -12,12 +12,12 @@
 </p>
 
 <p align="center">
-  <a href="https://alexandrosliaskos.github.io/Awesome_Wallpapers/"><b>Browse the gallery →</b></a>
+  <a href="https://wallpapers.liaskos.eu/"><b>Browse the gallery →</b></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/AlexandrosLiaskos/Awesome_Wallpapers/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/AlexandrosLiaskos/Awesome_Wallpapers?style=flat-square&labelColor=0a0d0c&color=5eead4"></a>
-  <a href="https://alexandrosliaskos.github.io/Awesome_Wallpapers/"><img alt="Number of wallpapers" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Falexandrosliaskos.github.io%2FAwesome_Wallpapers%2Fapi%2Fwallpapers.json&query=%24.length&label=wallpapers&style=flat-square&labelColor=0a0d0c&color=5eead4"></a>
+  <a href="https://wallpapers.liaskos.eu/"><img alt="Number of wallpapers" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fwallpapers.liaskos.eu%2Fapi%2Fwallpapers.json&query=%24.length&label=wallpapers&style=flat-square&labelColor=0a0d0c&color=5eead4"></a>
   <a href="https://github.com/AlexandrosLiaskos/Awesome_Wallpapers/actions/workflows/deploy.yml"><img alt="Deploy status" src="https://img.shields.io/github/actions/workflow/status/AlexandrosLiaskos/Awesome_Wallpapers/deploy.yml?label=deploy&style=flat-square&labelColor=0a0d0c"></a>
   <a href="LICENSE"><img alt="Code licence: MIT" src="https://img.shields.io/badge/code-MIT-5eead4?style=flat-square&labelColor=0a0d0c"></a>
 </p>
@@ -32,7 +32,7 @@ The gallery is this repository's work. The wallpapers are not: they were collect
 
 - **Search and filters.** Search by name or tag, then narrow by size (FHD to 4K+), shape (desktop, ultrawide, phone) and dominant colour. A filtered view has its own address, so it can be shared.
 - **A page for every wallpaper**, with its resolution, aspect ratio, format, file size and a five-colour palette. Click a colour to copy its hex code.
-- **A page for every tag**, from [Nord](https://alexandrosliaskos.github.io/Awesome_Wallpapers/tags/nord/) to [pixel art](https://alexandrosliaskos.github.io/Awesome_Wallpapers/tags/pixel-art/).
+- **A page for every tag**, from [Nord](https://wallpapers.liaskos.eu/tags/nord/) to [pixel art](https://wallpapers.liaskos.eu/tags/pixel-art/).
 - **Keyboard friendly.** `/` to search, `←` `→` to move between wallpapers, `Esc` to close.
 - **Light.** The gallery shows small thumbnails. An original is fetched only when you download it, or when you open one of the few animated wallpapers.
 - **Private.** No analytics and no cookies. The only thing that comes from elsewhere is an original file, from GitHub, when you ask for it.
@@ -53,13 +53,13 @@ git sparse-checkout set images
 **From a script.** The whole catalog is one JSON file, with the title, tags, size, palette and addresses of every wallpaper:
 
 ```sh
-curl -s https://alexandrosliaskos.github.io/Awesome_Wallpapers/api/wallpapers.json
+curl -s https://wallpapers.liaskos.eu/api/wallpapers.json
 ```
 
 For example, to download one at random (needs `jq`):
 
 ```sh
-url=$(curl -s https://alexandrosliaskos.github.io/Awesome_Wallpapers/api/wallpapers.json | jq -r '.[].raw' | shuf -n 1)
+url=$(curl -s https://wallpapers.liaskos.eu/api/wallpapers.json | jq -r '.[].raw' | shuf -n 1)
 curl -sLO "$url"
 ```
 
@@ -86,7 +86,7 @@ The first run builds a thumbnail and a preview for every wallpaper, which takes 
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Starts the site at `localhost:4321/Awesome_Wallpapers/` |
+| `npm run dev` | Starts the site at `localhost:4321/` |
 | `npm run build` | Builds the site into `dist/` |
 | `npm run validate` | Checks `data/` against the files in `images/` |
 | `npm test` | Runs the tests |

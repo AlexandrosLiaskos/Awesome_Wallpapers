@@ -7,9 +7,20 @@ import { SITE } from '../lib/site.ts';
 import { stats } from '../lib/site-data.ts';
 
 const totals = stats(wallpapers, tags);
+
+// Names the site in structured data. Google reads a site name only at the root of a
+// domain or subdomain, so for Google this takes effect if the gallery gets its own domain.
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: new URL(import.meta.env.BASE_URL, Astro.site).href,
+  description: SITE.description,
+};
 ---
 
 <Base description={SITE.description}>
+  <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(website)} />
   <section class="intro">
     <div>
       <h1 class="intro__title">Wallpapers worth <em>staring&nbsp;at.</em></h1>

@@ -8,7 +8,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn(async () => {}) } });
   document.body.innerHTML =
-    '<button data-copy="#336699"><span data-copy-text>#336699</span></button>' +
+    '<button id="swatch" data-copy="#336699"><span data-copy-text>#336699</span></button>' +
     '<button id="plain" data-copy="https://example.com/w/x/">Copy link</button>';
   if (!wired) initActions();
   wired = true;
@@ -50,5 +50,14 @@ describe('copy buttons', () => {
     button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await vi.advanceTimersByTimeAsync(5000);
     expect(button.textContent).toBe('Copy link');
+  });
+
+  it('marks the button while it says Copied, so it can show a tick', async () => {
+    const button = document.querySelector<HTMLElement>('#swatch')!;
+    label().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(button.hasAttribute('data-copied')).toBe(true);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(button.hasAttribute('data-copied')).toBe(false);
   });
 });

@@ -12,7 +12,7 @@ body:
     attributes:
       label: Which wallpaper?
       description: A link to its page in the gallery, or its filename.
-      placeholder: https://alexandrosliaskos.github.io/Awesome_Wallpapers/w/...
+      placeholder: https://wallpapers.liaskos.eu/w/...
     validations:
       required: true
   - type: dropdown

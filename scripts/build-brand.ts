@@ -113,6 +113,24 @@ async function socialPreview(): Promise<void> {
     .toFile('.github/social-preview.png');
 }
 
+/** PNG copies of public/favicon.svg, for browsers, phones and search engines that do not use the SVG. */
+async function icons(): Promise<void> {
+  const svg = await readFile('public/favicon.svg');
+  const sizes: [file: string, size: number][] = [
+    ['favicon-48.png', 48],
+    ['apple-touch-icon.png', 180],
+    ['icon-192.png', 192],
+    ['icon-512.png', 512],
+  ];
+  for (const [file, size] of sizes) {
+    await sharp(svg, { density: Math.ceil((72 * size) / 32) })
+      .resize(size, size)
+      .png({ compressionLevel: 9 })
+      .toFile(join('public', file));
+  }
+}
+
 await readmeHero();
 await socialPreview();
-console.log('brand: wrote .github/readme-hero.jpg and .github/social-preview.png');
+await icons();
+console.log('brand: wrote .github/readme-hero.jpg, .github/social-preview.png and the PNG icons in public/');

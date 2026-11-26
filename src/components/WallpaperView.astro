@@ -2,6 +2,7 @@
 // One wallpaper, large, with its label. This is the whole wallpaper page, and
 // it is also what the gallery's viewer shows: the viewer fetches the page and
 // lifts this element out of it, so there is one source for both.
+import { inkOn } from '../lib/colors.ts';
 import { tagLabel, wallpapers } from '../lib/data.ts';
 import { SHAPE_LABEL, SIZE_LABEL, formatBytes, numberInCollection } from '../lib/format.ts';
 import { media, url } from '../lib/site.ts';
@@ -88,14 +89,25 @@ const sizeLink = wallpaper.size === 'hd' ? undefined : url(`/?size=${wallpaper.s
 
     <div>
       <p class="caption view__heading">
-        Palette<span class="needs-js"> · click to copy</span>
+        Palette
       </p>
       <ul class="view__palette">
         {
           wallpaper.palette.map((swatch) => (
             <li>
-              <button type="button" data-copy={swatch.hex} aria-label={`Copy colour ${swatch.hex}`}>
-                <span class="view__swatch" style={`background:${swatch.hex}`} />
+              {/* Each colour is a button that copies its code; the icon on it says so. */}
+              <button
+                type="button"
+                data-copy={swatch.hex}
+                aria-label={`Copy colour ${swatch.hex}`}
+                title={`Copy ${swatch.hex}`}
+              >
+                <span class="view__swatch" style={`--swatch:${swatch.hex};--ink:${inkOn(swatch.hex)}`}>
+                  <span class="view__copy needs-js" aria-hidden="true">
+                    <Icon name="copy" size={15} />
+                    <Icon name="check" size={15} />
+                  </span>
+                </span>
                 <span data-copy-text>{swatch.hex}</span>
               </button>
             </li>
