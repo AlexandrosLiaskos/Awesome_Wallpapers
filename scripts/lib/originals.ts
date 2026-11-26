@@ -114,15 +114,17 @@ export interface OriginalsDeps {
 }
 
 /**
- * The approved files that each active collection still has, collection by
- * collection. One without approved files is not asked at all, so a build needs
- * no network until a collection is approved. One that is gone shows nothing;
- * one that could not be listed keeps its approved files (see `availableFiles`).
+ * The approved files that each collection still has, collection by collection.
+ * A paused collection is listed like an active one, so its removals still apply;
+ * a removed one shows nothing and is not asked. One without approved files is
+ * not asked either, so a build needs no network until a collection is approved.
+ * One that is gone shows nothing; one that could not be listed keeps its
+ * approved files (see `availableFiles`).
  */
 export async function availableOriginals(sources: Source[], deps: OriginalsDeps): Promise<IndexedFile[]> {
   const found = await Promise.all(
     sources
-      .filter((source) => source.status === 'active')
+      .filter((source) => source.status !== 'removed')
       .map(async (source) => {
         const approved = await deps.approved(source);
         if (approved.length === 0) return [];

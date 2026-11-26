@@ -11,7 +11,10 @@
 #   tags:    tags every wallpaper of the collection gets (from tags.yml)
 #   folders: folder path from the repository root -> extra tags for files in it. The deepest
 #            mapped folder above a file wins. A folder that matches no tag is left out.
-#   status:  active, paused or removed
+#   status:  active (the default): its approved files are shown, and new files are proposed for review
+#            paused: its approved files are still shown and files removed from it leave the site,
+#                    but no new files are proposed
+#            removed: nothing of it is shown, and it is not checked
 
 - id: nordic-wallpapers
   short: nordic

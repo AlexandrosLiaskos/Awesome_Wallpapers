@@ -172,13 +172,15 @@ describe('availableOriginals', () => {
     expect(list).not.toHaveBeenCalled();
   });
 
-  it('lists only active collections', async () => {
-    const files = { [source.id]: [a1], [second.id]: [b1] };
-    const { deps, list } = setup(files, { [second.id]: { kind: 'ok', files: [{ path: b1.path, sha: 'b1', size: 6 }] } });
+  it('keeps showing a paused collection, removals included, and leaves a removed one out unasked', async () => {
     const paused: Source = { ...source, status: 'paused' };
-    const removed: Source = { ...second, id: 'gone-one', status: 'removed' };
-    expect(await availableOriginals([paused, second, removed], deps)).toEqual([{ source: second, file: b1 }]);
-    expect(list.mock.calls.map(([s]) => s.id)).toEqual([second.id]);
+    const removed: Source = { ...second, status: 'removed' };
+    const { deps, list } = setup(
+      { [paused.id]: [a1, b1], [removed.id]: [a1] },
+      { [paused.id]: { kind: 'ok', files: [{ path: a1.path, sha: 'a1', size: 6 }] } },
+    );
+    expect(await availableOriginals([paused, removed], deps)).toEqual([{ source: paused, file: a1 }]);
+    expect(list.mock.calls.map(([s]) => s.id)).toEqual([paused.id]);
   });
 
   it('drops a collection that is gone and says which', async () => {
