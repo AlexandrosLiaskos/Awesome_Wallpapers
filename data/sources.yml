@@ -1,0 +1,53 @@
+# Wallpaper collections on GitHub that the gallery indexes. Their images are never
+# copied here; every card links to the collection's own raw file.
+#
+#   id:      stable name, lower-case letters, digits and hyphens
+#   short:   short readable name used in addresses and labels, same characters, unique
+#   name:    how the collection is written on the site
+#   repo:    owner/name on GitHub
+#   branch:  the branch to list
+#   include: only files under these folders are indexed (empty or missing: the whole repository)
+#   exclude: files under these folders are skipped
+#   tags:    tags every wallpaper of the collection gets (from tags.yml)
+#   folders: folder path from the repository root -> extra tags for files in it. The deepest
+#            mapped folder above a file wins. A folder that matches no tag is left out.
+#   status:  active, paused or removed
+
+- id: nordic-wallpapers
+  short: nordic
+  name: Nordic Wallpapers
+  repo: linuxdotexe/nordic-wallpapers
+  branch: master
+  include: [wallpapers/]
+  tags: [nord]
+  status: active
+
+- id: rose-pine-wallpapers
+  short: rose-pine
+  name: Rosé Pine Wallpapers
+  repo: rose-pine/wallpapers
+  branch: main
+  tags: [rose-pine]
+  folders:
+    anime: [anime]
+    manga: [anime]
+    illustration: [illustration]
+    minecraft: [gaming, pixel-art]
+    photography: [photo]
+  status: active
+
+- id: gruvbox-wallpapers
+  short: gruvbox
+  name: Gruvbox Wallpapers
+  repo: AngelJumbo/gruvbox-wallpapers
+  branch: main
+  include: [wallpapers/]
+  tags: [gruvbox]
+  folders:
+    wallpapers/anime: [anime]
+    wallpapers/game: [gaming]
+    wallpapers/minimalistic: [minimal]
+    wallpapers/painting: [illustration]
+    wallpapers/photography: [photo]
+    wallpapers/pixelart: [pixel-art]
+  status: active
