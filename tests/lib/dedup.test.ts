@@ -107,7 +107,19 @@ describe('mergeDuplicates', () => {
     ];
     const merged = await mergeDuplicates(list, confirm);
     expect(asked.sort()).toEqual(['c:a', 'c:b']);
-    expect(merged.map((w) => w.slug)).toEqual(['c', 'd']);
+    // c takes in one nordic copy; the other nordic copy is that collection's own business.
+    expect(merged.map((w) => w.slug)).toEqual(['b', 'c', 'd']);
+  });
+
+  it('takes in at most one copy per collection, so a collection keeps its own duplicates', async () => {
+    // The same picture twice in one collection, say in 1080p/ and 4k/, and once elsewhere.
+    const hd = wallpaper('hd');
+    const qhd = wallpaper('qhd', { width: 2560, height: 1440 });
+    const gruvbox = wallpaper('gruvbox', { sourceId: 'gruvbox', width: 3840, height: 2160 });
+    const merged = await mergeDuplicates([hd, qhd, gruvbox], same);
+    expect(merged).toEqual([hd, { ...gruvbox, alsoIn: ['nordic'] }]);
+    // Without the third collection the two stay apart, and they still do with it.
+    expect(await mergeDuplicates([hd, qhd], same)).toEqual([hd, qhd]);
   });
 
   it('lets an own wallpaper win a tie', async () => {
@@ -136,12 +148,12 @@ describe('mergeDuplicates', () => {
     const list = [
       wallpaper('a', { sourceId: 'nordic', alsoIn: ['gruvbox', 'rose-pine'] }),
       wallpaper('b', { sourceId: 'gruvbox', width: 3840, height: 2160 }),
-      wallpaper('c', { sourceId: 'nordic', phash: flip(HASH, 3) }),
+      wallpaper('c', { sourceId: 'catppuccin', phash: flip(HASH, 3), alsoIn: ['rose-pine'] }),
     ];
     const [kept, ...rest] = await mergeDuplicates(list, same);
     expect(rest).toEqual([]);
     expect(kept.slug).toBe('b');
-    expect([...kept.alsoIn].sort()).toEqual(['nordic', 'rose-pine']);
+    expect([...kept.alsoIn].sort()).toEqual(['catppuccin', 'nordic', 'rose-pine']);
   });
 
   it('does not change the list it is given', async () => {

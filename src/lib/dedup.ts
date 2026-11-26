@@ -8,8 +8,10 @@
 // pictures themselves (given by the caller) agrees. A recolouring of one
 // artwork, a Nord and a Gruvbox version, fails on the first swatch.
 //
-// Only copies in different collections merge: a collection's own files are left
-// as its maintainer arranged them, and two own wallpapers never merge.
+// Only copies in different collections merge, and a group takes in at most
+// one copy per collection: a collection's own files are left as its maintainer
+// arranged them, whether or not another collection has the image, and two own
+// wallpapers never merge.
 
 import type { Wallpaper } from './types.ts';
 
@@ -121,7 +123,8 @@ const KEPT = 2;
  * wallpaper keeps that entry, its page, title, tags and credit, with the
  * download and size of the largest copy; a group without one keeps the largest
  * copy. Either way the kept entry lists the other collections in `alsoIn`, and
- * survivors keep their order. A group takes in at most one own wallpaper.
+ * survivors keep their order. A group takes in at most one copy per
+ * collection, the best-ranked one; the others stay as they are.
  */
 export async function mergeDuplicates(list: Wallpaper[], confirm: Confirm): Promise<Wallpaper[]> {
   const prints = list.map(printOf);
@@ -181,19 +184,18 @@ export async function mergeDuplicates(list: Wallpaper[], confirm: Confirm): Prom
     if (candidates.length === 0) continue;
 
     const answers = await Promise.all(candidates.map((other) => confirm(list[largest], list[other])));
-    let own = isOwn(largest) ? largest : -1;
+    const taken = new Set([list[largest].sourceId]);
     const copies: number[] = [];
     for (const other of candidates.filter((_, i) => answers[i]).sort((a, b) => rank[a] - rank[b])) {
-      if (isOwn(other)) {
-        // Another own wallpaper stays as it is, open to copies of its own.
-        if (own !== -1) continue;
-        own = other;
-      }
+      // A second copy from a collection already in the group stays as it is, open to copies of its own.
+      if (taken.has(list[other].sourceId)) continue;
+      taken.add(list[other].sourceId);
       copies.push(other);
     }
     if (copies.length === 0) continue;
 
-    const kept = own === -1 ? largest : own;
+    // The group holds at most one own wallpaper, own being one collection; if there is one, it stays.
+    const kept = [largest, ...copies].find(isOwn) ?? largest;
     const alsoIn = new Set(list[kept].alsoIn);
     for (const member of [largest, ...copies]) {
       if (member === kept) continue;
