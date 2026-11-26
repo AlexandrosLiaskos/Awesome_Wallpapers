@@ -1,15 +1,19 @@
-const DROPPED = new Set(['wallhaven', 'wallpaper', 'wall', 'img', 'image', 'unsplash']);
+const DROPPED = new Set(['wallhaven', 'wallpaper', 'wall', 'img', 'image', 'unsplash', 'photo']);
 const SMALL_WORDS = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'with']);
 
 function isNoise(token: string): boolean {
   return /^\d+$/.test(token) || /^\d+x\d+$/i.test(token) || DROPPED.has(token.toLowerCase());
 }
 
-/** Random-looking ids: letters mixed with digits, no vowel, or capitals inside the word ("CoA"). */
+/**
+ * Random-looking ids: letters mixed with digits, no vowel, or capitals inside the word ("CoA").
+ * The vowel test only applies to ASCII words (so Greek or Cyrillic names survive) and spares
+ * short all-capital words such as NYC.
+ */
 function isGibberish(token: string): boolean {
   return (
     (/[a-z]/i.test(token) && /\d/.test(token)) ||
-    !/[aeiouy]/i.test(token) ||
+    (/^[\u0000-\u007f]+$/.test(token) && !/^[A-Z]{2,4}$/.test(token) && !/[aeiouy]/i.test(token)) ||
     /[a-z][A-Z]/.test(token)
   );
 }
@@ -26,8 +30,8 @@ export function titleFromPath(path: string): string | null {
   const base = path.split(/[\\/]/).pop() ?? '';
   const name = base.replace(/\.[A-Za-z0-9]{1,5}$/, '');
   // Dashes of any kind are separators so a title never carries an em dash.
-  const tokens = name.split(/[\s_.\-–—]+/).filter((t) => t && !isNoise(t));
-  if (tokens.length === 0 || tokens.every(isGibberish)) return null;
+  const tokens = name.split(/[\s_.,()[\]\-–—]+/).filter((t) => t && !isNoise(t) && !isGibberish(t));
+  if (tokens.length === 0) return null;
   return tokens.map((t, i) => capitalise(t, i === 0)).join(' ');
 }
 

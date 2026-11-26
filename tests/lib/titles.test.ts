@@ -33,6 +33,20 @@ describe('titleFromPath', () => {
     expect(titleFromPath('unsplash-lake-image-04.jpg')).toBe('Lake');
   });
 
+  it('treats brackets and commas as separators', () => {
+    expect(titleFromPath('forest (3).png')).toBe('Forest');
+    expect(titleFromPath('lake[2],pines.png')).toBe('Lake Pines');
+  });
+
+  it('keeps non-Latin names', () => {
+    expect(titleFromPath('θάλασσα.jpg')).toBe('Θάλασσα');
+  });
+
+  it('drops id-like tokens next to real words', () => {
+    expect(titleFromPath('forest_a8f3k2.jpg')).toBe('Forest');
+    expect(titleFromPath('photo-1506905925346-21bda4d32df4.jpg')).toBeNull();
+  });
+
   it('never produces an em dash', () => {
     expect(titleFromPath('sunset—beach.png')).toBe('Sunset Beach');
   });
