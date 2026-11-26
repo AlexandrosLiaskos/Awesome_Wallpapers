@@ -1,0 +1,20 @@
+---
+import Icon from '../components/Icon.astro';
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site.ts';
+---
+
+<Base title="Not found" description="This page does not exist." noindex>
+  <section class="notice">
+    <p class="caption">Error 404</p>
+    <h1 class="notice__title">This wall is <em>empty.</em></h1>
+    <p class="notice__text">
+      The page you asked for is not here. It may have been a wallpaper that was removed, or the address may be
+      mistyped.
+    </p>
+    <div class="notice__actions">
+      <a class="btn" href={url('/')}><Icon name="arrow-left" /> Back to the gallery</a>
+      <a class="btn" href={url('/random/')}><Icon name="shuffle" /> Show me a random one</a>
+    </div>
+  </section>
+</Base>

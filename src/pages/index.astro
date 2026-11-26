@@ -1,0 +1,30 @@
+---
+import FilterBar from '../components/FilterBar.astro';
+import Wall from '../components/Wall.astro';
+import Base from '../layouts/Base.astro';
+import { tags, wallpapers } from '../lib/data.ts';
+import { SITE } from '../lib/site.ts';
+import { stats } from '../lib/site-data.ts';
+
+const totals = stats(wallpapers, tags);
+---
+
+<Base description={SITE.description}>
+  <section class="intro">
+    <div>
+      <h1 class="intro__title">Wallpapers worth <em>staring&nbsp;at.</em></h1>
+      <p class="intro__text">
+        A fast, searchable gallery of {totals.total} aesthetic wallpapers. Free to download, no ads, no tracking. The
+        collection comes from <a class="link" href={SITE.defaultSource.url}>{SITE.defaultSource.name}</a>.
+      </p>
+    </div>
+    <dl class="stats">
+      <div><dt class="caption">wallpapers</dt><dd>{totals.total}</dd></div>
+      <div><dt class="caption">in 4K+</dt><dd>{totals.fourK}</dd></div>
+      <div><dt class="caption">tags</dt><dd>{totals.tags}</dd></div>
+    </dl>
+  </section>
+
+  <FilterBar />
+  <Wall wallpapers={wallpapers} filterable eager={8} />
+</Base>

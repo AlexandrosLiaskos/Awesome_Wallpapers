@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import { usedTags, wallpapers } from '../../lib/data.ts';
+import { media, url } from '../../lib/site.ts';
+import { byTag } from '../../lib/site-data.ts';
+
+// Each tag is shown over one of its wallpapers; no wallpaper is used twice while others are free.
+const taken = new Set<string>();
+const cards = usedTags.map((tag) => {
+  const candidates = byTag(wallpapers, tag.slug).filter((w) => w.shape !== 'phone');
+  const cover = candidates.find((w) => !taken.has(w.slug)) ?? candidates[0] ?? byTag(wallpapers, tag.slug)[0];
+  taken.add(cover.slug);
+  return { tag, cover };
+});
+
+const groups = [
+  { title: 'Palettes', cards: cards.filter(({ tag }) => tag.kind === 'palette') },
+  { title: 'Subjects and styles', cards: cards.filter(({ tag }) => tag.kind === 'subject') },
+];
+---
+
+<Base
+  title="All tags"
+  description={`Browse ${wallpapers.length} wallpapers by palette, subject and style: Nord, Gruvbox, Catppuccin, anime, minimal, pixel art and more.`}
+>
+  <section class="intro">
+    <div>
+      <h1 class="intro__title">Browse by <em>tag.</em></h1>
+      <p class="intro__text">
+        Every wallpaper carries a few tags: the colour scheme it was made for, what it shows, and how it looks.
+      </p>
+    </div>
+    <dl class="stats">
+      <div><dt class="caption">tags</dt><dd>{usedTags.length}</dd></div>
+    </dl>
+  </section>
+
+  {
+    groups.map((group) => (
+      <section class="tag-group">
+        <h2 class="caption tag-group__title">{group.title}</h2>
+        <ul class="tag-grid">
+          {group.cards.map(({ tag, cover }) => (
+            <li>
+              <a class="tag-card" href={url(`/tags/${tag.slug}/`)}>
+                <img src={media('t', cover.slug)} width="533" height="300" alt="" loading="lazy" decoding="async" />
+                <span class="tag-card__name">
+                  {tag.label}
+                  <span class="tag-card__count">{tag.count}</span>
+                </span>
+                <span class="tag-card__text">{tag.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</Base>

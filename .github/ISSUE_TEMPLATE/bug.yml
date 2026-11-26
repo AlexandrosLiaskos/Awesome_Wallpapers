@@ -1,0 +1,23 @@
+name: Report a problem
+description: Something on the site is broken, looks wrong, or is mislabelled.
+title: "Problem: "
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw instead. A screenshot helps.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where?
+      description: The address of the page.
+      placeholder: https://alexandrosliaskos.github.io/Awesome_Wallpapers/...
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Firefox 140 on Linux, Safari on iPhone, ...

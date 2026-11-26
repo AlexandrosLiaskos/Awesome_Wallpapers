@@ -1,0 +1,43 @@
+---
+import { wallpapers } from '../lib/data.ts';
+import { SITE, url } from '../lib/site.ts';
+import { getStars } from '../lib/stars.ts';
+import Icon from './Icon.astro';
+
+const stars = await getStars();
+const starLabel = stars === null ? 'Star on GitHub' : `Star ${stars.toLocaleString('en')} on GitHub`;
+---
+
+<header class="site-header">
+  <a class="brand" href={url('/')}>
+    <span class="brand__mark" aria-hidden="true"></span>
+    <span class="brand__name">Awesome <em>Wallpapers</em></span>
+  </a>
+
+  <!-- A plain form, so a search from any page lands on the gallery with ?q= -->
+  <form class="search needs-js" action={url('/')} method="get" role="search">
+    <Icon name="search" />
+    <input
+      type="search"
+      name="q"
+      placeholder={`Search ${wallpapers.length} wallpapers…`}
+      aria-label="Search wallpapers"
+      autocomplete="off"
+      spellcheck="false"
+      data-search
+    />
+    <kbd aria-hidden="true">/</kbd>
+  </form>
+
+  <nav class="site-header__actions" aria-label="Site">
+    <a class="btn" href={url('/random/')} aria-label="Random wallpaper" data-random>
+      <Icon name="shuffle" />
+      <span class="btn__text">Random</span>
+    </a>
+    <a class="btn" href={SITE.repo} aria-label={starLabel}>
+      <Icon name="github" />
+      <span class="btn__text">Star</span>
+      {stars !== null && <span class="btn__count">{stars.toLocaleString('en')}</span>}
+    </a>
+  </nav>
+</header>

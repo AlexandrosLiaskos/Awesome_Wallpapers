@@ -1,0 +1,64 @@
+name: Deploy
+
+# Builds the site and publishes it to GitHub Pages on every push to main.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time; a newer push waits for the running one to finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run validate
+
+      - run: npm test
+
+      # Thumbnails and previews are rebuilt only for images that changed.
+      - name: Restore generated images
+        uses: actions/cache@v6
+        with:
+          path: |
+            .cache
+            public/m
+          key: media-v1-${{ hashFiles('images/**', 'scripts/lib/media.ts') }}
+          restore-keys: media-v1-
+
+      - run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

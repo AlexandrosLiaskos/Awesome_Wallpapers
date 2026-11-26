@@ -1,0 +1,238 @@
+# The tags a wallpaper may use. A tag that is not listed here fails validation.
+#
+#   slug:        what goes in wallpapers.yml and in the tag's address
+#   label:       how the tag is written on the site
+#   kind:        palette (a named colour scheme) or subject (what it shows, or its style)
+#   description: one sentence for the tag's page
+#   swatch:      the colour shown next to a palette tag
+
+# Palettes
+
+- slug: nord
+  label: Nord
+  kind: palette
+  description: Wallpapers in the cool, arctic blue-greys of the Nord colour scheme.
+  swatch: "#88c0d0"
+
+- slug: gruvbox
+  label: Gruvbox
+  kind: palette
+  description: Warm, retro wallpapers in the earthy tones of the Gruvbox colour scheme.
+  swatch: "#d79921"
+
+- slug: catppuccin
+  label: Catppuccin
+  kind: palette
+  description: Soft pastel wallpapers in the Catppuccin colour scheme.
+  swatch: "#cba6f7"
+
+- slug: tokyo-night
+  label: Tokyo Night
+  kind: palette
+  description: Wallpapers in the deep blues and neon accents of the Tokyo Night colour scheme.
+  swatch: "#7aa2f7"
+
+- slug: everforest
+  label: Everforest
+  kind: palette
+  description: Calm green wallpapers in the Everforest colour scheme.
+  swatch: "#a7c080"
+
+# What it shows
+
+- slug: landscape
+  label: Landscape
+  kind: subject
+  description: Wide views of coasts, valleys, hills and open country.
+
+- slug: mountains
+  label: Mountains
+  kind: subject
+  description: Peaks, ridges and snow lines.
+
+- slug: forest
+  label: Forest
+  kind: subject
+  description: Woods, trees and the things hidden among them.
+
+- slug: water
+  label: Water
+  kind: subject
+  description: Seas, lakes, ponds, rivers and waterfalls.
+
+- slug: sky
+  label: Sky
+  kind: subject
+  description: Clouds, auroras and wide open skies.
+
+- slug: sunset
+  label: Sunset
+  kind: subject
+  description: Low suns and the colours they leave behind, at dusk or at dawn.
+
+- slug: night
+  label: Night
+  kind: subject
+  description: Scenes after dark, lit by the moon, the stars or a window.
+
+- slug: flowers
+  label: Flowers
+  kind: subject
+  description: Blossoms, from cherry trees in bloom to a single lily.
+
+- slug: animals
+  label: Animals
+  kind: subject
+  description: Cats, foxes, deer, dinosaurs and other creatures.
+
+- slug: city
+  label: City
+  kind: subject
+  description: Streets, skylines and alleys.
+
+- slug: japan
+  label: Japan
+  kind: subject
+  description: Torii gates, pagodas, castles and Japanese streets.
+
+- slug: cozy
+  label: Cozy
+  kind: subject
+  description: Warm rooms, cafés and cabins you would like to be in.
+
+- slug: cars
+  label: Cars
+  kind: subject
+  description: Cars on the road, in the garage or parked at dusk.
+
+- slug: space
+  label: Space
+  kind: subject
+  description: Planets, moons, nebulae and the dark between them.
+
+- slug: astronaut
+  label: Astronaut
+  kind: subject
+  description: Astronauts, afloat or far from home.
+
+- slug: samurai
+  label: Samurai
+  kind: subject
+  description: Swordsmen, ronin and their blades.
+
+- slug: sci-fi
+  label: Sci-fi
+  kind: subject
+  description: Robots, mechs, strange planets and imagined futures.
+
+- slug: cyberpunk
+  label: Cyberpunk
+  kind: subject
+  description: Rain, neon signs and megacities.
+
+- slug: fantasy
+  label: Fantasy
+  kind: subject
+  description: Enchanted forests, impossible castles and creatures of legend.
+
+- slug: anime
+  label: Anime
+  kind: subject
+  description: Anime and manga artwork, from quiet backgrounds to well-known characters.
+
+- slug: gaming
+  label: Gaming
+  kind: subject
+  description: Artwork from video games and for the people who play them.
+
+- slug: movies-tv
+  label: Movies & TV
+  kind: subject
+  description: Artwork from films and series.
+
+- slug: comics
+  label: Comics
+  kind: subject
+  description: Comic-book heroes and villains.
+
+- slug: linux
+  label: Linux
+  kind: subject
+  description: Distribution logos and wallpapers for Linux desktops.
+
+- slug: tech
+  label: Tech
+  kind: subject
+  description: Code, circuits, keyboards and programmer humour.
+
+- slug: typography
+  label: Typography
+  kind: subject
+  description: Wallpapers built around words, letters or a single line of text.
+
+# How it looks
+
+- slug: minimal
+  label: Minimal
+  kind: subject
+  description: Simple compositions with plenty of empty space for your icons.
+
+- slug: dark
+  label: Dark
+  kind: subject
+  description: Mostly black wallpapers, easy on the eyes and kind to OLED screens.
+
+- slug: monochrome
+  label: Monochrome
+  kind: subject
+  description: Black, white and the greys in between.
+
+- slug: pastel
+  label: Pastel
+  kind: subject
+  description: Soft, light colours.
+
+- slug: colorful
+  label: Colorful
+  kind: subject
+  description: Bright, saturated wallpapers that use the whole palette.
+
+- slug: neon
+  label: Neon
+  kind: subject
+  description: Glowing lines and signs against the dark.
+
+- slug: gradient
+  label: Gradient
+  kind: subject
+  description: Smooth blends from one colour to the next.
+
+- slug: abstract
+  label: Abstract
+  kind: subject
+  description: Shapes, smoke, waves and textures that depict nothing in particular.
+
+- slug: geometric
+  label: Geometric
+  kind: subject
+  description: Lines, triangles, cubes and other precise shapes.
+
+- slug: retro
+  label: Retro
+  kind: subject
+  description: Synthwave suns, old consoles and the look of the eighties.
+
+- slug: pixel-art
+  label: Pixel art
+  kind: subject
+  description: Scenes drawn pixel by pixel.
+
+- slug: illustration
+  label: Illustration
+  kind: subject
+  description: Digital paintings and drawn artwork.
+
+- slug: photo
+  label: Photo
+  kind: subject
+  description: Photographs of real places and things.

@@ -1,0 +1,37 @@
+name: Suggest a wallpaper
+description: Point us to a wallpaper that belongs in the collection.
+title: "Wallpaper: "
+labels: [wallpaper]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If you can, open a pull request instead: [CONTRIBUTING.md](https://github.com/AlexandrosLiaskos/Awesome_Wallpapers/blob/main/CONTRIBUTING.md) shows how, and it takes three steps.
+  - type: input
+    id: link
+    attributes:
+      label: Where is it?
+      description: A link to the full-size image, or attach the file below.
+    validations:
+      required: true
+  - type: input
+    id: artist
+    attributes:
+      label: Who made it?
+      description: The artist's name and a link, if you know them.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send
+      options:
+        - label: It is at least 1920 px on its long edge.
+          required: true
+        - label: It has no watermark and nothing explicit.
+          required: true
+        - label: As far as I know, the artist allows it to be shared.
+          required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Suggested title and tags, or the file itself.

@@ -1,0 +1,48 @@
+---
+import type { Indexed } from '../lib/filter.ts';
+import type { Wallpaper } from '../lib/types.ts';
+import Card from './Card.astro';
+
+interface Props {
+  wallpapers: Wallpaper[];
+  /** Adds the data the filters, search and sort need. One filterable wall per page. */
+  filterable?: boolean;
+  /** How many cards at the top load their image at once. */
+  eager?: number;
+}
+
+const { wallpapers, filterable = false, eager = 0 } = Astro.props;
+
+const index: Indexed[] = wallpapers.map((w) => ({
+  slug: w.slug,
+  title: w.title,
+  tags: w.tags,
+  size: w.size,
+  shape: w.shape,
+  colors: w.colors,
+  pixels: w.width * w.height,
+}));
+// "<" is escaped so that no title can close the script element early.
+const indexJson = JSON.stringify(index).replace(/</g, '\\u003c');
+---
+
+<div class="wall-wrap" id={filterable ? 'wallpapers' : undefined} tabindex={filterable ? -1 : undefined}>
+  <ul class="wall" data-wall data-filterable={filterable ? '' : undefined}>
+    {wallpapers.map((wallpaper, i) => <Card wallpaper={wallpaper} eager={i < eager} />)}
+  </ul>
+</div>
+
+{
+  filterable && (
+    <>
+      <div class="wall-empty" data-empty hidden>
+        <p class="wall-empty__title">Nothing matches that.</p>
+        <p class="wall-empty__text">Try fewer filters, or a tag such as nord, pixel art or landscape.</p>
+        <button class="btn" type="button" data-clear>
+          Clear all filters
+        </button>
+      </div>
+      <script type="application/json" data-wall-index set:html={indexJson} />
+    </>
+  )
+}

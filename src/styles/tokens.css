@@ -1,0 +1,31 @@
+/* The whole palette. The wallpapers supply the colour; the interface stays out of the way. */
+:root {
+  --bg: #0a0d0c;
+  --surface: #111514;
+  --raised: #171c1b;
+  --line: #232a28;
+  --line-strong: #34403d;
+  --text: #e9efed;
+  --muted: #a3b0ac;
+  --faint: #7f8c88;
+  /* One accent, for the primary action, the active state and focus. */
+  --accent: #5eead4;
+  --accent-hover: #7ff3e0;
+  --accent-ink: #04201c;
+
+  /* Serif for names and headlines, monospace for everything else. */
+  --serif: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+
+  --pad: clamp(16px, 3vw, 40px);
+  --gap: 6px;
+  --radius: 3px;
+  --header-height: 65px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --gap: 4px;
+  }
+}

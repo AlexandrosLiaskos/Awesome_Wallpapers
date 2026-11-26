@@ -1,0 +1,80 @@
+---
+import '@fontsource/newsreader/latin-400.css';
+import '@fontsource/newsreader/latin-400-italic.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import monoFont from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
+import serifFont from '@fontsource/newsreader/files/newsreader-latin-400-normal.woff2?url';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/layout.css';
+import '../styles/wall.css';
+import '../styles/view.css';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE, media, url } from '../lib/site.ts';
+
+interface Props {
+  /** Page title without the site name; omit on the home page. */
+  title?: string;
+  description: string;
+  /** Share image; defaults to the home collage. */
+  image?: string;
+  noindex?: boolean;
+}
+
+const { title, description, image = media('og', 'home'), noindex = false } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} · Aesthetic wallpapers for your desktop`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const shareImage = new URL(image, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title ?? SITE.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={shareImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preload" href={monoFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={serifFont} as="font" type="font/woff2" crossorigin />
+
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0d0c" />
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="manifest" href={url('/site.webmanifest')} />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+
+    <!-- Marks that scripts run, so search and filters can appear and the wall can lay itself out. -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    {/* Filled by scripts/viewer.ts with a wallpaper page's own markup. */}
+    <dialog class="viewer" id="viewer" aria-label="Wallpaper" data-base={url('/')}></dialog>
+
+    <script>
+      import '../scripts/main.ts';
+    </script>
+  </body>
+</html>

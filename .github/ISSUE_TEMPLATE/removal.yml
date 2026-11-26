@@ -1,0 +1,36 @@
+name: Credit or removal request
+description: You made one of the wallpapers (or hold its rights) and want it credited or taken down.
+title: "Credit or removal: "
+labels: [credit-or-removal]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for getting in touch. Requests like this are handled first, and nothing more than the answers below is needed.
+  - type: input
+    id: wallpaper
+    attributes:
+      label: Which wallpaper?
+      description: A link to its page in the gallery, or its filename.
+      placeholder: https://alexandrosliaskos.github.io/Awesome_Wallpapers/w/...
+    validations:
+      required: true
+  - type: dropdown
+    id: request
+    attributes:
+      label: What would you like?
+      options:
+        - Add a credit
+        - Remove the wallpaper
+    validations:
+      required: true
+  - type: input
+    id: credit
+    attributes:
+      label: For a credit, the name and link to show
+      placeholder: Jane Doe, https://example.com/jane
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else we should know
+      description: For example, a link to the original work.

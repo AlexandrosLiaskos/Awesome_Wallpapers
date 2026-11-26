@@ -1,0 +1,10 @@
+{
+  "name": "Awesome Wallpapers",
+  "short_name": "Wallpapers",
+  "description": "A fast, searchable gallery of aesthetic wallpapers.",
+  "start_url": ".",
+  "display": "browser",
+  "background_color": "#0a0d0c",
+  "theme_color": "#0a0d0c",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
