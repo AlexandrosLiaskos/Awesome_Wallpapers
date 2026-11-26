@@ -1,0 +1,23 @@
+---
+// The Random button points here from every page. The list of addresses is
+// written into the page, so picking one needs no further request.
+import Base from '../layouts/Base.astro';
+import { wallpapers } from '../lib/data.ts';
+import { url } from '../lib/site.ts';
+
+const pages = wallpapers.map((wallpaper) => url(`/w/${wallpaper.slug}/`));
+---
+
+<Base title="Random wallpaper" description="Jumps to a wallpaper picked at random." noindex>
+  <script is:inline define:vars={{ pages }} slot="head">
+    location.replace(pages[Math.floor(Math.random() * pages.length)]);
+  </script>
+  <section class="notice">
+    <h1 class="notice__title">Picking a <em>wallpaper…</em></h1>
+    <noscript>
+      <p class="notice__text">
+        Picking at random needs JavaScript. <a class="link" href={url('/')}>Browse the gallery</a> instead.
+      </p>
+    </noscript>
+  </section>
+</Base>

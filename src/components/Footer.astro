@@ -1,0 +1,21 @@
+---
+import { SITE, url } from '../lib/site.ts';
+
+const source = SITE.defaultSource;
+---
+
+<footer class="site-footer">
+  {/* Spaces around the links are written out: line breaks next to tags are not kept as spaces. */}
+  <p>
+    The wallpapers belong to their original artists and were collected from{' '}
+    <a class="link" href={source.url}>{source.name}</a>. Want one credited or removed?{' '}
+    <a class="link" href={`${SITE.repo}/issues/new/choose`}>Open an issue</a>. The code of this site is{' '}
+    <a class="link" href={`${SITE.repo}/blob/main/LICENSE`}>MIT licensed</a>.
+  </p>
+  <ul>
+    <li><a class="link" href={url('/tags/')}>All tags</a></li>
+    <li><a class="link" href={`${SITE.repo}/blob/main/CONTRIBUTING.md`}>Contribute</a></li>
+    <li><a class="link" href={url('/api/wallpapers.json')}>JSON</a></li>
+    <li><a class="link" href={SITE.repo}>GitHub</a></li>
+  </ul>
+</footer>

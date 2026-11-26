@@ -1,0 +1,76 @@
+---
+import '@fontsource/newsreader/latin-400.css';
+import '@fontsource/newsreader/latin-400-italic.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/layout.css';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE, media, url } from '../lib/site.ts';
+
+interface Props {
+  /** Page title without the site name; omit on the home page. */
+  title?: string;
+  description: string;
+  /** Share image; defaults to the home collage. */
+  image?: string;
+  noindex?: boolean;
+}
+
+const { title, description, image = media('og', 'home'), noindex = false } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} · Aesthetic wallpapers for your desktop`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const shareImage = new URL(image, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title ?? SITE.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={shareImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0d0c" />
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="manifest" href={url('/site.webmanifest')} />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+
+    <!-- Marks that scripts run, so search and filters can appear and the wall can lay itself out. -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // "/" focuses the search field from anywhere on the site.
+      addEventListener('keydown', (event) => {
+        const field = document.querySelector<HTMLInputElement>('[data-search]');
+        const typing = (event.target as HTMLElement).closest('input, textarea, [contenteditable]');
+        if (event.key !== '/' || !field || typing || event.ctrlKey || event.metaKey || event.altKey) return;
+        event.preventDefault();
+        field.focus();
+      });
+    </script>
+  </body>
+</html>
