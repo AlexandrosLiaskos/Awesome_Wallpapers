@@ -82,11 +82,11 @@ describe('buildMedia', () => {
     expect((await metadataOf('t/solid-blue@2x.webp')).height).toBe(600);
   });
 
-  it('keeps previews within 1600 px on both sides without enlarging', async () => {
+  it('keeps previews within 1280 px on both sides without enlarging', async () => {
     const wide = await metadataOf('p/solid-blue.webp');
     const tall = await metadataOf('p/tall.webp');
-    expect([wide.width, wide.height]).toEqual([1600, 900]);
-    expect(tall.height).toBe(1600);
+    expect([wide.width, wide.height]).toEqual([1280, 720]);
+    expect(tall.height).toBe(1280);
   });
 
   it('makes share images 1200 by 630', async () => {

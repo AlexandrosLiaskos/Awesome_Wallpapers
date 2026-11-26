@@ -10,7 +10,7 @@ import type { Entry, Swatch, Wallpaper } from '../../src/lib/types.ts';
 import { mapLimit } from './scan.ts';
 
 /** Bump when sizes or qualities change, so every image is rebuilt. */
-export const PIPELINE_VERSION = 1;
+export const PIPELINE_VERSION = 2;
 
 export interface MediaOptions {
   /** The originals. */
@@ -26,7 +26,7 @@ export interface MediaOptions {
 /** The site background; transparent images are composed onto it. */
 const BACKGROUND = '#0a0d0c';
 const THUMB_HEIGHT = 300;
-const PREVIEW_EDGE = 1600;
+const PREVIEW_EDGE = 1280;
 const CONCURRENCY = 4;
 
 interface Derived {
@@ -68,9 +68,9 @@ async function derive(bytes: Buffer, outDir: string, slug: string): Promise<Deri
       .toFile(thumb2x),
     frame()
       .resize({ width: PREVIEW_EDGE, height: PREVIEW_EDGE, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 80 })
+      .webp({ quality: 75 })
       .toFile(preview),
-    frame().resize(1200, 630, { fit: 'cover', position: 'attention' }).jpeg({ quality: 80, mozjpeg: true }).toFile(og),
+    frame().resize(1200, 630, { fit: 'cover', position: 'attention' }).jpeg({ quality: 70, mozjpeg: true }).toFile(og),
   ]);
 
   return {
