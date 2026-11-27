@@ -34,15 +34,19 @@ const entry = `
 `;
 
 describe('parseSources', () => {
-  it('parses the pilot file against the real tags', () => {
+  // Only the shape of the real file: collections are added, paused and removed by editing it.
+  it('parses the real data/sources.yml against the real tags', () => {
     const tags = parseTags(readFileSync('data/tags.yml', 'utf8')).map((t) => t.slug);
     const sources = parseSources(readFileSync('data/sources.yml', 'utf8'), tags);
-    expect(sources.map((s) => s.repo)).toEqual([
-      'linuxdotexe/nordic-wallpapers',
-      'rose-pine/wallpapers',
-      'AngelJumbo/gruvbox-wallpapers',
-    ]);
-    expect(sources.every((s) => s.status === 'active')).toBe(true);
+    expect(sources.length).toBeGreaterThan(0);
+    expect(new Set(sources.map((s) => s.id)).size).toBe(sources.length);
+    expect(new Set(sources.map((s) => s.short)).size).toBe(sources.length);
+    for (const s of sources) {
+      expect(['active', 'paused', 'removed']).toContain(s.status);
+      expect(s.repo).toMatch(/^[\w.-]+\/[\w.-]+$/);
+      expect(s.branch).not.toBe('');
+      for (const tag of [...s.tags, ...Object.values(s.folders).flat()]) expect(tags).toContain(tag);
+    }
   });
 
   it('fills in defaults', () => {
