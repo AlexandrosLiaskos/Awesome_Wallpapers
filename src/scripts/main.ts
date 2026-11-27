@@ -2,6 +2,7 @@
 // exact wall layout, search and filters, the viewer and the wallpaper buttons.
 
 import { initActions } from './actions.ts';
+import { initFilterBar } from './filter-bar.ts';
 import { initGallery, visibleSlugs } from './gallery.ts';
 import { initWalls } from './layout.ts';
 import { initViewer, openViewer, prefetch } from './viewer.ts';
@@ -24,6 +25,7 @@ initViewer();
 initActions();
 void initVisits();
 initGallery((slug) => void openViewer(slug, visibleSlugs()));
+initFilterBar();
 
 // A plain click on a card opens the viewer; a modified click still opens the page in a tab.
 document.addEventListener('click', (event) => {

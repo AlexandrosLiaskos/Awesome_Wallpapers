@@ -1,6 +1,7 @@
 ---
 import { usedTags, wallpapers } from '../lib/data.ts';
 import { url } from '../lib/site.ts';
+import Icon from './Icon.astro';
 
 interface Props {
   /** The tag whose page this is; its chip is marked. */
@@ -56,7 +57,7 @@ const COLOURS = [
 ---
 
 <div class="filters" data-filters data-mode={links ? 'links' : 'filter'}>
-  <nav class="filters__tags" aria-label="Tags">
+  <nav class="filters__tags" id="filter-tags" aria-label="Tags" data-tag-row>
     <a class="chip" href={url('/')} data-tag="" aria-current={links ? undefined : 'true'}>
       All <span class="chip__count">{wallpapers.length}</span>
     </a>
@@ -87,9 +88,17 @@ const COLOURS = [
       ))
     }
     <a class="chip" href={url('/tags/')}>All tags…</a>
+    <button class="chip chip--more needs-js" type="button" data-tag-more aria-controls="filter-tags" hidden>
+      More
+    </button>
   </nav>
 
-  <div class="filters__facets needs-js">
+  <div class="filters__facets needs-js" id="filter-facets" data-facets>
+    <button class="filters__toggle" type="button" data-facets-toggle aria-expanded="false" aria-controls="filter-facets">
+      <Icon name="sliders" size={14} />
+      Filters
+    </button>
+
     <fieldset class="facet" data-facet="size">
       <legend class="caption">Size</legend>
       <div class="segment">

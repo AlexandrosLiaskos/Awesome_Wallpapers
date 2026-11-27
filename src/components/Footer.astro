@@ -1,6 +1,7 @@
 ---
 import { otherCollectionsText as others } from '../lib/data.ts';
 import { SITE, url } from '../lib/site.ts';
+import Icon from './Icon.astro';
 
 const source = SITE.defaultSource;
 ---
@@ -25,8 +26,13 @@ const source = SITE.defaultSource;
   {/* Filled in by scripts/visits.ts; stays hidden if the counter cannot be reached. */}
   <p class="site-footer__visits" data-visits hidden>
     Recorded page visits <span class="site-footer__count" data-visits-count></span>{' '}
-    <span class="site-footer__note">
-      The counter uses no cookies and stores only the total.
+    <span class="info" data-info>
+      <button type="button" class="info__button" aria-label="About the counter" aria-describedby="visits-note">
+        <Icon name="info" size={14} />
+      </button>
+      <span class="info__tip" id="visits-note" role="tooltip">
+        The counter uses no cookies and stores only the total.
+      </span>
     </span>
   </p>
 </footer>

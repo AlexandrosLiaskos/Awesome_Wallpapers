@@ -61,4 +61,16 @@ export async function initVisits(): Promise<void> {
   if (total === null) return;
   figure.textContent = total.toLocaleString('en');
   line.hidden = false;
+  dismissibleNote(line.querySelector<HTMLElement>('[data-info]'));
+}
+
+/** Escape closes the note without moving the pointer; it opens again on the next hover or focus. */
+function dismissibleNote(info: HTMLElement | null): void {
+  if (!info) return;
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') info.dataset.dismissed = '';
+  });
+  const reopen = () => delete info.dataset.dismissed;
+  info.addEventListener('pointerleave', reopen);
+  info.addEventListener('focusout', reopen);
 }
