@@ -1,0 +1,393 @@
+name: Sync collections
+
+# Every day: finds the new, changed and removed files of the indexed collections (scripts/sync.ts)
+# and proposes them in one pull request from the branch sync/additions. While that pull request is
+# open, each run merges main into the branch and adds to it without force, so hand tags pushed to
+# it stay and pending files are not downloaded again. Once it is merged, the next run starts again
+# from main and replaces the branch. Closing it without merging stops the proposals: runs do nothing
+# while the branch is still at that pull request's last commit, until the branch is deleted. Single
+# files are declined in the pull request itself, by moving their entry to "skipped" with the reason
+# "declined". Removals do not wait for the pull request: the scheduled deploys leave gone files out.
+#
+# The sync job runs the npm packages and reads images from other repositories with read-only
+# permissions; the publish job, which installs nothing, pushes its commits and opens the pull request.
+
+on:
+  schedule:
+    - cron: '47 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+env:
+  BRANCH: sync/additions
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      state: ${{ steps.branch.outputs.state }}
+      remote-head: ${{ steps.branch.outputs.remote-head }}
+      pull-request: ${{ steps.branch.outputs.pull-request }}
+      committed: ${{ steps.commit.outputs.committed }}
+      pending: ${{ steps.commit.outputs.pending }}
+    steps:
+      # The whole history, to merge main into the branch.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # state: new (no branch); existing (its pull request is open: main is merged in); declined (the
+      # branch is at the last commit of a pull request closed without merging: nothing is synced);
+      # or replace (otherwise, as after a merge: started again from main, and the publish job
+      # replaces the branch).
+      - name: Take up the branch
+        id: branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          found=0
+          git ls-remote --exit-code --heads origin "refs/heads/$BRANCH" > /dev/null || found=$?
+          if [ "$found" -eq 2 ]; then
+            git checkout -B "$BRANCH" origin/main
+            echo 'state=new' >> "$GITHUB_OUTPUT"
+            exit 0
+          elif [ "$found" -ne 0 ]; then
+            echo "::error::Could not ask GitHub whether $BRANCH exists (git ls-remote exited with $found)."
+            exit 1
+          fi
+          git fetch --no-tags origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
+          tip=$(git rev-parse "origin/$BRANCH")
+          echo "remote-head=$tip" >> "$GITHUB_OUTPUT"
+          pulls="repos/$GITHUB_REPOSITORY/pulls?head=$GITHUB_REPOSITORY_OWNER:$BRANCH"
+          if ! open=$(gh api "$pulls&state=open" --jq '.[0].number // empty'); then
+            echo "::error::Could not look up whether a pull request of $BRANCH is open, so the branch is left as it is."
+            exit 1
+          fi
+          if [ -z "$open" ]; then
+            if ! closed=$(gh api "$pulls&state=closed&per_page=100" \
+              --jq "map(select(.merged_at == null and .head.sha == \"$tip\")) | .[0].number // empty"); then
+              echo "::error::Could not look up the closed pull requests of $BRANCH, so nothing is synced."
+              exit 1
+            fi
+            if [ -n "$closed" ]; then
+              echo 'state=declined' >> "$GITHUB_OUTPUT"
+              echo "pull-request=$closed" >> "$GITHUB_OUTPUT"
+              message="Nothing was synced: pull request #$closed was closed without merging, which stops new proposals. Delete the branch $BRANCH to start proposals again."
+              echo "::notice::$message"
+              printf '## Sync\n\n%s\n' "$message" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            git checkout -B "$BRANCH" origin/main
+            echo 'state=replace' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+          echo 'state=existing' >> "$GITHUB_OUTPUT"
+          echo "pull-request=$open" >> "$GITHUB_OUTPUT"
+          if ! git merge --no-edit -m "chore: merge main into $BRANCH" origin/main; then
+            conflicts=$(git diff --name-only --diff-filter=U | paste -sd ' ' -)
+            git merge --abort
+            message="Merging main into $BRANCH stopped at a conflict in: $conflicts. Resolve it on pull request #$open (with Resolve conflicts there, or by merging main into $BRANCH and pushing), then run this workflow again."
+            echo "::error::$message"
+            printf '## Sync stopped\n\n%s\n' "$message" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      # Every step from here on is skipped when the proposals are stopped (state declined).
+      - uses: actions/setup-node@v7
+        if: steps.branch.outputs.state != 'declined'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+        if: steps.branch.outputs.state != 'declined'
+
+      # The CLIP model is downloaded on first use, only when there are files to tag.
+      - name: Restore the tagger's model
+        if: steps.branch.outputs.state != 'declined'
+        uses: actions/cache@v6
+        with:
+          path: .cache/models
+          key: clip-${{ hashFiles('scripts/lib/clip.ts') }}
+
+      - name: Sync the collections
+        if: steps.branch.outputs.state != 'declined'
+        run: node scripts/sync.ts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # Held files fail validation until they are tagged by hand on the pull request, so the result
+      # goes into the job summary instead of stopping the job. The tests are the gate.
+      - name: Validate the catalog
+        id: validate
+        if: steps.branch.outputs.state != 'declined'
+        continue-on-error: true
+        run: npm run validate 2>&1 | tee "$RUNNER_TEMP/validate.log"
+
+      - name: Test
+        id: test
+        if: steps.branch.outputs.state != 'declined'
+        run: npm test
+
+      # The body line links each commit to its run's summary and contact sheets; the pull request
+      # body lists these lines.
+      - name: Commit the changes
+        id: commit
+        if: steps.branch.outputs.state != 'declined'
+        run: |
+          git add data/sources/
+          if git diff --cached --quiet -- data/sources/; then
+            echo 'committed=false' >> "$GITHUB_OUTPUT"
+          else
+            git commit --quiet -m 'chore: add files from indexed collections' \
+              -m "Summary and contact sheets: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo 'committed=true' >> "$GITHUB_OUTPUT"
+          fi
+          # Whether the branch has files for main, from this run or from earlier ones.
+          if git diff --quiet origin/main HEAD -- data/sources/; then
+            echo 'pending=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'pending=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload the contact sheets
+        id: sheets
+        if: steps.commit.outputs.committed == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: contact-sheets
+          path: .cache/review/
+          # The folder is inside .cache, which would otherwise count as hidden.
+          include-hidden-files: true
+          if-no-files-found: error
+          # A re-run of the job uploads again under the same name.
+          overwrite: true
+
+      - name: Prepare the pull request and the commits
+        if: steps.commit.outputs.committed == 'true'
+        env:
+          STATE: ${{ steps.branch.outputs.state }}
+          SHEETS_URL: ${{ steps.sheets.outputs.artifact-url }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/publish"
+          # Every run whose files the branch holds and main does not: the newest 100, oldest first.
+          line='^Summary and contact sheets: '
+          runs=$(git log --grep="$line" --format=%H origin/main..HEAD | wc -l)
+          tail="$RUNNER_TEMP/pull-request-tail.md"
+          {
+            echo
+            echo "The contact sheets of this run are in [its artifact]($SHEETS_URL)."
+            if [ "$runs" -gt 0 ]; then
+              echo
+              echo 'Runs whose files this pull request proposes, each with its summary and contact sheets:'
+              echo
+              if [ "$runs" -gt 100 ]; then echo "- $((runs - 100)) earlier runs, not listed here"; fi
+              git log --grep="$line" --format='%cs %b' --max-count=100 origin/main..HEAD \
+                | sed -n 's/^\([0-9-]*\) Summary and contact sheets: \(https:[^ ]*\)$/\1 \2/p' | tac \
+                | while read -r day url; do echo "- [$day, run ${url##*/}]($url)"; done
+            fi
+            echo
+            echo 'This pull request can be merged once the Validate check on its latest commit passes; held files need tags first.'
+            echo
+            echo 'To leave a file out, move its entry from `approved` to `skipped` in its `data/sources/<id>.json`, as `{"path": ..., "sha": ..., "reason": "declined"}` with the same path and sha; it is not proposed again until the file changes.'
+            printf 'Closing this pull request without merging stops new proposals until the branch `%s` is deleted.\n' "$BRANCH"
+          } > "$tail"
+          # GitHub takes at most 65,536 characters in a pull request body; the summary gets what the
+          # rest leaves.
+          summary=.cache/review/summary.md
+          limit=$((64000 - $(wc -c < "$tail")))
+          {
+            if [ "$(wc -c < "$summary")" -le "$limit" ]; then
+              cat "$summary"
+            else
+              head -c "$limit" "$summary" | sed '$d'
+              echo
+              echo "The summary is cut short here; all of it is in summary.md in this run's artifact."
+            fi
+            cat "$tail"
+          } > "$RUNNER_TEMP/publish/pull-request.md"
+          # Only the commits made here: the publish job fetches main and the branch itself.
+          known=(^origin/main)
+          if [ "$STATE" = existing ]; then known+=("^origin/$BRANCH"); fi
+          git bundle create "$RUNNER_TEMP/publish/branch.bundle" "$BRANCH" "${known[@]}"
+
+      - name: Hand them to the publish job
+        if: steps.commit.outputs.committed == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: publish
+          path: ${{ runner.temp }}/publish/
+          retention-days: 1
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Write the job summary
+        if: ${{ !cancelled() && steps.branch.outcome == 'success' && steps.branch.outputs.state != 'declined' }}
+        env:
+          STATE: ${{ steps.branch.outputs.state }}
+          PULL_REQUEST: ${{ steps.branch.outputs.pull-request }}
+          VALIDATE: ${{ steps.validate.outcome }}
+          TEST: ${{ steps.test.outcome }}
+          COMMITTED: ${{ steps.commit.outputs.committed }}
+        run: |
+          {
+            echo '## Sync'
+            echo
+            case $STATE in
+              new) echo "- Branch: $BRANCH, started from main" ;;
+              replace) echo "- Branch: $BRANCH, started again from main, since no pull request of it is open or closed unmerged at its last commit" ;;
+              existing) echo "- Branch: $BRANCH, under review in pull request #$PULL_REQUEST, with main merged in" ;;
+            esac
+            echo "- Catalog validation: $VALIDATE (held files fail it until they are tagged by hand)"
+            echo "- Tests: $TEST"
+            if [ "$COMMITTED" = true ]; then
+              echo '- data/sources/ changed and was committed'
+            elif [ "$COMMITTED" = false ]; then
+              echo '- data/sources/ did not change, so nothing is published'
+            fi
+            if [ "$VALIDATE" = failure ] && [ -s "$RUNNER_TEMP/validate.log" ]; then
+              echo
+              echo '<details><summary>Validation output</summary>'
+              echo
+              echo '```'
+              head -n 200 "$RUNNER_TEMP/validate.log"
+              echo '```'
+              echo
+              echo '</details>'
+            fi
+            if [ -f .cache/review/summary.md ]; then
+              echo
+              cat .cache/review/summary.md
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    needs: sync
+    if: needs.sync.outputs.committed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: publish
+          path: ${{ runner.temp }}/publish
+
+      # The whole history: the commits from the sync job build on main and the branch.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Under review (existing): without force, so a branch that moved during the run (new hand
+      # tags) refuses the push and the next run starts from it. Nothing under review (replace): the
+      # branch is replaced, but only if no pull request of it was opened meanwhile and it is still
+      # where the sync job saw it.
+      - name: Push the branch
+        id: push
+        env:
+          STATE: ${{ needs.sync.outputs.state }}
+          REMOTE_HEAD: ${{ needs.sync.outputs.remote-head }}
+          PULL_REQUEST: ${{ needs.sync.outputs.pull-request }}
+        run: |
+          git fetch --no-tags "$RUNNER_TEMP/publish/branch.bundle" "refs/heads/$BRANCH"
+          sha=$(git rev-parse FETCH_HEAD)
+          current=$(git ls-remote origin "refs/heads/$BRANCH" | cut -f 1)
+          if [ "$current" = "$sha" ]; then
+            echo "- $BRANCH is already at $sha" >> "$GITHUB_STEP_SUMMARY"
+            echo "sha=$sha" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          lease=()
+          if [ "$STATE" = replace ]; then
+            stop=
+            if ! open=$(gh api "repos/$GITHUB_REPOSITORY/pulls?head=$GITHUB_REPOSITORY_OWNER:$BRANCH&state=open" --jq '.[0].number // empty'); then
+              stop="Could not check again that no pull request of $BRANCH is open, so the branch was not replaced. Run the workflow again."
+            elif [ -n "$open" ]; then
+              stop="Pull request #$open of $BRANCH was opened while this workflow ran, so the branch was not replaced. Run the workflow again."
+            fi
+            if [ -n "$stop" ]; then
+              echo "::error::$stop"
+              printf '## Publish stopped\n\n%s\n' "$stop" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            lease=("--force-with-lease=refs/heads/$BRANCH:$REMOTE_HEAD")
+          fi
+          if ! git push "${lease[@]}" origin "$sha:refs/heads/$BRANCH" 2> "$RUNNER_TEMP/push.log"; then
+            cat "$RUNNER_TEMP/push.log" >&2
+            if ! grep -q 'workflows' "$RUNNER_TEMP/push.log"; then
+              message="Pushing $BRANCH failed: it changed while this workflow ran. Run the workflow again."
+            elif [ "$STATE" = existing ]; then
+              message="GitHub refused the push: main changed files in .github/workflows since $BRANCH last took it in, and this workflow's token may not push such changes. Use Update branch on pull request #$PULL_REQUEST (or merge main into $BRANCH and push), then run this workflow again."
+            else
+              message="GitHub refused the push because it changes files in .github/workflows, which this workflow's token may not do. No pull request of $BRANCH is open, so delete the branch, then run this workflow again."
+            fi
+            echo "::error::$message"
+            printf '## Publish stopped\n\n%s\n' "$message" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/push.log"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "- Pushed $BRANCH at $sha" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open or update the pull request
+        id: pull-request
+        env:
+          PENDING: ${{ needs.sync.outputs.pending }}
+          TITLE: Additions from indexed collections
+        run: |
+          body="$RUNNER_TEMP/publish/pull-request.md"
+          log="$RUNNER_TEMP/pull-request.log"
+          pulls="repos/$GITHUB_REPOSITORY/pulls"
+          fail() {
+            cat "$log" >&2
+            if grep -qi 'not permitted to create or approve pull requests' "$log"; then
+              message="GitHub refused to open the pull request: this repository does not let GitHub Actions create pull requests. Turn on \"Allow GitHub Actions to create and approve pull requests\" in Settings, Actions, General. Until then every run proposes the files again and is refused the same way."
+            else
+              message="$1 failed; GitHub's answer is in the log of this step."
+            fi
+            echo "::error::$message"
+            echo "- $message" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          open=$(gh api "$pulls?head=$GITHUB_REPOSITORY_OWNER:$BRANCH&state=open" --jq '.[0].number // empty' 2> "$log") \
+            || fail 'Looking up the open pull request'
+          if [ -n "$open" ]; then
+            url=$(gh api -X PATCH "$pulls/$open" -f title="$TITLE" -F body=@"$body" --jq .html_url 2> "$log") \
+              || fail "Updating pull request #$open"
+          elif [ "$PENDING" = true ]; then
+            url=$(gh api "$pulls" -f title="$TITLE" -f head="$BRANCH" -f base=main -F body=@"$body" --jq .html_url 2> "$log") \
+              || fail 'Opening the pull request'
+          else
+            echo '- No pull request: the branch has no files that main does not have' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "- Pull request: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      # A push or pull request made with this workflow's token starts no checks, so Validate is
+      # started here, on the branch's latest commit.
+      - name: Run Validate on the branch
+        if: ${{ !cancelled() && steps.push.outcome == 'success' }}
+        run: |
+          gh workflow run validate.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+          echo '- Started Validate on the branch' >> "$GITHUB_STEP_SUMMARY"

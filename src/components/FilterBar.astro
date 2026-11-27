@@ -1,14 +1,22 @@
 ---
 import { usedTags, wallpapers } from '../lib/data.ts';
+import { formatCount } from '../lib/format.ts';
 import { url } from '../lib/site.ts';
 import Icon from './Icon.astro';
 
 interface Props {
-  /** The tag whose page this is. Without it the tag chips filter the wall in place. */
+  /** The tag whose page this is; its chip is marked. */
   current?: string;
+  /**
+   * Whether the tag chips are links to the tag pages, and the search goes to the
+   * full gallery. That is the case on a tag's page and on a collection's page;
+   * on the whole catalog's listing they filter the wall in place.
+   */
+  links?: boolean;
 }
 
 const { current } = Astro.props;
+const links = Astro.props.links ?? Boolean(current);
 
 // Every palette, then the most used subjects; the rest are on the tags page.
 const SUBJECTS_SHOWN = 14;
@@ -49,10 +57,10 @@ const COLOURS = [
 ];
 ---
 
-<div class="filters" data-filters data-mode={current ? 'links' : 'filter'}>
+<div class="filters" data-filters data-mode={links ? 'links' : 'filter'}>
   <nav class="filters__tags" id="filter-tags" aria-label="Tags" data-tag-row>
-    <a class="chip" href={url('/')} data-tag="" aria-current={current ? undefined : 'true'}>
-      All <span class="chip__count">{wallpapers.length}</span>
+    <a class="chip" href={url('/')} data-tag="" aria-current={links ? undefined : 'true'}>
+      All <span class="chip__count">{formatCount(wallpapers.length)}</span>
     </a>
     {
       palettes.map((tag) => (
@@ -63,7 +71,7 @@ const COLOURS = [
           aria-current={tag.slug === current ? 'true' : undefined}
         >
           <span class="chip__swatch" style={`background:${tag.swatch}`} />
-          {tag.label} <span class="chip__count">{tag.count}</span>
+          {tag.label} <span class="chip__count">{formatCount(tag.count)}</span>
         </a>
       ))
     }
@@ -76,7 +84,7 @@ const COLOURS = [
           data-tag={tag.slug}
           aria-current={tag.slug === current ? 'true' : undefined}
         >
-          {tag.label} <span class="chip__count">{tag.count}</span>
+          {tag.label} <span class="chip__count">{formatCount(tag.count)}</span>
         </a>
       ))
     }

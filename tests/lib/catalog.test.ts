@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parseEntries, parseTags, slugOf, validateCatalog } from '../../src/lib/catalog.ts';
-import type { Entry, FileFacts, Tag } from '../../src/lib/types.ts';
+import { parseEntries, parseTags, slugOf, validateApproved, validateCatalog } from '../../src/lib/catalog.ts';
+import type { ApprovedFile, Entry, FileFacts, Tag } from '../../src/lib/types.ts';
 
 const tags: Tag[] = [
   { slug: 'nord', label: 'Nord', kind: 'palette', description: 'Nord palette.', swatch: '#88c0d0' },
@@ -209,5 +209,61 @@ describe('what the data files may contain', () => {
 
   it('rejects a tag slug that is not lower-case kebab-case', () => {
     expect(() => parseTags('- slug: Pixel Art\n  label: X\n  kind: subject\n  description: d')).toThrow(/slug/);
+  });
+});
+
+describe('validateApproved', () => {
+  function file(over: Partial<ApprovedFile> = {}): ApprovedFile {
+    return {
+      path: 'walls/aurora.png',
+      sha: 'b'.repeat(40),
+      slug: 'aurora-nordic',
+      title: 'Aurora',
+      tags: ['nord', 'night'],
+      width: 1920,
+      height: 1080,
+      bytes: 1000,
+      animated: false,
+      palette: [{ hex: '#88c0d0', share: 1 }],
+      phash: '0123456789abcdef',
+      ...over,
+    };
+  }
+
+  function check(files: ApprovedFile[], others: ApprovedFile[] = [], own: Entry[] = [entry()]) {
+    return validateApproved(own, tags, [
+      { id: 'nordic', files },
+      { id: 'gruvbox', files: others },
+    ]);
+  }
+
+  it('accepts approved files with two to five known tags and their own slugs', () => {
+    expect(check([file(), file({ path: 'walls/b.png', slug: 'b-nordic', tags: ['nord', 'city', 'night'] })])).toEqual([]);
+  });
+
+  it('reports a file that is still held for hand tagging, naming collection and path', () => {
+    const issues = check([file({ held: true })]);
+    expect(issues.map((issue) => issue.rule)).toEqual(['held']);
+    expect(issues[0].file).toBe('nordic:walls/aurora.png');
+  });
+
+  it('reports unknown tags and a count outside two to five', () => {
+    expect(check([file({ tags: ['nord', 'mood'] })]).map((issue) => issue.rule)).toEqual(['unknown-tag']);
+    expect(check([file({ tags: ['nord', 'nord'] })]).map((issue) => issue.rule)).toEqual(['too-few-tags']);
+    const six = ['nord', 'city', 'night', 'a', 'b', 'c'];
+    const many = validateApproved([], [...tags, ...['a', 'b', 'c'].map((slug) => ({ ...tags[1], slug }))], [{ id: 'nordic', files: [file({ tags: six })] }]);
+    expect(many.map((issue) => issue.rule)).toEqual(['too-many-tags']);
+  });
+
+  it('reports a slug used twice within a collection, across collections, or by an own wallpaper', () => {
+    expect(check([file(), file({ path: 'walls/c.png' })]).map((issue) => issue.rule)).toEqual(['slug-collision']);
+    expect(check([file()], [file({ path: 'x.png' })]).map((issue) => issue.rule)).toEqual(['slug-collision']);
+    const clash = check([file({ slug: 'night-city' })]);
+    expect(clash.map((issue) => issue.rule)).toEqual(['slug-collision']);
+    expect(clash[0].message).toMatch(/images\/night-city\.png/);
+  });
+
+  it('leaves a clash between own wallpapers to validateCatalog', () => {
+    expect(check([], [], [entry(), entry({ file: 'night_city.jpg' })])).toEqual([]);
   });
 });

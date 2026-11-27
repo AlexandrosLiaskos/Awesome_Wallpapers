@@ -1,0 +1,40 @@
+---
+interface Props {
+  current: number;
+  last: number;
+  prev?: string;
+  next?: string;
+  /**
+   * On a first page, gallery.ts hides the pager once it has installed scrolling,
+   * and shows it again if the browser cannot load the rest of the listing.
+   * Without that script the pager stays.
+   */
+  scroll?: boolean;
+}
+
+const { current, last, prev, next, scroll = false } = Astro.props;
+---
+
+{
+  last > 1 && (
+    <nav class="pager" aria-label="Pages" data-pager data-scroll={scroll ? '' : undefined}>
+      {prev ? (
+        <a class="btn pager__prev" href={prev} rel="prev">
+          Previous
+        </a>
+      ) : (
+        <span />
+      )}
+      <span class="pager__status caption">
+        Page {current} of {last}
+      </span>
+      {next ? (
+        <a class="btn pager__next" href={next} rel="next">
+          Next
+        </a>
+      ) : (
+        <span />
+      )}
+    </nav>
+  )
+}

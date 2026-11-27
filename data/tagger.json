@@ -1,0 +1,217 @@
+{
+  "palettes": {
+    "catppuccin": null,
+    "everforest": null,
+    "gruvbox": {
+      "deltaE": 6,
+      "threshold": 0.9212
+    },
+    "nord": null,
+    "rose-pine": null,
+    "tokyo-night": null
+  },
+  "subjects": {
+    "abstract": 2.6325,
+    "animals": 1.4108,
+    "anime": 5.292,
+    "astronaut": 4.2728,
+    "cars": 0.8213,
+    "city": 2.1106,
+    "colorful": 1.5917,
+    "comics": 2.0433,
+    "cozy": 1.9821,
+    "cyberpunk": null,
+    "dark": 6.2207,
+    "fantasy": 2.7113,
+    "flowers": 1.0663,
+    "forest": 2.3676,
+    "gaming": null,
+    "geometric": 3.0419,
+    "gradient": 2.0931,
+    "illustration": 4.1657,
+    "japan": 2.2105,
+    "landscape": 2.2283,
+    "linux": 2.1363,
+    "minimal": -0.4544,
+    "monochrome": 2.0437,
+    "mountains": 3.8339,
+    "movies-tv": 1.3783,
+    "neon": 1.9663,
+    "night": 1.6419,
+    "pastel": 2.9682,
+    "photo": 3.1469,
+    "pixel-art": 2.194,
+    "retro": null,
+    "samurai": null,
+    "sci-fi": 2.7425,
+    "sky": 2.4093,
+    "space": 2.1146,
+    "sunset": 1.8418,
+    "tech": 2.3434,
+    "typography": 2.3635,
+    "water": 2.074
+  },
+  "subjectsGate": {
+    "precision": 0.8015,
+    "recall": 0.4031,
+    "passed": true
+  },
+  "subjectsHeldOut": {
+    "abstract": {
+      "assigned": 19,
+      "precision": 0.7895
+    },
+    "animals": {
+      "assigned": 5,
+      "precision": 0.8
+    },
+    "anime": {
+      "assigned": 3,
+      "precision": 1
+    },
+    "astronaut": {
+      "assigned": 4,
+      "precision": 0.25
+    },
+    "cars": {
+      "assigned": 7,
+      "precision": 1
+    },
+    "city": {
+      "assigned": 32,
+      "precision": 0.9063
+    },
+    "colorful": {
+      "assigned": 3,
+      "precision": 1
+    },
+    "comics": {
+      "assigned": 9,
+      "precision": 1
+    },
+    "cozy": {
+      "assigned": 2,
+      "precision": 0.5
+    },
+    "cyberpunk": {
+      "assigned": 1,
+      "precision": 0
+    },
+    "dark": {
+      "assigned": 23,
+      "precision": 0.6957
+    },
+    "fantasy": {
+      "assigned": 8,
+      "precision": 0.875
+    },
+    "flowers": {
+      "assigned": 4,
+      "precision": 1
+    },
+    "forest": {
+      "assigned": 12,
+      "precision": 0.75
+    },
+    "gaming": {
+      "assigned": 0,
+      "precision": null
+    },
+    "geometric": {
+      "assigned": 5,
+      "precision": 0.8
+    },
+    "gradient": {
+      "assigned": 11,
+      "precision": 0.8182
+    },
+    "illustration": {
+      "assigned": 12,
+      "precision": 0.75
+    },
+    "japan": {
+      "assigned": 19,
+      "precision": 0.7368
+    },
+    "landscape": {
+      "assigned": 37,
+      "precision": 0.8378
+    },
+    "linux": {
+      "assigned": 24,
+      "precision": 0.7917
+    },
+    "minimal": {
+      "assigned": 170,
+      "precision": 0.8118
+    },
+    "monochrome": {
+      "assigned": 1,
+      "precision": 1
+    },
+    "mountains": {
+      "assigned": 2,
+      "precision": 0.5
+    },
+    "movies-tv": {
+      "assigned": 3,
+      "precision": 0.3333
+    },
+    "neon": {
+      "assigned": 6,
+      "precision": 0.6667
+    },
+    "night": {
+      "assigned": 13,
+      "precision": 0.7692
+    },
+    "pastel": {
+      "assigned": 9,
+      "precision": 0.8889
+    },
+    "photo": {
+      "assigned": 7,
+      "precision": 0.8571
+    },
+    "pixel-art": {
+      "assigned": 3,
+      "precision": 1
+    },
+    "retro": {
+      "assigned": 0,
+      "precision": null
+    },
+    "samurai": {
+      "assigned": 0,
+      "precision": null
+    },
+    "sci-fi": {
+      "assigned": 2,
+      "precision": 1
+    },
+    "sky": {
+      "assigned": 2,
+      "precision": 1
+    },
+    "space": {
+      "assigned": 17,
+      "precision": 0.7059
+    },
+    "sunset": {
+      "assigned": 14,
+      "precision": 0.5714
+    },
+    "tech": {
+      "assigned": 19,
+      "precision": 0.8421
+    },
+    "typography": {
+      "assigned": 12,
+      "precision": 0.8333
+    },
+    "water": {
+      "assigned": 4,
+      "precision": 1
+    }
+  }
+}

@@ -1,0 +1,55 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import FilterBar from '../../../components/FilterBar.astro';
+import Pager from '../../../components/Pager.astro';
+import Wall from '../../../components/Wall.astro';
+import Base from '../../../layouts/Base.astro';
+import { usedTags, wallpapers } from '../../../lib/data.ts';
+import { formatCount } from '../../../lib/format.ts';
+import { media } from '../../../lib/site.ts';
+import { byTag, type CountedTag } from '../../../lib/site-data.ts';
+import type { Wallpaper } from '../../../lib/types.ts';
+import { PAGE_SIZE } from '../../../lib/wall-batches.ts';
+
+// Page 1 at /tags/<tag>/, later pages at /tags/<tag>/<n>/.
+export const getStaticPaths = (({ paginate }) =>
+  usedTags.flatMap((tag) =>
+    paginate(byTag(wallpapers, tag.slug), { pageSize: PAGE_SIZE, params: { tag: tag.slug }, props: { tag } }),
+  )) satisfies GetStaticPaths;
+
+interface Props {
+  tag: CountedTag;
+  page: Page<Wallpaper>;
+}
+
+const { tag, page } = Astro.props;
+const tagged = byTag(wallpapers, tag.slug);
+const cover = tagged[0];
+const n = page.currentPage;
+const kind = tag.kind === 'palette' ? 'Palette' : 'Tag';
+const description = `${formatCount(tag.count)} ${tag.label} wallpapers, free to download. ${tag.description}`;
+---
+
+<Base
+  title={n === 1 ? `${tag.label} wallpapers` : `${tag.label} wallpapers, page ${n}`}
+  description={n === 1 ? description : `Page ${n} of ${page.lastPage}. ${description}`}
+  image={media('og', cover.slug)}
+>
+  {page.url.prev && <link rel="prev" href={page.url.prev} slot="head" />}
+  {page.url.next && <link rel="next" href={page.url.next} slot="head" />}
+  <section class="intro">
+    <div>
+      <p class="caption intro__kicker">{n === 1 ? kind : `${kind}, page ${n} of ${page.lastPage}`}</p>
+      <h1 class="intro__title">{tag.label} <em>wallpapers.</em></h1>
+      <p class="intro__text">{tag.description}</p>
+    </div>
+    <dl class="stats">
+      <div><dt class="caption">wallpapers</dt><dd>{formatCount(tag.count)}</dd></div>
+      <div><dt class="caption">in 4K+</dt><dd>{formatCount(tagged.filter((w) => w.size === '4k').length)}</dd></div>
+    </dl>
+  </section>
+
+  <FilterBar current={tag.slug} />
+  <Wall wallpapers={tagged} filterable eager={8} scope={{ kind: 'tag', tag: tag.slug }} page={n} />
+  <Pager current={n} last={page.lastPage} prev={page.url.prev} next={page.url.next} scroll={n === 1} />
+</Base>

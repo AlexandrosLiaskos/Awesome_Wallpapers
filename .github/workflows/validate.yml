@@ -1,9 +1,11 @@
 name: Validate
 
-# Checks every pull request: the catalog, the tests, the types, and that the site builds.
+# Checks every pull request: the catalog, the tests, the types, and that the site builds. The sync
+# workflow also starts it on its branch, since a pull request it opens or updates starts no checks.
 
 on:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,10 +18,11 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      # Two commits deep, so the files this pull request adds can be told apart from the rest.
+      # On a pull request, two commits deep, so the files it adds can be told apart from the rest;
+      # started on a branch, the whole history, to find where the branch left main.
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 2
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
 
       - uses: actions/setup-node@v7
         with:
@@ -31,23 +34,45 @@ jobs:
       # New files meet stricter rules (size, filename) than files already in the collection.
       - name: Validate the catalog
         run: |
-          mapfile -d '' -t added < <(git diff -z --name-only --diff-filter=A HEAD^1 HEAD -- images/)
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            base=HEAD^1
+          else
+            base=$(git merge-base origin/main HEAD)
+          fi
+          mapfile -d '' -t added < <(git diff -z --name-only --diff-filter=A "$base" HEAD -- images/)
           npm run validate -- --new "${added[@]}"
 
       - run: npm test
 
+      # As in deploy.yml: the newest earlier cache is restored, and saved under this run's own key
+      # whenever the build changed it, also when a later step fails.
       - name: Restore generated images
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             .cache
             public/m
-          key: media-v1-${{ hashFiles('images/**', 'scripts/lib/media.ts') }}
-          restore-keys: media-v1-
+          key: media-v2-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: media-v2-
+
+      - name: Note what the cache held
+        id: media-before
+        env:
+          HASH: ${{ hashFiles('.cache/media.json') }}
+        run: echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
       - run: npm run build
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Save generated images
+        if: always() && hashFiles('.cache/media.json') != steps.media-before.outputs.hash
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            .cache
+            public/m
+          key: media-v2-${{ github.run_id }}-${{ github.run_attempt }}
 
       # After the build: the types include the catalog that the build generates.
       - run: npm run check

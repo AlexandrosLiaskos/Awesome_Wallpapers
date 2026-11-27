@@ -1,0 +1,37 @@
+---
+// Later pages of the home listing, for browsers without scripts and for search
+// engines. Page 1 is the home page itself. Astro's paginate() needs a parameter
+// named "page" and would also build /page/1/, so the pages are counted here.
+import FilterBar from '../../components/FilterBar.astro';
+import Pager from '../../components/Pager.astro';
+import Wall from '../../components/Wall.astro';
+import Base from '../../layouts/Base.astro';
+import { wallpapers } from '../../lib/data.ts';
+import { SITE, url } from '../../lib/site.ts';
+import { pageCount } from '../../lib/wall-batches.ts';
+
+export function getStaticPaths() {
+  const last = pageCount(wallpapers.length);
+  return Array.from({ length: last - 1 }, (_, i) => ({ params: { n: String(i + 2) } }));
+}
+
+const n = Number(Astro.params.n);
+const last = pageCount(wallpapers.length);
+const prev = n === 2 ? url('/') : url(`/page/${n - 1}/`);
+const next = n < last ? url(`/page/${n + 1}/`) : undefined;
+---
+
+<Base title={`All wallpapers, page ${n}`} description={`Page ${n} of ${last}. ${SITE.description}`}>
+  <link rel="prev" href={prev} slot="head" />
+  {next && <link rel="next" href={next} slot="head" />}
+  <section class="intro">
+    <div>
+      <p class="caption intro__kicker">Page {n} of {last}</p>
+      <h1 class="intro__title">All <em>wallpapers.</em></h1>
+    </div>
+  </section>
+
+  <FilterBar />
+  <Wall wallpapers={wallpapers} filterable eager={8} scope={{ kind: 'all' }} page={n} />
+  <Pager current={n} last={last} prev={prev} next={next} />
+</Base>

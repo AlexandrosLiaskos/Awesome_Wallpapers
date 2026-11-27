@@ -1,24 +1,48 @@
-// Builds everything the site needs from the originals in images/:
-// thumbnails, previews and share images in public/m/, and the catalog in
-// src/generated/catalog.json. Only new or changed images are processed.
+// Builds everything the site needs: thumbnails, previews and share images in
+// public/m/ for the wallpapers in images/ and for the approved files of the
+// indexed collections, and the catalog in src/generated/catalog.json. Only new
+// or changed images are processed; an indexed original is downloaded only then,
+// and never kept.
 //
 //   node scripts/build-media.ts
+//
+// GITHUB_TOKEN, when set, is used to list the collections and to download their files. In GitHub
+// Actions, a collection that is gone and a build that stops are also written to the job summary.
 
-import { validateCatalog } from '../src/lib/catalog.ts';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { slugOf, validateCatalog } from '../src/lib/catalog.ts';
+import { mergeDuplicates } from '../src/lib/dedup.ts';
+import { toWallpaper } from '../src/lib/indexed.ts';
+import { parseSources } from '../src/lib/sources.ts';
+import { listTree } from './lib/github.ts';
 import { loadCatalog } from './lib/load.ts';
-import { buildHomeOg, buildMedia, type MediaOptions } from './lib/media.ts';
+import {
+  buildHomeOg,
+  buildMedia,
+  catalogOrder,
+  ownItem,
+  ownWallpaper,
+  thumbnailsMatch,
+  type MediaOptions,
+} from './lib/media.ts';
+import { availableOriginals, checkLeftOut, indexedItem, loadApproved, withoutSlugClashes } from './lib/originals.ts';
 import { scanImages } from './lib/scan.ts';
+import { writeJobSummary } from './lib/summary.ts';
 
-const options: MediaOptions = {
-  imagesDir: 'images',
-  outDir: 'public/m',
-  cacheFile: '.cache/media.json',
-  catalogOut: 'src/generated/catalog.json',
-};
+const IMAGES_DIR = 'images';
+const SOURCES_FILE = 'data/sources.yml';
+const APPROVED_DIR = 'data/sources';
+const CATALOG_OUT = 'src/generated/catalog.json';
+const options: MediaOptions = { outDir: 'public/m', cacheFile: '.cache/media.json' };
 
 try {
   const started = Date.now();
-  const [{ entries, tags }, files] = await Promise.all([loadCatalog(), scanImages(options.imagesDir)]);
+  const [{ entries, tags }, files, sourcesYaml] = await Promise.all([
+    loadCatalog(),
+    scanImages(IMAGES_DIR),
+    readFile(SOURCES_FILE, 'utf8'),
+  ]);
 
   const issues = validateCatalog(entries, tags, files);
   if (issues.length > 0) {
@@ -26,12 +50,64 @@ try {
     throw new Error(`The catalog has ${issues.length} problem(s). Run "npm run validate" for details.`);
   }
 
-  const { wallpapers, processed, cached } = await buildMedia(entries, options);
+  const sources = parseSources(sourcesYaml, tags.map((tag) => tag.slug));
+  const token = process.env.GITHUB_TOKEN || undefined;
+  const warn = (message: string) => console.warn(message);
+  const gone: string[] = [];
+  const available = await availableOriginals(sources, {
+    approved: (source) => loadApproved(APPROVED_DIR, source.id),
+    list: (source) => listTree(source, { token }),
+    warn,
+    gone: (message) => gone.push(message),
+  });
+  if (gone.length > 0) {
+    const lines = gone.map((message) => `- ${message}`);
+    await writeJobSummary(['## Collections left out', '', ...lines, '', 'If one moved or renamed its branch, update data/sources.yml.'].join('\n'));
+  }
+  // Own slugs were checked by validateCatalog above; a clash with an indexed file only costs that file.
+  const indexed = withoutSlugClashes(entries.map(slugOf), available, warn);
+
+  // Validation made sure every entry's file is there.
+  const sha1 = new Map(files.map((facts) => [facts.file, facts.sha1]));
+  const own = entries.map((entry) => ({ entry, item: ownItem(entry, IMAGES_DIR, sha1.get(entry.file)!) }));
+  const remote = indexed.map(({ source, file }) => ({ source, file, item: indexedItem(source, file, { token }) }));
+  const { derived, failed, processed, cached } = await buildMedia(
+    [...own.map(({ item }) => item), ...remote.map(({ item }) => item)],
+    options,
+  );
+
+  // An own file must build; an indexed one that cannot be fetched waits for the next build, as
+  // long as only a few do.
+  const missing: typeof remote = [];
+  for (const { item, error } of failed) {
+    const copy = remote.find((candidate) => candidate.item === item);
+    if (copy) {
+      console.warn(`${copy.source.name}: ${copy.file.path} is left out of this build (${error.message})`);
+      missing.push(copy);
+    } else {
+      const { entry } = own.find((candidate) => candidate.item === item)!;
+      throw new Error(`images/${entry.file} could not be processed: ${error.message}`);
+    }
+  }
+  checkLeftOut(missing, remote.length);
+
+  const list = [
+    ...own.map(({ entry, item }) => ownWallpaper(entry, derived.get(item.key)!)),
+    ...remote.filter(({ item }) => derived.has(item.key)).map(({ source, file }) => toWallpaper(source, file)),
+  ];
+  const wallpapers = catalogOrder(await mergeDuplicates(list, thumbnailsMatch(options.outDir)));
+  await mkdir(dirname(CATALOG_OUT), { recursive: true });
+  await writeFile(CATALOG_OUT, JSON.stringify(wallpapers, null, 1));
   await buildHomeOg(wallpapers, options);
 
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
-  console.log(`media: ${wallpapers.length} wallpapers (${processed} processed, ${cached} cached) in ${seconds}s`);
+  const fromCollections = wallpapers.filter((w) => w.sourceId !== 'own').length;
+  const leftOut = failed.length > 0 ? `, ${failed.length} left out` : '';
+  console.log(
+    `media: ${wallpapers.length} wallpapers, ${fromCollections} from collections (${processed} processed, ${cached} cached${leftOut}) in ${seconds}s`,
+  );
 } catch (error) {
   console.error((error as Error).message);
   process.exitCode = 1;
+  await writeJobSummary(`## Build stopped\n\n${(error as Error).message}`).catch(() => {});
 }

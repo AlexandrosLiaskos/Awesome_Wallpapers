@@ -2,8 +2,12 @@ const RAW_BASE = 'https://raw.githubusercontent.com/AlexandrosLiaskos/Awesome_Wa
 
 /** URL-safe identifier for a wallpaper, derived from its filename. */
 export function toSlug(file: string): string {
-  return file
-    .replace(/\.[^.]+$/, '')
+  return slugify(file.replace(/\.[^.]+$/, ''));
+}
+
+/** Lower-case letters and digits joined by single hyphens; accents are dropped, not the letter. */
+export function slugify(text: string): string {
+  return text
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()

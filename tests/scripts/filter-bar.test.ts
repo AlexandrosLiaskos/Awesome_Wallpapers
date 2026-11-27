@@ -60,6 +60,23 @@ describe('layoutTags', () => {
     expect(row.dataset.state).toBe('open');
   });
 
+  it('measures the chips before hiding any, so the browser lays the bar out once rather than once per chip', () => {
+    const tops = [0, 0, 0, 38, 38, 38, 76, 76, 76, 114, 114, 114];
+    const { row, items, toggle } = tagRow(tops, (hidden) => (hidden >= 7 ? 38 : 76));
+    // A chip's position read after another chip was hidden is a forced layout in a browser.
+    let lateReads = 0;
+    items.forEach((item, i) =>
+      rowOf(item, () => {
+        if (items.some((other) => other.hidden)) lateReads++;
+        return tops[i];
+      }),
+    );
+    layoutTags(row, toggle, false, false);
+    expect(lateReads).toBe(0);
+    expect(items.filter((item) => item.hidden)).toHaveLength(7);
+    expect(toggle.textContent).toBe('+6 more');
+  });
+
   it('does not end a row on the divider', () => {
     const { row, items, toggle } = tagRow([0, 0, 38, 38, 76, 76], () => 38);
     items[3].className = 'filters__divider';

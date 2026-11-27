@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatBytes, numberInCollection } from '../../src/lib/format.ts';
+import { formatBytes, formatCount, numberInCollection } from '../../src/lib/format.ts';
 
 describe('formatBytes', () => {
   it.each([
@@ -16,5 +16,18 @@ describe('numberInCollection', () => {
   it('pads the position to the width of the total', () => {
     expect(numberInCollection(13, 346)).toBe('No. 014 / 346');
     expect(numberInCollection(0, 9)).toBe('No. 1 / 9');
+  });
+
+  it('writes a total of a thousand or more with a thousands separator', () => {
+    expect(numberInCollection(13, 1154)).toBe('No. 0014 / 1,154');
+  });
+});
+
+describe('formatCount', () => {
+  it('writes counts with a thousands separator', () => {
+    expect(formatCount(7)).toBe('7');
+    expect(formatCount(511)).toBe('511');
+    expect(formatCount(1154)).toBe('1,154');
+    expect(formatCount(4600000)).toBe('4,600,000');
   });
 });

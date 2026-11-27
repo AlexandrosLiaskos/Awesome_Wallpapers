@@ -1,10 +1,15 @@
 name: Deploy
 
-# Builds the site and publishes it to GitHub Pages on every push to main.
+# Builds the site and publishes it to GitHub Pages on every push to main, and every six hours so
+# that files gone from the indexed collections leave the site without anyone. A scheduled run
+# publishes only when the catalog it built differs from the live one, or when no run of the same
+# commit has published yet.
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '17 */6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -18,6 +23,12 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # To look up earlier deploys of the same commit (see "Compare with the live site").
+      actions: read
+    outputs:
+      deploy: ${{ steps.live.outputs.skip != 'true' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -26,32 +37,92 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - run: npm ci
+      # The build needs none of the devDependencies (tests, type checks, the tagger's model
+      # runtime); every pull request runs the tests in validate.yml.
+      - run: npm ci --omit=dev
 
+      # Not on the schedule: the build already leaves held files and clashing addresses out, and a
+      # problem in an approved list must not stop the scheduled runs that take removed files down.
       - run: npm run validate
+        if: github.event_name != 'schedule'
 
-      - run: npm test
-
-      # Thumbnails and previews are rebuilt only for images that changed.
+      # Thumbnails and previews are rebuilt only for images that changed. The newest earlier cache is
+      # restored, and the cache is saved under this run's own key whenever the build changed it, also
+      # when the build failed, so the images made before a failure are not made again.
       - name: Restore generated images
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             .cache
             public/m
-          key: media-v1-${{ hashFiles('images/**', 'scripts/lib/media.ts') }}
-          restore-keys: media-v1-
+          key: media-v2-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: media-v2-
+
+      - name: Note what the cache held
+        id: media-before
+        env:
+          HASH: ${{ hashFiles('.cache/media.json') }}
+        run: echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
       - run: npm run build
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      - name: Save generated images
+        if: always() && hashFiles('.cache/media.json') != steps.media-before.outputs.hash
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            .cache
+            public/m
+          key: media-v2-${{ github.run_id }}-${{ github.run_attempt }}
+
+      # A scheduled run skips the deploy only when the catalog is the live one and a run of this
+      # commit already deployed: a scheduled run can displace a pending push run of the same commit,
+      # whose code changes would otherwise never go live. A live catalog or an earlier run that
+      # cannot be looked up counts as a difference, so the run deploys.
+      - name: Compare with the live site
+        id: live
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          built=$(sha256sum dist/api/wallpapers.json)
+          built=${built%% *}
+          live=unknown
+          if curl --fail --silent --show-error --location --retry 3 --max-time 60 \
+            --output "$RUNNER_TEMP/live.json" https://wallpapers.liaskos.eu/api/wallpapers.json; then
+            live=$(sha256sum "$RUNNER_TEMP/live.json")
+            live=${live%% *}
+          else
+            echo "::warning::The live catalog could not be fetched, so this run deploys."
+          fi
+          skip=false
+          if [ "$built" = "$live" ]; then
+            if runs=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy.yml --commit "$GITHUB_SHA" \
+              --status success --json databaseId --jq length); then
+              if [ "$runs" -gt 0 ] 2> /dev/null; then
+                skip=true
+              else
+                echo "No earlier run deployed $GITHUB_SHA, so this run deploys."
+              fi
+            else
+              echo "::warning::Earlier runs of $GITHUB_SHA could not be looked up, so this run deploys."
+            fi
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+          if [ "$skip" = true ]; then
+            echo 'The catalog is the same as the live one and this commit was deployed before, so nothing was deployed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - uses: actions/upload-pages-artifact@v5
+        if: steps.live.outputs.skip != 'true'
         with:
           path: dist
 
   deploy:
     needs: build
+    if: needs.build.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write

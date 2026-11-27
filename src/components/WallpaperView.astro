@@ -3,11 +3,10 @@
 // it is also what the gallery's viewer shows: the viewer fetches the page and
 // lifts this element out of it, so there is one source for both.
 import { inkOn } from '../lib/colors.ts';
-import { tagLabel, wallpapers } from '../lib/data.ts';
+import { credited, tagLabel, wallpapers } from '../lib/data.ts';
 import { SHAPE_LABEL, SIZE_LABEL, formatBytes, numberInCollection } from '../lib/format.ts';
 import { media, url } from '../lib/site.ts';
-import { neighbours, sourceOf } from '../lib/site-data.ts';
-import { rawUrl } from '../lib/slug.ts';
+import { creditsOf, neighbours, type CreditLink } from '../lib/site-data.ts';
 import type { Wallpaper } from '../lib/types.ts';
 import Icon from './Icon.astro';
 
@@ -19,8 +18,10 @@ const { wallpaper } = Astro.props;
 const { slug, title, width, height, file } = wallpaper;
 const { prev, next } = neighbours(wallpapers, slug);
 const position = wallpapers.findIndex((w) => w.slug === slug);
-const original = rawUrl(file);
-const source = sourceOf(wallpaper);
+const original = wallpaper.download;
+// Named as the intro and the footer name them: owner/repo, linked to the collection's page.
+const { source, alsoIn } = creditsOf(wallpaper, credited.items);
+const external = (link: CreditLink) => link.href?.startsWith('http') ?? false;
 const size = formatBytes(wallpaper.bytes);
 const page = new URL(url(`/w/${slug}/`), Astro.site).href;
 const alt = `${title}: ${wallpaper.tags.map(tagLabel).join(', ')}`;
@@ -145,7 +146,29 @@ const sizeLink = wallpaper.size === 'hd' ? undefined : url(`/?size=${wallpaper.s
           )
         }
         Source:{' '}
-        {source.url ? <a class="link" href={source.url} rel="noopener">{source.name}</a> : source.name}.
+        {source.href ? (
+          <a class="link credit-name" href={source.href} rel={external(source) ? 'noopener' : undefined}>{source.name}</a>
+        ) : (
+          source.name
+        )}.
+        {
+          alsoIn.length > 0 && (
+            <>
+              {' '}Also in:{' '}
+              {alsoIn.map((other, index) => (
+                <>
+                  {index > 0 && ', '}
+                  {other.href ? (
+                    <a class="link credit-name" href={other.href} rel={external(other) ? 'noopener' : undefined}>{other.name}</a>
+                  ) : (
+                    other.name
+                  )}
+                </>
+              ))}
+              .
+            </>
+          )
+        }
       </p>
     </div>
   </div>

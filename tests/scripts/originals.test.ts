@@ -1,0 +1,372 @@
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import type { Listing } from '../../scripts/lib/github.ts';
+import {
+  availableOriginals,
+  checkLeftOut,
+  fetchOriginal,
+  indexedItem,
+  leftOutLimit,
+  loadApproved,
+  loadCollection,
+  retryAfterMs,
+  withoutSlugClashes,
+  type IndexedFile,
+} from '../../scripts/lib/originals.ts';
+import type { Source } from '../../src/lib/sources.ts';
+import type { ApprovedFile } from '../../src/lib/types.ts';
+
+const URL_ = 'https://raw.githubusercontent.com/o/r/main/a%20b.png';
+const noWait = async (_ms: number) => {};
+
+/** The shape of `fetch`, so a mock can stand in for it. */
+type Fetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+
+function answers(...steps: (number | Error)[]) {
+  let call = 0;
+  return vi.fn<Fetch>(async () => {
+    const step = steps[Math.min(call++, steps.length - 1)];
+    if (step instanceof Error) throw step;
+    return new Response(step === 200 ? new Uint8Array([1, 2, 3]) : 'nope', { status: step });
+  });
+}
+
+const source: Source = {
+  id: 'nordic-wallpapers', short: 'nordic', name: 'Nordic Wallpapers', repo: 'linuxdotexe/nordic-wallpapers',
+  branch: 'master', include: [], exclude: [], tags: ['nord'], folders: {}, status: 'active',
+};
+
+function approvedFile(path: string, sha: string): ApprovedFile {
+  return {
+    path, sha, slug: path.replace(/\W+/g, '-'), title: path, tags: ['nord', 'minimal'], width: 1920, height: 1080,
+    bytes: 6, animated: false, palette: [{ hex: '#336699', share: 1 }], phash: '0000000000000000',
+  };
+}
+
+describe('fetchOriginal', () => {
+  it('returns the bytes and bounds the request with a timeout', async () => {
+    const fetch = answers(200);
+    const bytes = await fetchOriginal(URL_, { fetch, sleep: noWait });
+    expect([...bytes]).toEqual([1, 2, 3]);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0][0]).toBe(URL_);
+    expect(fetch.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('tries again after a server error, twice at most', async () => {
+    const recovering = answers(502, 503, 200);
+    expect([...(await fetchOriginal(URL_, { fetch: recovering, sleep: noWait }))]).toEqual([1, 2, 3]);
+    expect(recovering).toHaveBeenCalledTimes(3);
+
+    const failing = answers(500);
+    await expect(fetchOriginal(URL_, { fetch: failing, sleep: noWait })).rejects.toThrow(/500/);
+    expect(failing).toHaveBeenCalledTimes(3);
+  });
+
+  it('tries again after a network error', async () => {
+    const fetch = answers(new TypeError('fetch failed'), 200);
+    expect([...(await fetchOriginal(URL_, { fetch, sleep: noWait }))]).toEqual([1, 2, 3]);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    const down = answers(new TypeError('fetch failed'));
+    await expect(fetchOriginal(URL_, { fetch: down, sleep: noWait })).rejects.toThrow(/fetch failed/);
+    expect(down).toHaveBeenCalledTimes(3);
+  });
+
+  it('gives up at once when the file is not there or access is refused', async () => {
+    for (const status of [404, 403, 410]) {
+      const fetch = answers(status);
+      await expect(fetchOriginal(URL_, { fetch, sleep: noWait })).rejects.toThrow(String(status));
+      expect(fetch).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('tries again after rate limiting, waiting as long as Retry-After asks, at most a minute', async () => {
+    let call = 0;
+    const steps = [
+      new Response('slow down', { status: 429, headers: { 'retry-after': '7' } }),
+      new Response('slow down', { status: 403, headers: { 'retry-after': '3600' } }),
+      new Response(new Uint8Array([1, 2, 3]), { status: 200 }),
+    ];
+    const fetch = vi.fn<Fetch>(async () => steps[call++]);
+    const sleep = vi.fn(noWait);
+    expect([...(await fetchOriginal(URL_, { fetch, sleep }))]).toEqual([1, 2, 3]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(sleep.mock.calls.map(([ms]) => ms)).toEqual([7_000, 60_000]);
+  });
+
+  it('counts a 403 with no requests left as rate limiting, and a 429 without Retry-After waits as after a server error', async () => {
+    const limited = vi.fn<Fetch>(async () => new Response('', { status: 403, headers: { 'x-ratelimit-remaining': '0' } }));
+    await expect(fetchOriginal(URL_, { fetch: limited, sleep: noWait })).rejects.toThrow(/403, after 3 tries/);
+    expect(limited).toHaveBeenCalledTimes(3);
+
+    const sleep = vi.fn(noWait);
+    await fetchOriginal(URL_, { fetch: answers(429, 200), sleep });
+    expect(sleep.mock.calls.map(([ms]) => ms)).toEqual([2_000]);
+  });
+
+  it('sends the token to raw.githubusercontent.com only', async () => {
+    const fetch = answers(200);
+    await fetchOriginal(URL_, { fetch, sleep: noWait, token: 'secret' });
+    expect(new Headers(fetch.mock.calls[0][1]?.headers).get('authorization')).toBe('Bearer secret');
+
+    const elsewhere = answers(200);
+    await fetchOriginal('https://example.com/raw.githubusercontent.com/a.png', { fetch: elsewhere, sleep: noWait, token: 'secret' });
+    expect(new Headers(elsewhere.mock.calls[0][1]?.headers).has('authorization')).toBe(false);
+
+    const without = answers(200);
+    await fetchOriginal(URL_, { fetch: without, sleep: noWait });
+    expect(new Headers(without.mock.calls[0][1]?.headers).has('authorization')).toBe(false);
+  });
+
+  it('asks once more without the token when it is answered 404, as raw.githubusercontent.com does for a token it does not take', async () => {
+    const fetch = answers(404, 200);
+    expect([...(await fetchOriginal(URL_, { fetch, sleep: noWait, token: 'stale' }))]).toEqual([1, 2, 3]);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(new Headers(fetch.mock.calls[1][1]?.headers).has('authorization')).toBe(false);
+
+    const missing = answers(404);
+    await expect(fetchOriginal(URL_, { fetch: missing, sleep: noWait, token: 'stale' })).rejects.toThrow('answered 404');
+    expect(missing).toHaveBeenCalledTimes(2);
+  });
+
+  it('never names the token in an error', async () => {
+    await expect(fetchOriginal(URL_, { fetch: answers(404), sleep: noWait, token: 'secret' })).rejects.toThrow(
+      expect.objectContaining({ message: expect.not.stringContaining('secret') }),
+    );
+  });
+
+  it('still gives up at once when the answer cannot be cancelled', async () => {
+    const body = { cancel: async () => Promise.reject(new Error('stream locked')) };
+    const fetch = vi.fn<Fetch>(async () => ({ status: 404, body }) as unknown as Response);
+    await expect(fetchOriginal(URL_, { fetch, sleep: noWait })).rejects.toThrow('answered 404');
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('counts a request that runs past the timeout as a network error', async () => {
+    const hanging = vi.fn<Fetch>(
+      (_input, init) =>
+        new Promise<Response>((_, reject) => init?.signal?.addEventListener('abort', () => reject(init.signal!.reason))),
+    );
+    await expect(fetchOriginal(URL_, { fetch: hanging, sleep: noWait, timeoutMs: 5 })).rejects.toThrow(/timeout/i);
+    expect(hanging).toHaveBeenCalledTimes(3);
+  });
+
+  it('waits longer before each new try', async () => {
+    const sleep = vi.fn(noWait);
+    await fetchOriginal(URL_, { fetch: answers(500, 500, 200), sleep });
+    const [first, second] = sleep.mock.calls.map(([ms]) => ms);
+    expect(first).toBeGreaterThan(0);
+    expect(second).toBeGreaterThan(first);
+  });
+});
+
+describe('retryAfterMs', () => {
+  const now = Date.parse('2026-11-27T12:00:00Z');
+  const of = (headers: Record<string, string>) => retryAfterMs(new Headers(headers), now);
+
+  it('reads seconds or a date from Retry-After, else the reset time, and caps the pause at a minute', () => {
+    expect(of({ 'retry-after': '30' })).toBe(30_000);
+    expect(of({ 'retry-after': 'Fri, 27 Nov 2026 12:00:20 GMT' })).toBe(20_000);
+    expect(of({ 'retry-after': '120' })).toBe(60_000);
+    expect(of({ 'x-ratelimit-reset': String(now / 1000 + 15) })).toBe(15_000);
+    expect(of({ 'retry-after': 'Fri, 27 Nov 2026 11:00:00 GMT' })).toBe(0);
+  });
+
+  it('has none when the answer asks for none', () => {
+    expect(of({})).toBeUndefined();
+    expect(of({ 'retry-after': 'soon' })).toBeUndefined();
+  });
+});
+
+describe('checkLeftOut', () => {
+  const second: Source = { ...source, id: 'gruvbox', short: 'gruvbox', name: 'Gruvbox Wallpapers', repo: 'AngelJumbo/gruvbox-wallpapers' };
+  const missing = (count: number, from: Source) =>
+    Array.from({ length: count }, (_, i): IndexedFile => ({ source: from, file: approvedFile(`w/${from.id}-${i}.png`, 'x') }));
+
+  it('lets a build leave out 10 files, or 2% of them when that is more', () => {
+    expect(leftOutLimit(100)).toBe(10);
+    expect(leftOutLimit(830)).toBe(16);
+    expect(leftOutLimit(4600)).toBe(92);
+    expect(() => checkLeftOut(missing(10, source), 100)).not.toThrow();
+    expect(() => checkLeftOut(missing(16, source), 830)).not.toThrow();
+  });
+
+  it('stops the build beyond that, naming each collection with its count', () => {
+    expect(() => checkLeftOut([...missing(12, second), ...missing(5, source)], 830)).toThrow(
+      '17 of the 830 files from the collections could not be fetched (Gruvbox Wallpapers: 12, Nordic Wallpapers: 5), more than the 16 a build may leave out.',
+    );
+    expect(() => checkLeftOut(missing(11, source), 100)).toThrow(/more than the 10/);
+  });
+});
+
+describe('indexedItem', () => {
+  // `git hash-object` of "hello\n".
+  const HELLO_SHA = 'ce013625030ba8dba906f756967f9e9ca394464a';
+  const hello = () => vi.fn<Fetch>(async () => new Response('hello\n'));
+
+  it('names the file by collection and path and fetches nothing until read', () => {
+    const fetch = hello();
+    const item = indexedItem(source, approvedFile('wallpapers/a b.png', HELLO_SHA), { fetch, sleep: noWait });
+    expect(item).toMatchObject({ key: 'nordic-wallpapers:wallpapers/a b.png', slug: 'wallpapers-a-b-png', sha: HELLO_SHA });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("reads the original from the collection's raw file", async () => {
+    const fetch = hello();
+    const item = indexedItem(source, approvedFile('wallpapers/a b.png', HELLO_SHA), { fetch, sleep: noWait });
+    expect((await item.read()).toString()).toBe('hello\n');
+    expect(fetch.mock.calls[0][0]).toBe(
+      'https://raw.githubusercontent.com/linuxdotexe/nordic-wallpapers/master/wallpapers/a%20b.png',
+    );
+  });
+
+  it('refuses bytes that are not the approved version', async () => {
+    const item = indexedItem(source, approvedFile('wallpapers/a.png', '0'.repeat(40)), { fetch: hello(), sleep: noWait });
+    await expect(item.read()).rejects.toThrow(/approved/);
+  });
+});
+
+describe('loadCollection and loadApproved', () => {
+  let dir: string;
+  const skipped = { path: 'small.png', sha: 's1', reason: 'long edge under 1280 px', detail: '1000x800' };
+
+  beforeAll(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'aw-approved-'));
+    await writeFile(join(dir, 'listed.json'), JSON.stringify({ approved: [approvedFile('a.png', 'a1')], skipped: [skipped] }));
+    await writeFile(join(dir, 'unskipped.json'), JSON.stringify({ approved: [approvedFile('a.png', 'a1')] }));
+    await writeFile(join(dir, 'object.json'), JSON.stringify({ path: 'a.png' }));
+    await writeFile(join(dir, 'list.json'), JSON.stringify([approvedFile('a.png', 'a1')]));
+    await writeFile(join(dir, 'broken.json'), '[{');
+  });
+
+  afterAll(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('reads the approved and the skipped files of a collection', async () => {
+    expect(await loadCollection(dir, 'listed')).toEqual({ approved: [approvedFile('a.png', 'a1')], skipped: [skipped] });
+    expect(await loadApproved(dir, 'listed')).toEqual([approvedFile('a.png', 'a1')]);
+    expect(await loadCollection(dir, 'unskipped')).toEqual({ approved: [approvedFile('a.png', 'a1')], skipped: [] });
+  });
+
+  it('has none for a collection without a file', async () => {
+    expect(await loadCollection(dir, 'missing')).toEqual({ approved: [], skipped: [] });
+    expect(await loadApproved(dir, 'missing')).toEqual([]);
+  });
+
+  it('names the file when it is not shaped as documented', async () => {
+    await expect(loadApproved(dir, 'object')).rejects.toThrow(/object\.json/);
+    await expect(loadApproved(dir, 'list')).rejects.toThrow(/list\.json/);
+    await expect(loadApproved(dir, 'broken')).rejects.toThrow(/broken\.json/);
+  });
+});
+
+describe('availableOriginals', () => {
+  const a1 = approvedFile('wallpapers/a.png', 'a1');
+  const b1 = approvedFile('wallpapers/b.png', 'b1');
+  const second: Source = { ...source, id: 'rose-pine', short: 'rose-pine', name: 'Rose Pine', repo: 'rose-pine/wallpapers' };
+
+  function setup(approved: Record<string, ApprovedFile[]>, listings: Record<string, Listing>) {
+    const warnings: string[] = [];
+    const list = vi.fn(async (s: Source) => listings[s.id]);
+    const deps = { approved: async (s: Source) => approved[s.id] ?? [], list, warn: (m: string) => warnings.push(m) };
+    return { deps, list, warnings };
+  }
+
+  it('keeps the approved files that the listing still has with the same content', async () => {
+    const { deps, warnings } = setup(
+      { [source.id]: [a1, b1] },
+      { [source.id]: { kind: 'ok', files: [{ path: a1.path, sha: 'a1', size: 6 }, { path: b1.path, sha: 'b2', size: 6 }] } },
+    );
+    expect(await availableOriginals([source], deps)).toEqual([{ source, file: a1 }]);
+    expect(warnings).toEqual([]);
+  });
+
+  it('does not list a collection that has no approved files', async () => {
+    const { deps, list } = setup({ [source.id]: [] }, {});
+    expect(await availableOriginals([source, second], deps)).toEqual([]);
+    expect(list).not.toHaveBeenCalled();
+  });
+
+  it('keeps showing a paused collection, removals included, and leaves a removed one out unasked', async () => {
+    const paused: Source = { ...source, status: 'paused' };
+    const removed: Source = { ...second, status: 'removed' };
+    const { deps, list } = setup(
+      { [paused.id]: [a1, b1], [removed.id]: [a1] },
+      { [paused.id]: { kind: 'ok', files: [{ path: a1.path, sha: 'a1', size: 6 }] } },
+    );
+    expect(await availableOriginals([paused, removed], deps)).toEqual([{ source: paused, file: a1 }]);
+    expect(list.mock.calls.map(([s]) => s.id)).toEqual([paused.id]);
+  });
+
+  it('drops a collection that is gone and says which, also for the job summary', async () => {
+    const { deps, warnings } = setup({ [source.id]: [a1] }, { [source.id]: { kind: 'gone', status: 404 } });
+    const gone: string[] = [];
+    expect(await availableOriginals([source], { ...deps, gone: (message) => gone.push(message) })).toEqual([]);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('Nordic Wallpapers');
+    expect(warnings[0]).toContain('404');
+    expect(gone).toEqual(warnings);
+  });
+
+  it('tells the job summary only about a collection that is gone', async () => {
+    const { deps } = setup({ [source.id]: [a1] }, { [source.id]: { kind: 'transient', reason: 'GitHub answered 502' } });
+    const gone: string[] = [];
+    await availableOriginals([source], { ...deps, gone: (message) => gone.push(message) });
+    expect(gone).toEqual([]);
+  });
+
+  it('keeps the approved files of a collection that could not be listed, and says which', async () => {
+    const { deps, warnings } = setup({ [source.id]: [a1, b1] }, { [source.id]: { kind: 'transient', reason: 'GitHub answered 502' } });
+    expect(await availableOriginals([source], deps)).toEqual([{ source, file: a1 }, { source, file: b1 }]);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('Nordic Wallpapers');
+    expect(warnings[0]).toContain('GitHub answered 502');
+  });
+
+  it('leaves out a file that is still held for hand tagging, and says which', async () => {
+    const held = { ...b1, held: true };
+    const { deps, warnings } = setup({ [source.id]: [a1, held] }, { [source.id]: { kind: 'transient', reason: 'x' } });
+    expect(await availableOriginals([source], deps)).toEqual([{ source, file: a1 }]);
+    expect(warnings.filter((warning) => warning.includes('held'))).toEqual([
+      'Nordic Wallpapers: wallpapers/b.png is held for hand tagging: it is left out of this build',
+    ]);
+  });
+
+  it('keeps the order of the collections and of their files', async () => {
+    const { deps } = setup(
+      { [source.id]: [b1, a1], [second.id]: [a1] },
+      { [source.id]: { kind: 'transient', reason: 'x' }, [second.id]: { kind: 'transient', reason: 'x' } },
+    );
+    const found = await availableOriginals([second, source], deps);
+    expect(found.map(({ source: s, file }) => `${s.id}:${file.path}`)).toEqual([
+      'rose-pine:wallpapers/a.png',
+      'nordic-wallpapers:wallpapers/b.png',
+      'nordic-wallpapers:wallpapers/a.png',
+    ]);
+  });
+});
+
+describe('withoutSlugClashes', () => {
+  const second: Source = { ...source, id: 'rose-pine', short: 'rose-pine', name: 'Rose Pine', repo: 'rose-pine/wallpapers' };
+  const file = (path: string, slug: string) => ({ ...approvedFile(path, 'x'), slug });
+
+  it('leaves out an indexed file whose slug an own wallpaper or an earlier indexed file already has, and says which', () => {
+    const warnings: string[] = [];
+    const indexed: IndexedFile[] = [
+      { source, file: file('a.png', 'aurora') },
+      { source, file: file('b.png', 'night-city') },
+      { source: second, file: file('c.png', 'aurora') },
+      { source: second, file: file('d.png', 'dunes') },
+    ];
+    const kept = withoutSlugClashes(['night-city', 'forest'], indexed, (message) => warnings.push(message));
+    expect(kept).toEqual([indexed[0], indexed[3]]);
+    expect(warnings).toEqual([
+      'Nordic Wallpapers: b.png is left out of this build, its address "night-city" is already used by an own wallpaper',
+      'Rose Pine: c.png is left out of this build, its address "aurora" is already used by Nordic Wallpapers: a.png',
+    ]);
+  });
+});

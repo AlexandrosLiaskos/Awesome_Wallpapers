@@ -1,0 +1,73 @@
+---
+// Page 1 at /sources/<id>/, later pages at /sources/<id>/<n>/. The pages are
+// counted here rather than by paginate(), which would cut the list a second
+// time: the wall takes the whole collection and shows the page it is given.
+import FilterBar from '../../../components/FilterBar.astro';
+import Icon from '../../../components/Icon.astro';
+import Pager from '../../../components/Pager.astro';
+import Wall from '../../../components/Wall.astro';
+import Base from '../../../layouts/Base.astro';
+import { collections } from '../../../lib/data.ts';
+import { getRepoStats } from '../../../lib/repo-stats.ts';
+import { formatCount } from '../../../lib/format.ts';
+import { media, url } from '../../../lib/site.ts';
+import type { ListedCollection } from '../../../lib/site-data.ts';
+import { pageCount } from '../../../lib/wall-batches.ts';
+
+export function getStaticPaths() {
+  return collections.flatMap((collection) =>
+    Array.from({ length: pageCount(collection.wallpapers.length) }, (_, i) => ({
+      params: { id: collection.id, page: i === 0 ? undefined : String(i + 1) },
+      props: { collection, n: i + 1 },
+    })),
+  );
+}
+
+interface Props {
+  collection: ListedCollection;
+  /** Which page of the collection this is, from 1. */
+  n: number;
+}
+
+const { collection, n } = Astro.props;
+const { id, name, repo, wallpapers, cover } = collection;
+const { stars, description } = await getRepoStats(repo);
+const owner = repo.split('/')[0];
+const last = pageCount(wallpapers.length);
+const pageUrl = (page: number) => url(page === 1 ? `/sources/${id}/` : `/sources/${id}/${page}/`);
+const prev = n > 1 ? pageUrl(n - 1) : undefined;
+const next = n < last ? pageUrl(n + 1) : undefined;
+const summary = `${formatCount(wallpapers.length)} wallpapers from ${name} by ${owner}, free to download.${description ? ` ${description}` : ''}`;
+---
+
+<Base
+  title={n === 1 ? name : `${name}, page ${n}`}
+  description={n === 1 ? summary : `Page ${n} of ${last}. ${summary}`}
+  image={media('og', cover.slug)}
+>
+  {prev && <link rel="prev" href={prev} slot="head" />}
+  {next && <link rel="next" href={next} slot="head" />}
+  <section class="intro">
+    <div>
+      <p class="caption intro__kicker">{n === 1 ? 'Collection' : `Collection, page ${n} of ${last}`}</p>
+      <h1 class="intro__title">{name}</h1>
+      {description && <p class="intro__text">{description}</p>}
+      <p class="collection-intro__links">
+        <a class="btn" href={`https://github.com/${repo}`}>
+          <Icon name="github" />
+          Browse the repository
+        </a>
+        <span class="collection-intro__owner">by {owner}</span>
+      </p>
+    </div>
+    <dl class="stats stats--always">
+      <div><dt class="caption">wallpapers</dt><dd>{formatCount(wallpapers.length)}</dd></div>
+      <div><dt class="caption">in 4K+</dt><dd>{formatCount(wallpapers.filter((w) => w.size === '4k').length)}</dd></div>
+      {stars !== null && <div><dt class="caption">stars</dt><dd>{formatCount(stars)}</dd></div>}
+    </dl>
+  </section>
+
+  <FilterBar links />
+  <Wall wallpapers={wallpapers} filterable eager={8} scope={{ kind: 'source', source: id }} page={n} />
+  <Pager current={n} last={last} prev={prev} next={next} scroll={n === 1} />
+</Base>

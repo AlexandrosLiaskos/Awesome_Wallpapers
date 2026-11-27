@@ -1,0 +1,80 @@
+---
+import Base from '../../layouts/Base.astro';
+import { collections } from '../../lib/data.ts';
+import { getRepoStats } from '../../lib/repo-stats.ts';
+import { formatCount } from '../../lib/format.ts';
+import { media, url } from '../../lib/site.ts';
+
+const plural = (n: number, one: string) => `${formatCount(n)} ${n === 1 ? one : `${one}s`}`;
+// Thumbnails are 300 px high; previews fit inside 1280 px (see scripts/lib/media.ts).
+const THUMB_HEIGHT = 300;
+const PREVIEW_EDGE = 1280;
+// As wide as a card: one column on phones, then two, three and four as the grid's 340 px minimum allows.
+const SIZES = '(max-width: 730px) calc(100vw - 32px), (max-width: 1100px) 50vw, (max-width: 1460px) 34vw, 25vw';
+
+// The collections are already ordered, the largest first.
+const cards = await Promise.all(
+  collections.map(async (collection) => {
+    const { stars, description } = await getRepoStats(collection.repo);
+    const { cover } = collection;
+    const facts = [
+      `by ${collection.repo.split('/')[0]}`,
+      plural(collection.wallpapers.length, 'wallpaper'),
+      ...(stars === null ? [] : [plural(stars, 'star')]),
+    ];
+    const width = Math.round((THUMB_HEIGHT * cover.width) / cover.height);
+    const preview = Math.round(cover.width * Math.min(1, PREVIEW_EDGE / Math.max(cover.width, cover.height)));
+    const srcset = `${media('t', cover.slug)} ${width}w, ${media('p', cover.slug)} ${preview}w`;
+    return { collection, cover, description, facts, width, srcset };
+  }),
+);
+---
+
+<Base
+  title="Collections"
+  description={`Browse the wallpapers by the collection on GitHub they come from: ${collections.map((c) => c.name).join(', ')}.`}
+>
+  <section class="intro">
+    <div>
+      <h1 class="intro__title">Browse by <em>collection.</em></h1>
+      <p class="intro__text">
+        The wallpapers on this site come from these collections on GitHub. Each collection has a page with its
+        wallpapers and a link to its repository.
+      </p>
+    </div>
+    <dl class="stats">
+      <div><dt class="caption">collections</dt><dd>{formatCount(collections.length)}</dd></div>
+    </dl>
+  </section>
+
+  <ul class="collection-grid">
+    {
+      cards.map(({ collection, cover, description, facts, width, srcset }) => (
+        <li>
+          <a class="collection-card" href={url(`/sources/${collection.id}/`)}>
+            <img
+              src={media('t', cover.slug)}
+              srcset={srcset}
+              sizes={SIZES}
+              width={width}
+              height={THUMB_HEIGHT}
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+            <span class="collection-card__name">{collection.name}</span>
+            <span class="collection-card__facts">
+              {facts.map((fact, i) => (
+                <>
+                  {i > 0 && ' · '}
+                  <span>{fact}</span>
+                </>
+              ))}
+            </span>
+            {description && <span class="collection-card__text">{description}</span>}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

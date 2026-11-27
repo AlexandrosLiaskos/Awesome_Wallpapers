@@ -38,6 +38,12 @@
   description: Calm green wallpapers in the Everforest colour scheme.
   swatch: "#a7c080"
 
+- slug: rose-pine
+  label: Rosé Pine
+  kind: palette
+  description: Wallpapers in the muted purples and golds of the Rosé Pine colour scheme.
+  swatch: "#c4a7e7"
+
 # What it shows
 
 - slug: landscape

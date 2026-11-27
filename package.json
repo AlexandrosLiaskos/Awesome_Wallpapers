@@ -6,7 +6,7 @@
   "description": "A fast, searchable gallery of aesthetic wallpapers.",
   "license": "MIT",
   "engines": {
-    "node": ">=24"
+    "node": ">=24.2"
   },
   "scripts": {
     "media": "node scripts/build-media.ts",
@@ -15,7 +15,8 @@
     "preview": "astro preview",
     "test": "vitest run",
     "validate": "node scripts/validate.ts",
-    "check": "npm run media && astro check"
+    "check": "npm run media && astro check",
+    "eval-tagger": "node scripts/eval-tagger.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.6",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@huggingface/transformers": "4.3.2",
     "happy-dom": "^21.0.4",
     "typescript": "^6.0.3",
     "vitest": "^5.1.2"

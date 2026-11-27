@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { usedTags, wallpapers } from '../../lib/data.ts';
+import { formatCount } from '../../lib/format.ts';
 import { media, url } from '../../lib/site.ts';
 import { byTag } from '../../lib/site-data.ts';
 
@@ -21,7 +22,7 @@ const groups = [
 
 <Base
   title="All tags"
-  description={`Browse ${wallpapers.length} wallpapers by palette, subject and style: Nord, Gruvbox, Catppuccin, anime, minimal, pixel art and more.`}
+  description={`Browse ${formatCount(wallpapers.length)} wallpapers by palette, subject and style: Nord, Gruvbox, Catppuccin, anime, minimal, pixel art and more.`}
 >
   <section class="intro">
     <div>
@@ -31,7 +32,7 @@ const groups = [
       </p>
     </div>
     <dl class="stats">
-      <div><dt class="caption">tags</dt><dd>{usedTags.length}</dd></div>
+      <div><dt class="caption">tags</dt><dd>{formatCount(usedTags.length)}</dd></div>
     </dl>
   </section>
 
@@ -46,7 +47,7 @@ const groups = [
                 <img src={media('t', cover.slug)} width="533" height="300" alt="" loading="lazy" decoding="async" />
                 <span class="tag-card__name">
                   {tag.label}
-                  <span class="tag-card__count">{tag.count}</span>
+                  <span class="tag-card__count">{formatCount(tag.count)}</span>
                 </span>
                 <span class="tag-card__text">{tag.description}</span>
               </a>
