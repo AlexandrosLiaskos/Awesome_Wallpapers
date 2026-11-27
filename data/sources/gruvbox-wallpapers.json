@@ -2251,19 +2251,6 @@
       "phash": "14b271f9717970b2"
     },
     {
-      "path": "wallpapers/minimalistic/light/nethack.png",
-      "sha": "015c623020d11d668b92b410e07bd8dd95771e74",
-      "slug": "nethack-gruvbox",
-      "title": "NetHack",
-      "tags": ["gruvbox","gaming","anime","retro"],
-      "width": 1920,
-      "height": 1080,
-      "bytes": 1647619,
-      "animated": false,
-      "palette": [{"hex":"#f9f4e1","share":0.691},{"hex":"#e5a797","share":0.087},{"hex":"#a9a89a","share":0.087},{"hex":"#dad7c7","share":0.069},{"hex":"#151815","share":0.067}],
-      "phash": "6169713169696971"
-    },
-    {
       "path": "wallpapers/minimalistic/light/orbit.png",
       "sha": "2929d69aa252a0eb858b4b9ca3833615effe83cc",
       "slug": "orbit-gruvbox",
@@ -6675,6 +6662,7 @@
     {"path":"wallpapers/minimalistic/light/gruv-buildings.png","sha":"eb47759a09195a6e9fd0050f903353506e672864","reason":"declined: same image as wallpapers/minimalistic/light/buildings.png"},
     {"path":"wallpapers/minimalistic/light/hlgruvlightgreen.png","sha":"009963504ad454faa885d908f516d033be5ea3c0","reason":"declined: tone variant of wallpapers/minimalistic/light/hlgruvlighblu.png"},
     {"path":"wallpapers/minimalistic/light/hlgruvlightorange.png","sha":"8da72436d422b550986b39db2e4c597c54770505","reason":"declined: tone variant of wallpapers/minimalistic/light/hlgruvlighblu.png"},
+    {"path":"wallpapers/minimalistic/light/nethack.png","sha":"015c623020d11d668b92b410e07bd8dd95771e74","reason":"declined: suggestive art"},
     {"path":"wallpapers/minimalistic/light/nethackgruv.png","sha":"f20ec7535f2916029a5839a7d1ba765ddce85feb","reason":"declined: tone variant of wallpapers/minimalistic/light/nethack.png"},
     {"path":"wallpapers/minimalistic/tetris_gruvbox_brighter.png","sha":"719b7e647d98cd39c2dffe2ae0966f4440efcddc","reason":"declined: tone variant of wallpapers/minimalistic/tetris_gruvbox.png"},
     {"path":"wallpapers/minimalistic/tetris_gruvbox_brighter_lighter.png","sha":"d51b05ea2cd95b52d832cc25390e16198441c470","reason":"declined: tone variant of wallpapers/minimalistic/tetris_gruvbox.png"},
