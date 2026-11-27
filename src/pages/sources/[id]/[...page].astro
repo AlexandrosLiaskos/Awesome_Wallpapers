@@ -9,6 +9,7 @@ import Wall from '../../../components/Wall.astro';
 import Base from '../../../layouts/Base.astro';
 import { collections } from '../../../lib/data.ts';
 import { getRepoStats } from '../../../lib/repo-stats.ts';
+import { formatCount } from '../../../lib/format.ts';
 import { media, url } from '../../../lib/site.ts';
 import type { ListedCollection } from '../../../lib/site-data.ts';
 import { pageCount } from '../../../lib/wall-batches.ts';
@@ -36,7 +37,7 @@ const last = pageCount(wallpapers.length);
 const pageUrl = (page: number) => url(page === 1 ? `/sources/${id}/` : `/sources/${id}/${page}/`);
 const prev = n > 1 ? pageUrl(n - 1) : undefined;
 const next = n < last ? pageUrl(n + 1) : undefined;
-const summary = `${wallpapers.length} wallpapers from ${name} by ${owner}, free to download.${description ? ` ${description}` : ''}`;
+const summary = `${formatCount(wallpapers.length)} wallpapers from ${name} by ${owner}, free to download.${description ? ` ${description}` : ''}`;
 ---
 
 <Base
@@ -60,9 +61,9 @@ const summary = `${wallpapers.length} wallpapers from ${name} by ${owner}, free 
       </p>
     </div>
     <dl class="stats stats--always">
-      <div><dt class="caption">wallpapers</dt><dd>{wallpapers.length}</dd></div>
-      <div><dt class="caption">in 4K+</dt><dd>{wallpapers.filter((w) => w.size === '4k').length}</dd></div>
-      {stars !== null && <div><dt class="caption">stars</dt><dd>{stars.toLocaleString('en')}</dd></div>}
+      <div><dt class="caption">wallpapers</dt><dd>{formatCount(wallpapers.length)}</dd></div>
+      <div><dt class="caption">in 4K+</dt><dd>{formatCount(wallpapers.filter((w) => w.size === '4k').length)}</dd></div>
+      {stars !== null && <div><dt class="caption">stars</dt><dd>{formatCount(stars)}</dd></div>}
     </dl>
   </section>
 

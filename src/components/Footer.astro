@@ -13,7 +13,7 @@ const { items } = credited;
     {items.map((item, i) => (
       <>
         {i > 0 && (i === items.length - 1 ? ' and ' : ', ')}
-        <a class="link" href={item.href}>{item.name}</a>
+        <a class="link credit-name" href={item.href}>{item.name}</a>
       </>
     ))}
     {' on GitHub'}

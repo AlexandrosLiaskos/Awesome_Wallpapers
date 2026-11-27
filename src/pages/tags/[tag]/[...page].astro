@@ -5,6 +5,7 @@ import Pager from '../../../components/Pager.astro';
 import Wall from '../../../components/Wall.astro';
 import Base from '../../../layouts/Base.astro';
 import { usedTags, wallpapers } from '../../../lib/data.ts';
+import { formatCount } from '../../../lib/format.ts';
 import { media } from '../../../lib/site.ts';
 import { byTag, type CountedTag } from '../../../lib/site-data.ts';
 import type { Wallpaper } from '../../../lib/types.ts';
@@ -26,7 +27,7 @@ const tagged = byTag(wallpapers, tag.slug);
 const cover = tagged[0];
 const n = page.currentPage;
 const kind = tag.kind === 'palette' ? 'Palette' : 'Tag';
-const description = `${tag.count} ${tag.label} wallpapers, free to download. ${tag.description}`;
+const description = `${formatCount(tag.count)} ${tag.label} wallpapers, free to download. ${tag.description}`;
 ---
 
 <Base
@@ -43,8 +44,8 @@ const description = `${tag.count} ${tag.label} wallpapers, free to download. ${t
       <p class="intro__text">{tag.description}</p>
     </div>
     <dl class="stats">
-      <div><dt class="caption">wallpapers</dt><dd>{tag.count}</dd></div>
-      <div><dt class="caption">in 4K+</dt><dd>{tagged.filter((w) => w.size === '4k').length}</dd></div>
+      <div><dt class="caption">wallpapers</dt><dd>{formatCount(tag.count)}</dd></div>
+      <div><dt class="caption">in 4K+</dt><dd>{formatCount(tagged.filter((w) => w.size === '4k').length)}</dd></div>
     </dl>
   </section>
 

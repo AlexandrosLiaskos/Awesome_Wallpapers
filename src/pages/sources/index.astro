@@ -2,9 +2,10 @@
 import Base from '../../layouts/Base.astro';
 import { collections } from '../../lib/data.ts';
 import { getRepoStats } from '../../lib/repo-stats.ts';
+import { formatCount } from '../../lib/format.ts';
 import { media, url } from '../../lib/site.ts';
 
-const plural = (n: number, one: string) => `${n.toLocaleString('en')} ${n === 1 ? one : `${one}s`}`;
+const plural = (n: number, one: string) => `${formatCount(n)} ${n === 1 ? one : `${one}s`}`;
 // Thumbnails are 300 px high; previews fit inside 1280 px (see scripts/lib/media.ts).
 const THUMB_HEIGHT = 300;
 const PREVIEW_EDGE = 1280;
@@ -42,7 +43,7 @@ const cards = await Promise.all(
       </p>
     </div>
     <dl class="stats">
-      <div><dt class="caption">collections</dt><dd>{collections.length}</dd></div>
+      <div><dt class="caption">collections</dt><dd>{formatCount(collections.length)}</dd></div>
     </dl>
   </section>
 

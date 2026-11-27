@@ -16,6 +16,7 @@ import {
   type FilterState,
   type Indexed,
 } from '../lib/filter.ts';
+import { formatCount } from '../lib/format.ts';
 import { url } from '../lib/site.ts';
 import { PAGE_SIZE, inScope, nextBatch, parseScope, scopePath, type WallScope } from '../lib/wall-batches.ts';
 import { layoutAppended, layoutWall } from './layout.ts';
@@ -79,7 +80,7 @@ function initLaterPage(wall: HTMLElement, scope: WallScope, page: number, open: 
   const total = Number(wall.dataset.total) || order.length;
   const start = (page - 1) * PAGE_SIZE + 1;
   const count = document.querySelector<HTMLElement>('[data-count]');
-  if (count) count.textContent = `${start} to ${start + order.length - 1} of ${total} wallpapers`;
+  if (count) count.textContent = `${formatCount(start)} to ${formatCount(start + order.length - 1)} of ${formatCount(total)} wallpapers`;
 
   document.querySelector('[data-filters]')?.addEventListener('click', (event) => {
     const option = (event.target as HTMLElement).closest<HTMLElement>('[data-facet] [data-value]');
@@ -189,7 +190,7 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
     const scopeTotal = catalog ? entries.length : total;
     // Before the index arrives an unfiltered wall still stands for the whole scope, which scrolling will load.
     const shown = catalog || failed || isFiltered() ? order.length : scopeTotal;
-    return shown === scopeTotal ? `${scopeTotal} wallpapers` : `${shown} of ${scopeTotal} wallpapers`;
+    return shown === scopeTotal ? `${formatCount(scopeTotal)} wallpapers` : `${formatCount(shown)} of ${formatCount(scopeTotal)} wallpapers`;
   }
 
   function render(): void {

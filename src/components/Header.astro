@@ -1,11 +1,12 @@
 ---
 import { wallpapers } from '../lib/data.ts';
+import { formatCount } from '../lib/format.ts';
 import { SITE, url } from '../lib/site.ts';
 import { getStars } from '../lib/stars.ts';
 import Icon from './Icon.astro';
 
 const stars = await getStars();
-const starLabel = stars === null ? 'Star on GitHub' : `Star ${stars.toLocaleString('en')} on GitHub`;
+const starLabel = stars === null ? 'Star on GitHub' : `Star ${formatCount(stars)} on GitHub`;
 ---
 
 <header class="site-header">
@@ -20,7 +21,7 @@ const starLabel = stars === null ? 'Star on GitHub' : `Star ${stars.toLocaleStri
     <input
       type="search"
       name="q"
-      placeholder={`Search ${wallpapers.length} wallpapers…`}
+      placeholder={`Search ${formatCount(wallpapers.length)} wallpapers…`}
       aria-label="Search wallpapers"
       autocomplete="off"
       spellcheck="false"
@@ -37,7 +38,7 @@ const starLabel = stars === null ? 'Star on GitHub' : `Star ${stars.toLocaleStri
     <a class="btn" href={SITE.repo} aria-label={starLabel}>
       <Icon name="github" />
       <span class="btn__text">Star</span>
-      {stars !== null && <span class="btn__count">{stars.toLocaleString('en')}</span>}
+      {stars !== null && <span class="btn__count">{formatCount(stars)}</span>}
     </a>
   </nav>
 </header>

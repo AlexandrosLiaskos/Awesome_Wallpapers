@@ -4,6 +4,7 @@ import Pager from '../components/Pager.astro';
 import Wall from '../components/Wall.astro';
 import Base from '../layouts/Base.astro';
 import { credited, tags, wallpapers } from '../lib/data.ts';
+import { formatCount } from '../lib/format.ts';
 import { SITE, url } from '../lib/site.ts';
 import { stats } from '../lib/site-data.ts';
 import { pageCount } from '../lib/wall-batches.ts';
@@ -30,21 +31,21 @@ const website = {
     <div>
       <h1 class="intro__title">Wallpapers worth <em>sharing.</em></h1>
       <p class="intro__text">
-        A fast, searchable gallery of {totals.total} aesthetic wallpapers. Free to download, no ads, no tracking.{' '}
+        A fast, searchable gallery of {formatCount(totals.total)} aesthetic wallpapers. Free to download, no ads, no tracking.{' '}
         {credited.items.length === 1 ? 'The wallpapers come from ' : `The wallpapers come from ${credited.countText} collections on GitHub: `}
         {credited.items.map((item, i) => (
           <>
             {i > 0 && (i === credited.items.length - 1 ? ' and ' : ', ')}
-            <a class="link" href={item.href}>{item.name}</a>
+            <a class="link credit-name" href={item.href}>{item.name}</a>
           </>
         ))}
         {credited.items.length === 1 && ' on GitHub'}.
       </p>
     </div>
     <dl class="stats">
-      <div><dt class="caption">wallpapers</dt><dd>{totals.total}</dd></div>
-      <div><dt class="caption">in 4K+</dt><dd>{totals.fourK}</dd></div>
-      <div><dt class="caption">tags</dt><dd>{totals.tags}</dd></div>
+      <div><dt class="caption">wallpapers</dt><dd>{formatCount(totals.total)}</dd></div>
+      <div><dt class="caption">in 4K+</dt><dd>{formatCount(totals.fourK)}</dd></div>
+      <div><dt class="caption">tags</dt><dd>{formatCount(totals.tags)}</dd></div>
     </dl>
   </section>
 

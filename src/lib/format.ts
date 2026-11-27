@@ -10,7 +10,12 @@ export function formatBytes(bytes: number): string {
   return `${megabytes.toFixed(megabytes < 10 ? 2 : 1)} MB`;
 }
 
-/** "No. 014 / 346" for the wallpaper at a zero-based position. */
+/** A count as the site writes it, with a thousands separator: "1,154". Star counts are written the same way. */
+export function formatCount(n: number): string {
+  return n.toLocaleString('en');
+}
+
+/** "No. 014 / 346", or "No. 0014 / 1,154", for the wallpaper at a zero-based position. */
 export function numberInCollection(index: number, total: number): string {
-  return `No. ${String(index + 1).padStart(String(total).length, '0')} / ${total}`;
+  return `No. ${String(index + 1).padStart(String(total).length, '0')} / ${formatCount(total)}`;
 }
