@@ -41,7 +41,10 @@ jobs:
       # runtime); every pull request runs the tests in validate.yml.
       - run: npm ci --omit=dev
 
+      # Not on the schedule: the build already leaves held files and clashing addresses out, and a
+      # problem in an approved list must not stop the scheduled runs that take removed files down.
       - run: npm run validate
+        if: github.event_name != 'schedule'
 
       # Thumbnails and previews are rebuilt only for images that changed. The newest earlier cache is
       # restored, and the cache is saved under this run's own key whenever the build changed it, also
