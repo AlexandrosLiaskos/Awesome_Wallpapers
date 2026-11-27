@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
-import { VISITS_ENDPOINT, recordVisit } from '../../src/scripts/visits.ts';
+import { VISITS_ENDPOINT, initVisits, recordVisit } from '../../src/scripts/visits.ts';
 
 function memoryStorage(): Storage {
   const values = new Map<string, string>();
@@ -60,5 +60,38 @@ describe('recordVisit', () => {
     expect(await recordVisit({ fetch: answer(5, 503), storage: memoryStorage() })).toBeNull();
     expect(await recordVisit({ fetch: answer('many'), storage: memoryStorage() })).toBeNull();
     expect(await recordVisit({ fetch: answer(-1), storage: memoryStorage() })).toBeNull();
+  });
+});
+
+describe('initVisits', () => {
+  const footer = `
+    <p data-visits hidden>Recorded page visits <span data-visits-count></span>
+      <span data-info><button type="button">i</button><span role="tooltip">note</span></span>
+    </p>`;
+
+  it('shows the total and lets Escape close the note until the pointer leaves', async () => {
+    document.body.innerHTML = footer;
+    sessionStorage.clear();
+    vi.stubGlobal('fetch', answer(1234));
+    await initVisits();
+    vi.unstubAllGlobals();
+
+    const line = document.querySelector<HTMLElement>('[data-visits]')!;
+    const info = document.querySelector<HTMLElement>('[data-info]')!;
+    expect(line.hidden).toBe(false);
+    expect(line.querySelector('[data-visits-count]')!.textContent).toBe('1,234');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(info.hasAttribute('data-dismissed')).toBe(true);
+    info.dispatchEvent(new Event('pointerleave'));
+    expect(info.hasAttribute('data-dismissed')).toBe(false);
+  });
+
+  it('keeps the line hidden when the counter cannot be reached', async () => {
+    document.body.innerHTML = footer;
+    vi.stubGlobal('fetch', answer(5, 503));
+    await initVisits();
+    vi.unstubAllGlobals();
+    expect(document.querySelector<HTMLElement>('[data-visits]')!.hidden).toBe(true);
   });
 });
