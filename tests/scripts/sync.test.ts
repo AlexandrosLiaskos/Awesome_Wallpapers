@@ -6,8 +6,18 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Listing, RemoteFile } from '../../scripts/lib/github.ts';
 import type { Derived } from '../../scripts/lib/media.ts';
 import { blobSha } from '../../scripts/lib/originals.ts';
-import { contactSheet, PER_SHEET } from '../../scripts/lib/sheet.ts';
-import { checkModel, formatCollection, summaryOf, syncSource, type SyncDeps, type SyncResult } from '../../scripts/sync.ts';
+import { contactSheet, drawCell, PER_SHEET, type SheetCell } from '../../scripts/lib/sheet.ts';
+import {
+  checkModel,
+  code,
+  formatCollection,
+  imageTagger,
+  summaryOf,
+  syncSource,
+  TaggerUnavailable,
+  type SyncDeps,
+  type SyncResult,
+} from '../../scripts/sync.ts';
 import { rawFileUrl, SKIP } from '../../src/lib/indexed.ts';
 import type { Source } from '../../src/lib/sources.ts';
 import type { ApprovedFile, SkippedFile, Tag } from '../../src/lib/types.ts';
@@ -299,6 +309,65 @@ describe('syncSource', () => {
   });
 });
 
+describe('syncSource when one file goes wrong', () => {
+  const files = {
+    'walls/a.png': { bytes: image('a'), derived: {}, tags: ['city'] },
+    'walls/b.png': { bytes: image('b'), derived: {}, tags: ['city'] },
+    'walls/c.png': { bytes: image('c'), derived: {}, tags: ['city'] },
+  };
+
+  it('skips a file that cannot be tagged for this run only, and goes on with the others', async () => {
+    const { deps } = collection(files);
+    const tag = deps.tag;
+    deps.tag = vi.fn(async (preview: Buffer) => {
+      if (preview.toString().endsWith('image b')) throw new Error('probe went wrong');
+      return tag(preview);
+    });
+    const result = await syncSource(source, [], deps);
+    expect(result.added.map((file) => file.path)).toEqual(['walls/a.png', 'walls/c.png']);
+    expect(result.skipped).toEqual([{ path: 'walls/b.png', sha: blobSha(image('b')), reason: SKIP.tagging, detail: 'probe went wrong' }]);
+    expect(result.skipList).toEqual([]);
+  });
+
+  it('keeps the approved version of a changed file that cannot be tagged', async () => {
+    const before = approved('walls/b.png', image('b old'));
+    const { deps } = collection({ 'walls/b.png': files['walls/b.png'] });
+    deps.tag = vi.fn(async () => Promise.reject(new Error('probe went wrong')));
+    const result = await syncSource(source, [before], deps);
+    expect(result.approved).toEqual([before]);
+    expect(result).toMatchObject({ changed: [], removed: [], review: [] });
+  });
+
+  it('stops when the tagger cannot work at all', async () => {
+    const { deps } = collection(files);
+    deps.tag = vi.fn(async () => Promise.reject(new TaggerUnavailable('the CLIP model could not be loaded: offline')));
+    await expect(syncSource(source, [], deps)).rejects.toThrow('the CLIP model could not be loaded');
+  });
+
+  it('skips a file whose contact-sheet cell cannot be drawn for this run only, without claiming its slug', async () => {
+    const drawCell = vi.fn(async (cell: SheetCell) => {
+      if (cell.title === 'B') throw new Error('unsupported image format');
+    });
+    const { deps } = collection(files, { drawCell });
+    const result = await syncSource(source, [], deps);
+    expect(drawCell).toHaveBeenCalledTimes(3);
+    expect(result.added.map((file) => file.path)).toEqual(['walls/a.png', 'walls/c.png']);
+    expect(result.review.map((item) => item.file.path)).toEqual(['walls/a.png', 'walls/c.png']);
+    expect(result.skipped).toEqual([{ path: 'walls/b.png', sha: blobSha(image('b')), reason: SKIP.sheet, detail: 'unsupported image format' }]);
+    expect(result.skipList).toEqual([]);
+    expect([...deps.taken]).toEqual(['a-nordic', 'c-nordic']);
+  });
+});
+
+describe('imageTagger', () => {
+  it('turns a model that does not load into TaggerUnavailable, which stops the sync', async () => {
+    const preview = await sharp({ create: { width: 64, height: 36, channels: 3, background: '#2e3440' } }).webp().toBuffer();
+    const tag = imageTagger({}, {}, async () => Promise.reject(new Error('could not reach huggingface.co')));
+    await expect(tag(preview)).rejects.toBeInstanceOf(TaggerUnavailable);
+    await expect(tag(preview)).rejects.toThrow('the CLIP model could not be loaded: could not reach huggingface.co');
+  });
+});
+
 describe('syncSource remembering skipped files', () => {
   const small = { bytes: image('small'), derived: { width: 1000, height: 800 } };
 
@@ -439,6 +508,45 @@ describe('summaryOf', () => {
   it('is plain text without em dashes', () => {
     expect(text).not.toContain('—');
   });
+
+  it('names the files that are tried again next run', () => {
+    const retried = summaryOf([
+      {
+        source,
+        result: { ...empty, skipped: [{ path: 'walls/odd.png', sha: '1', reason: SKIP.sheet, detail: 'bad' }, { path: 'walls/s.png', sha: '2', reason: SKIP.tooSmall }] },
+        sheets: [],
+      },
+    ]);
+    expect(retried).toContain('- `walls/odd.png`: could not be drawn on a contact sheet');
+    expect(retried).not.toContain('`walls/s.png`');
+  });
+
+  it('keeps paths from other repositories inside their code spans, so an @name in one mentions no one', () => {
+    const path = 'walls/a`b`` @someone c.png';
+    const sneaky = approved(path, image('sneaky'), { tags: ['nord'], held: true });
+    const body = summaryOf([
+      {
+        source,
+        result: { ...empty, held: [sneaky], review: [{ file: sneaky, status: 'held', preview: Buffer.alloc(0), hints: [] }], kept: [{ path, tags: ['nord'], machine: [] }] },
+        sheets: [],
+      },
+    ]);
+    expect(body).toContain('- ```walls/a`b`` @someone c.png```: kept nord');
+    expect(body).toContain('| ```walls/a`b`` @someone c.png``` |');
+  });
+});
+
+describe('code', () => {
+  it('fences a path with one backtick more than its longest run of them', () => {
+    expect(code('walls/a.png')).toBe('`walls/a.png`');
+    expect(code('a`b')).toBe('``a`b``');
+    expect(code('a``b`c')).toBe('```a``b`c```');
+  });
+
+  it('pads a path that starts or ends with a backtick, and shows control characters as U+FFFD', () => {
+    expect(code('`a')).toBe('`` `a ``');
+    expect(code('a\n@someone\tb')).toBe('`a�@someone�b`');
+  });
 });
 
 describe('contactSheet', () => {
@@ -480,5 +588,17 @@ describe('contactSheet', () => {
 
   it('writes nothing when there is nothing to review', async () => {
     expect(await contactSheet([], join(dir, 'none'))).toEqual([]);
+  });
+
+  it('leaves out characters XML does not allow, so an odd title does not stop the sheet', async () => {
+    const odd = { ...cells[1], title: 'Bell\u0007 and\u0000 form feed\u000c ￾ end', note: 'held\u001b' };
+    await expect(drawCell(odd)).resolves.toBeUndefined();
+    const written = await contactSheet([odd, cells[1]], join(dir, 'odd'));
+    expect(written).toEqual([join(dir, 'odd-01.jpg')]);
+  });
+
+  it('draws one cell without writing anything, and throws when it cannot', async () => {
+    await expect(drawCell(cells[1])).resolves.toBeUndefined();
+    await expect(drawCell({ ...cells[1], image: Buffer.from('not an image') })).rejects.toThrow();
   });
 });

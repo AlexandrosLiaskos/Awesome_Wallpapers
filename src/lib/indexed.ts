@@ -95,6 +95,8 @@ export const SKIP = {
   unreadable: 'not a readable image',
   download: 'could not be downloaded',
   moved: 'changed while it was downloaded',
+  tagging: 'could not be tagged',
+  sheet: 'could not be drawn on a contact sheet',
 } as const;
 
 const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v', 'ogv', 'wmv', 'flv'];

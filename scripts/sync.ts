@@ -27,17 +27,20 @@ import { measureOriginal, type Derived } from './lib/media.ts';
 import { blobSha, fetchOriginal, loadCollection, type CollectionRecord } from './lib/originals.ts';
 import { sampleForPalette } from './lib/palette-sample.ts';
 import { mapLimit } from './lib/scan.ts';
-import { contactSheet, PER_SHEET, type SheetCell } from './lib/sheet.ts';
+import { contactSheet, drawCell, PER_SHEET, type SheetCell } from './lib/sheet.ts';
 
 /** Originals downloaded, measured and tagged at a time. */
 const DOWNLOADS = 4;
 /** Enough of the start of a file to recognise a Git LFS pointer. */
 const LFS_PROBE = 64;
 /**
- * Reasons that say nothing about the file itself: the file is tried again next time, and a changed
- * one keeps its approved version meanwhile. Every other skip is remembered until the file changes.
+ * Reasons that may not hold next time: the file is tried again then, and a changed one keeps its
+ * approved version meanwhile. Every other skip is remembered until the file changes.
  */
-const PASSING = new Set<string>([SKIP.download, SKIP.moved]);
+const PASSING = new Set<string>([SKIP.download, SKIP.moved, SKIP.tagging, SKIP.sheet]);
+
+/** The tagger cannot work at all, as when its model does not load: the run stops instead of skipping every file. */
+export class TaggerUnavailable extends Error {}
 
 export interface SyncDeps {
   listTree: (source: Source) => Promise<Listing>;
@@ -49,6 +52,8 @@ export interface SyncDeps {
    * apply; and hints, subject tags the machine suggests but may not apply, for the reviewer.
    */
   tag: (preview: Buffer) => Promise<{ tags: string[]; hints: string[] }>;
+  /** Draws a file's cell of the contact sheets, throwing when it cannot be drawn (see drawCell); none in tests that do not need it. */
+  drawCell?: (cell: SheetCell) => Promise<void>;
   /** Every slug in use, own and of every collection; the slugs given to new files are added to it. */
   taken: Set<string>;
   /** The tags of tags.yml, for titles made from tags. */
@@ -114,7 +119,13 @@ async function examine(source: Source, remote: RemoteFile, deps: SyncDeps): Prom
   if (Math.max(derived.width, derived.height) < MIN_LONG_EDGE) {
     return { reason: SKIP.tooSmall, detail: `${derived.width}x${derived.height}` };
   }
-  const image = await deps.tag(preview);
+  let image: { tags: string[]; hints: string[] };
+  try {
+    image = await deps.tag(preview);
+  } catch (error) {
+    if (error instanceof TaggerUnavailable) throw error;
+    return { reason: SKIP.tagging, detail: messageOf(error) };
+  }
   const tags = combineTags(folderTags(remote.path, source), image.tags);
   return { derived, preview, tags, hints: image.hints.filter((hint) => !tags.includes(hint)) };
 }
@@ -145,8 +156,10 @@ function entryOf(remote: RemoteFile, derived: Derived, given: Pick<ApprovedFile,
  * measured and tagged again but keeps its slug, title and featured mark, and keeps its tags too
  * when they differ from the machine's, which marks them as hand-edited. Files left with fewer than
  * two tags are held. A file in `skipList` is not downloaded again while it is listed with the same
- * SHA. A paused collection takes no new files; a removed one is not listed; one whose listing is
- * gone or failed is left as it was.
+ * SHA. A file that cannot be tagged, or drawn on a contact sheet, is skipped for this run only and
+ * the others go on; only a tagger that cannot work at all (TaggerUnavailable) stops the sync. A
+ * paused collection takes no new files; a removed one is not listed; one whose listing is gone or
+ * failed is left as it was.
  */
 export async function syncSource(source: Source, approved: ApprovedFile[], deps: SyncDeps, skipList: SkippedFile[] = []): Promise<SyncResult> {
   const result: SyncResult = { approved, added: [], held: [], changed: [], removed: [], skipped: [], skipList, kept: [], review: [] };
@@ -180,35 +193,48 @@ export async function syncSource(source: Source, approved: ApprovedFile[], deps:
   result.removed.push(...diff.removed);
 
   // In path order, so slugs and numbered titles do not depend on which download finished first.
-  queue.forEach((remote, i) => {
+  for (const [i, remote] of queue.entries()) {
     const outcome = examined[i];
     const before = previous.get(remote.path);
-    if ('reason' in outcome) {
-      skip({ path: remote.path, sha: remote.sha, reason: outcome.reason, ...(outcome.detail ? { detail: outcome.detail } : {}) });
-      if (before && !PASSING.has(outcome.reason)) {
+    const skipFile = (reason: string, detail?: string) => {
+      skip({ path: remote.path, sha: remote.sha, reason, ...(detail ? { detail } : {}) });
+      if (before && !PASSING.has(reason)) {
         files.delete(remote.path);
         result.removed.push(before);
       }
-      return;
+    };
+    if ('reason' in outcome) {
+      skipFile(outcome.reason, outcome.detail);
+      continue;
     }
 
-    let file: ApprovedFile;
-    if (before) {
-      const handTagged = !sameTags(before.tags, outcome.tags);
-      if (handTagged) result.kept.push({ path: remote.path, tags: before.tags, machine: outcome.tags });
-      file = entryOf(remote, outcome.derived, { ...before, tags: handTagged ? before.tags : outcome.tags });
-    } else {
-      const slug = indexedSlug(source, remote.path, deps.taken);
-      deps.taken.add(slug);
-      const title = titleOf(remote.path, outcome.tags, deps.vocabulary, titles);
-      titles.add(title);
-      file = entryOf(remote, outcome.derived, { slug, title, tags: outcome.tags });
-    }
-    files.set(remote.path, file);
+    const handTagged = before !== undefined && !sameTags(before.tags, outcome.tags);
+    const file = before
+      ? entryOf(remote, outcome.derived, { ...before, tags: handTagged ? before.tags : outcome.tags })
+      : entryOf(remote, outcome.derived, {
+          slug: indexedSlug(source, remote.path, deps.taken),
+          title: titleOf(remote.path, outcome.tags, deps.vocabulary, titles),
+          tags: outcome.tags,
+        });
     const status = file.held ? 'held' : before ? 'changed' : 'added';
+    const item: ReviewItem = { file, status, preview: outcome.preview, hints: outcome.hints };
+    // A file whose cell would stop its whole contact sheet waits for the next run; the others go on.
+    try {
+      await deps.drawCell?.(cellOf(item));
+    } catch (error) {
+      skipFile(SKIP.sheet, messageOf(error));
+      continue;
+    }
+
+    if (!before) {
+      deps.taken.add(file.slug);
+      titles.add(file.title);
+    }
+    if (handTagged && before) result.kept.push({ path: remote.path, tags: before.tags, machine: outcome.tags });
+    files.set(remote.path, file);
     result[status].push(file);
-    result.review.push({ file, status, preview: outcome.preview, hints: outcome.hints });
-  });
+    result.review.push(item);
+  }
 
   result.approved = [...files.values()].sort(byPath);
   result.skipList = [...skips.values()].sort(byPath);
@@ -257,6 +283,22 @@ function counted(skipped: SkippedFile[]): string {
 const cell = (text: string) => text.replace(/\|/g, '\\|');
 const listOf = (tags: string[]) => tags.join(', ') || 'none';
 
+/**
+ * A path from another repository as a Markdown code span that it cannot end early: fenced by one
+ * backtick more than its longest run of them, with control characters (a line break would end a
+ * table row) shown as U+FFFD. Inside the span an "@name" mentions no one and nothing is markup.
+ */
+export function code(text: string): string {
+  const plain = text.replace(/[\u0000-\u001f\u007f]/g, '�');
+  const longest = Math.max(0, ...(plain.match(/`+/g) ?? []).map((run) => run.length));
+  const fence = '`'.repeat(longest + 1);
+  const pad = plain.startsWith('`') || plain.endsWith('`') ? ' ' : '';
+  return `${fence}${pad}${plain}${pad}${fence}`;
+}
+
+/** Skips worth naming one by one: something went wrong with the file this time, and it is tried again next run. */
+const RETRIED = new Set<string>([SKIP.tagging, SKIP.sheet]);
+
 /** The review pull request's body: what happened in each collection, then the files to tag by hand. */
 export function summaryOf(reports: Report[]): string {
   const lines = [
@@ -283,14 +325,19 @@ export function summaryOf(reports: Report[]): string {
       lines.push(`- Skipped and remembered: ${result.skipList.length}, not downloaded again until they change`);
     }
     if (sheets.length > 0) lines.push(`- Contact sheets: ${sheets.join(', ')}`);
+    const retried = result.skipped.filter((file) => RETRIED.has(file.reason));
+    if (retried.length > 0) {
+      lines.push('', 'Files that are tried again next run (the reason is in the log of this run):', '');
+      for (const { path, reason } of retried) lines.push(`- ${code(path)}: ${reason}`);
+    }
     if (result.kept.length > 0) {
       lines.push('', 'Changed files that kept their tags and title, since these differ from what the machine gives:', '');
-      for (const { path, tags, machine } of result.kept) lines.push(`- \`${path}\`: kept ${listOf(tags)}; the machine gives ${listOf(machine)}`);
+      for (const { path, tags, machine } of result.kept) lines.push(`- ${code(path)}: kept ${listOf(tags)}; the machine gives ${listOf(machine)}`);
     }
     result.review.forEach(({ file, hints }, i) => {
       if (!file.held) return;
       const sheet = String(Math.floor(i / PER_SHEET) + 1).padStart(2, '0');
-      held.push(`| ${cell(source.name)} | ${sheet}, #${i + 1} | \`${cell(file.path)}\` | ${listOf(file.tags)} | ${listOf(hints)} |`);
+      held.push(`| ${cell(source.name)} | ${sheet}, #${i + 1} | ${cell(code(file.path))} | ${listOf(file.tags)} | ${listOf(hints)} |`);
     });
   }
   if (held.length > 0) {
@@ -323,14 +370,20 @@ interface WeightsFile {
 
 type Embedder = () => Promise<{ image(buffer: Buffer): Promise<Float32Array> }>;
 
-/** The image taggers on a preview, as calibrated: palettes measured, subjects from the probes. */
-function imageTagger(tagger: TaggerFile, probes: Record<string, Probe>, loadClip: Embedder): SyncDeps['tag'] {
+/**
+ * The image taggers on a preview, as calibrated: palettes measured, subjects from the probes. A
+ * model that does not load is a TaggerUnavailable, which stops the sync; any other error is about
+ * the one file.
+ */
+export function imageTagger(tagger: TaggerFile, probes: Record<string, Probe>, loadClip: Embedder): SyncDeps['tag'] {
   const applicable = applicableSubjects(tagger);
   let clip: ReturnType<Embedder> | undefined;
   return async (preview) => {
     const palettes = paletteTags(await sampleForPalette(preview), tagger.palettes ?? {});
     // Loaded on first use, so a run without new files needs no model.
-    clip ??= loadClip();
+    clip ??= loadClip().catch((error: unknown) => {
+      throw new TaggerUnavailable(`the CLIP model could not be loaded: ${messageOf(error)}`);
+    });
     const embedding = await (await clip).image(preview);
     const scores = Object.fromEntries(Object.entries(probes).map(([slug, probe]) => [slug, probeScore(probe, embedding)]));
     const subjects = suggestTags(scores, applicable);
@@ -384,6 +437,7 @@ async function main(): Promise<void> {
     fetchOriginal: (url) => fetchOriginal(url, { token }),
     measure: measureOriginal,
     tag: imageTagger(JSON.parse(taggerText) as TaggerFile, weights.probes, loadClip),
+    drawCell,
     taken: new Set([...entries.map(slugOf), ...[...records.values()].flatMap((record) => record.approved.map((file) => file.slug))]),
     vocabulary: tags,
   };
@@ -407,7 +461,7 @@ async function main(): Promise<void> {
       );
     }
     for (const { path, reason, detail } of result.skipped) {
-      if (reason === SKIP.download || reason === SKIP.unreadable) console.warn(`  ${path}: ${reason} (${detail})`);
+      if (detail && reason !== SKIP.tooSmall) console.warn(`  ${path}: ${reason} (${detail})`);
     }
   }
   await writeFile(join(REVIEW_DIR, 'summary.md'), summaryOf(reports));

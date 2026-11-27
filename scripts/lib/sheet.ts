@@ -1,7 +1,7 @@
 // Contact sheets for the review pull request: the files a sync proposes, small enough to look at
 // together and to attach to a comment, each with its number, title and tags.
 
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import sharp from 'sharp';
 
@@ -29,8 +29,15 @@ const BACKGROUND = '#16181a';
 const TITLE_CHARS = 42;
 const TEXT_CHARS = 48;
 
+/**
+ * Characters XML does not allow, which would stop the whole sheet from being drawn: control
+ * characters other than tab and line breaks, U+FFFE and U+FFFF, and halves of a surrogate pair on
+ * their own (as cutting a title short can leave).
+ */
+const NOT_XML = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
 function escape(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return text.replace(NOT_XML, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function fit(text: string, chars: number): string {
@@ -54,6 +61,32 @@ function labels(cells: SheetCell[], first: number, height: number): Buffer {
   );
 }
 
+/** One sheet of up to 24 cells, numbered from `first`, as JPEG. */
+async function draw(cells: SheetCell[], first: number): Promise<Buffer> {
+  const height = Math.ceil(cells.length / COLUMNS) * CELL_HEIGHT;
+  const pictures = await Promise.all(
+    cells.map(async (cell, i) => ({
+      input: await sharp(cell.image)
+        .resize(PICTURE.width, PICTURE.height, { fit: 'contain', background: '#0a0d0c' })
+        .toBuffer(),
+      left: (i % COLUMNS) * CELL_WIDTH + PAD,
+      top: Math.floor(i / COLUMNS) * CELL_HEIGHT + PAD,
+    })),
+  );
+  return sharp({ create: { width: WIDTH, height, channels: 3, background: BACKGROUND } })
+    .composite([...pictures, { input: labels(cells, first, height), left: 0, top: 0 }])
+    .jpeg({ quality: 82, mozjpeg: true })
+    .toBuffer();
+}
+
+/**
+ * Draws one cell the way a sheet draws it, without writing anything; throws when it cannot be
+ * drawn. Sync tries each file's cell, so a file that would stop its whole sheet is caught alone.
+ */
+export async function drawCell(cell: SheetCell): Promise<void> {
+  await draw([cell], 1);
+}
+
 /**
  * Draws the cells on JPEG sheets of up to 24, numbered from 1 across the sheets, and writes them
  * to `<out>-01.jpg`, `<out>-02.jpg` and so on. Returns the paths written; nothing for no cells.
@@ -62,22 +95,8 @@ export async function contactSheet(entries: SheetCell[], out: string): Promise<s
   const written: string[] = [];
   if (entries.length > 0) await mkdir(dirname(out), { recursive: true });
   for (let start = 0; start < entries.length; start += PER_SHEET) {
-    const cells = entries.slice(start, start + PER_SHEET);
-    const height = Math.ceil(cells.length / COLUMNS) * CELL_HEIGHT;
-    const pictures = await Promise.all(
-      cells.map(async (cell, i) => ({
-        input: await sharp(cell.image)
-          .resize(PICTURE.width, PICTURE.height, { fit: 'contain', background: '#0a0d0c' })
-          .toBuffer(),
-        left: (i % COLUMNS) * CELL_WIDTH + PAD,
-        top: Math.floor(i / COLUMNS) * CELL_HEIGHT + PAD,
-      })),
-    );
     const path = `${out}-${String(start / PER_SHEET + 1).padStart(2, '0')}.jpg`;
-    await sharp({ create: { width: WIDTH, height, channels: 3, background: BACKGROUND } })
-      .composite([...pictures, { input: labels(cells, start + 1, height), left: 0, top: 0 }])
-      .jpeg({ quality: 82, mozjpeg: true })
-      .toFile(path);
+    await writeFile(path, await draw(entries.slice(start, start + PER_SHEET), start + 1));
     written.push(path);
   }
   return written;
