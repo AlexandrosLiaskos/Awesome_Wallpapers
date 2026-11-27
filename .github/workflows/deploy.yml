@@ -1,10 +1,14 @@
 name: Deploy
 
-# Builds the site and publishes it to GitHub Pages on every push to main.
+# Builds the site and publishes it to GitHub Pages on every push to main, and every six hours so
+# that files gone from the indexed collections leave the site without anyone. A scheduled run
+# publishes only when the catalog it built differs from the live one.
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '17 */6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -18,6 +22,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.live.outputs.same != 'true' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -26,11 +32,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - run: npm ci
+      # The build needs none of the devDependencies (tests, type checks, the tagger's model
+      # runtime); every pull request runs the tests in validate.yml.
+      - run: npm ci --omit=dev
 
       - run: npm run validate
-
-      - run: npm test
 
       # Thumbnails and previews are rebuilt only for images that changed.
       - name: Restore generated images
@@ -39,19 +45,43 @@ jobs:
           path: |
             .cache
             public/m
-          key: media-v1-${{ hashFiles('images/**', 'scripts/lib/media.ts') }}
-          restore-keys: media-v1-
+          key: media-v2-${{ hashFiles('images/**', 'data/sources/**', 'scripts/lib/media.ts') }}
+          restore-keys: media-v2-
 
       - run: npm run build
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      # A live catalog that cannot be fetched counts as different, so the run deploys.
+      - name: Compare with the live catalog
+        id: live
+        if: github.event_name == 'schedule'
+        run: |
+          built=$(sha256sum dist/api/wallpapers.json)
+          built=${built%% *}
+          live=unknown
+          if curl --fail --silent --show-error --location --retry 3 --max-time 60 \
+            --output "$RUNNER_TEMP/live.json" https://wallpapers.liaskos.eu/api/wallpapers.json; then
+            live=$(sha256sum "$RUNNER_TEMP/live.json")
+            live=${live%% *}
+          else
+            echo "::warning::The live catalog could not be fetched, so this run deploys."
+          fi
+          if [ "$built" = "$live" ]; then
+            echo 'same=true' >> "$GITHUB_OUTPUT"
+            echo 'The catalog is the same as the live one, so nothing was deployed.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'same=false' >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/upload-pages-artifact@v5
+        if: steps.live.outputs.same != 'true'
         with:
           path: dist
 
   deploy:
     needs: build
+    if: needs.build.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write

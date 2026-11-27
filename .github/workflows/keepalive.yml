@@ -1,0 +1,23 @@
+name: Keep scheduled workflows on
+
+# GitHub turns off the scheduled workflows of a public repository after 60 days without activity.
+# Enabling them again every month keeps them running without commits. This workflow is scheduled
+# too, so it enables itself as well.
+
+on:
+  schedule:
+    - cron: '23 5 1 * *'
+
+permissions:
+  actions: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/deploy.yml/enable"
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/sync.yml/enable"
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/keepalive.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}

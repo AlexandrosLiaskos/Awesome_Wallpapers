@@ -6,7 +6,7 @@
   "description": "A fast, searchable gallery of aesthetic wallpapers.",
   "license": "MIT",
   "engines": {
-    "node": ">=24"
+    "node": ">=24.2"
   },
   "scripts": {
     "media": "node scripts/build-media.ts",
