@@ -43,19 +43,36 @@ jobs:
 
       - run: npm run validate
 
-      # Thumbnails and previews are rebuilt only for images that changed.
+      # Thumbnails and previews are rebuilt only for images that changed. The newest earlier cache is
+      # restored, and the cache is saved under this run's own key whenever the build changed it, also
+      # when the build failed, so the images made before a failure are not made again.
       - name: Restore generated images
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             .cache
             public/m
-          key: media-v2-${{ hashFiles('images/**', 'data/sources/**', 'scripts/lib/media.ts') }}
+          key: media-v2-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: media-v2-
+
+      - name: Note what the cache held
+        id: media-before
+        env:
+          HASH: ${{ hashFiles('.cache/media.json') }}
+        run: echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
       - run: npm run build
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Save generated images
+        if: always() && hashFiles('.cache/media.json') != steps.media-before.outputs.hash
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            .cache
+            public/m
+          key: media-v2-${{ github.run_id }}-${{ github.run_attempt }}
 
       # A scheduled run skips the deploy only when the catalog is the live one and a run of this
       # commit already deployed: a scheduled run can displace a pending push run of the same commit,

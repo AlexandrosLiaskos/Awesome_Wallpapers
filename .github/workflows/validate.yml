@@ -44,18 +44,35 @@ jobs:
 
       - run: npm test
 
+      # As in deploy.yml: the newest earlier cache is restored, and saved under this run's own key
+      # whenever the build changed it, also when a later step fails.
       - name: Restore generated images
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             .cache
             public/m
-          key: media-v2-${{ hashFiles('images/**', 'data/sources/**', 'scripts/lib/media.ts') }}
+          key: media-v2-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: media-v2-
+
+      - name: Note what the cache held
+        id: media-before
+        env:
+          HASH: ${{ hashFiles('.cache/media.json') }}
+        run: echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
       - run: npm run build
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Save generated images
+        if: always() && hashFiles('.cache/media.json') != steps.media-before.outputs.hash
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            .cache
+            public/m
+          key: media-v2-${{ github.run_id }}-${{ github.run_attempt }}
 
       # After the build: the types include the catalog that the build generates.
       - run: npm run check
