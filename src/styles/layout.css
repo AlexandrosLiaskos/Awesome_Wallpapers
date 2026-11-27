@@ -236,8 +236,89 @@
   font-variant-numeric: tabular-nums;
 }
 
-.site-footer__note::before {
-  content: '· ';
+/* A small (i) next to the visit count; its note shows on hover, focus or tap. */
+.info {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.info__button {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -6px 0 -6px -2px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--faint);
+  cursor: help;
+}
+
+.info__button:hover,
+.info__button:focus-visible {
+  color: var(--accent);
+}
+
+.info__button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.info__tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 10;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 32px));
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  translate: -50% 4px;
+  transition:
+    opacity 120ms ease,
+    translate 120ms ease,
+    visibility 0s 120ms;
+}
+
+/* Keeps the note open while the pointer crosses the gap to it. */
+.info__tip::after {
+  content: '';
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 10px;
+}
+
+.info:hover .info__tip,
+.info:focus-within .info__tip {
+  opacity: 1;
+  visibility: visible;
+  translate: -50% 0;
+  transition:
+    opacity 120ms ease,
+    translate 120ms ease;
+}
+
+.info[data-dismissed] .info__tip {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info__tip {
+    transition: none;
+  }
 }
 
 .site-footer ul {
