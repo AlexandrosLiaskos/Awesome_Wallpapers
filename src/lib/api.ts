@@ -14,7 +14,7 @@ export interface ApiEntry {
   bytes: number;
   format: string;
   palette: string[];
-  source: { id: string; name: string; url: string };
+  source: { id: string; name: string; url?: string };
   /** The ids of the other collections that have the same image. */
   alsoIn: string[];
   page: string;
