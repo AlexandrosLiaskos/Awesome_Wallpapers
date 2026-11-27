@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
-import { looksIdentical } from '../../scripts/lib/similar.ts';
+import { looksIdentical, pictureDistance } from '../../scripts/lib/similar.ts';
 
 const png = (svg: string) => sharp(Buffer.from(svg)).png().toBuffer();
 
@@ -63,5 +63,49 @@ describe('looksIdentical', () => {
       .toBuffer();
     const dark = await sharp({ create: { width: 64, height: 36, channels: 3, background: '#0a0d0c' } }).png().toBuffer();
     expect(await looksIdentical(clear, dark)).toBe(true);
+  });
+
+  it('rejects a recolouring whose every colour is shifted a little, as a Gruvbox and a Nord version on near-equal dark greys', async () => {
+    // Every colour moved by (9, 9, 9), about 15.6 in RGB: no pixel is 32 apart, but all are.
+    const nord = await thumbnail(await png(artwork(['#2e3440', '#5e81ac', '#bf616a', '#88c0d0', '#ebcb8b'])));
+    const shifted = await thumbnail(await png(artwork(['#373d49', '#678ab5', '#c86a73', '#91c9d9', '#f4d494'])));
+    const { mean, max } = await pictureDistance(nord, shifted);
+    expect(max).toBeLessThanOrEqual(32);
+    expect(mean).toBeGreaterThan(8);
+    expect(await looksIdentical(nord, shifted)).toBe(false);
+  });
+});
+
+// Plain 32×32 images, which the comparison takes as they are, so the distances are exact.
+const GREY = { r: 100, g: 100, b: 100 };
+const flat = (colour: { r: number; g: number; b: number }) =>
+  sharp({ create: { width: 32, height: 32, channels: 3, background: colour } }).png().toBuffer();
+
+/** A grey 32×32 image with one pixel, at (5, 7), moved by the given amounts. */
+async function withOnePixel(dr: number, dg: number, db: number): Promise<Buffer> {
+  const raw = Buffer.alloc(32 * 32 * 3, 100);
+  const at = (7 * 32 + 5) * 3;
+  raw[at] += dr;
+  raw[at + 1] += dg;
+  raw[at + 2] += db;
+  return sharp(raw, { raw: { width: 32, height: 32, channels: 3 } }).png().toBuffer();
+}
+
+describe('the limits of looksIdentical', () => {
+  it('accepts one pixel exactly 32 apart and rejects one just over', async () => {
+    const grey = await flat(GREY);
+    expect(await pictureDistance(grey, await withOnePixel(32, 0, 0))).toEqual({ mean: 32 / 1024, max: 32 });
+    expect(await looksIdentical(grey, await withOnePixel(32, 0, 0))).toBe(true);
+    // (32, 1, 0) is 32.02 apart.
+    expect(await looksIdentical(grey, await withOnePixel(32, 1, 0))).toBe(false);
+  });
+
+  it('accepts every pixel exactly 8 apart and rejects every pixel just over', async () => {
+    const grey = await flat(GREY);
+    const eight = await flat({ r: 108, g: 100, b: 100 });
+    expect(await pictureDistance(grey, eight)).toEqual({ mean: 8, max: 8 });
+    expect(await looksIdentical(grey, eight)).toBe(true);
+    // (8, 1, 0) is 8.06 apart.
+    expect(await looksIdentical(grey, await flat({ r: 108, g: 101, b: 100 }))).toBe(false);
   });
 });
