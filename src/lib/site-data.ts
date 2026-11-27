@@ -70,6 +70,30 @@ export function creditedCollections(
   return { items, countText: count < NUMBER_WORDS.length ? NUMBER_WORDS[count] : String(count) };
 }
 
+/** A credit on a wallpaper page: a name, linked when there is somewhere to go. */
+export interface CreditLink {
+  name: string;
+  href?: string;
+}
+
+/**
+ * How a wallpaper page credits its collections, in the form of the intro and the footer: owner/repo,
+ * linked to the collection's page. `source` is the one it comes from, `alsoIn` the others that have
+ * it. An own wallpaper whose entry credits someone else (a contribution, which has no collection
+ * page) keeps that credit as its source.
+ */
+export function creditsOf(wallpaper: Wallpaper, credited: CreditedCollection[]): { source: CreditLink; alsoIn: CreditLink[] } {
+  const byId = new Map(credited.map(({ id, name, href }) => [id, { name, href }]));
+  const ids = collectionIdsOf(wallpaper);
+  const links = ids.flatMap((id) => byId.get(id) ?? []);
+  if (wallpaper.sourceId === 'own' && wallpaper.source) {
+    return { source: { name: wallpaper.source.name, href: wallpaper.source.url || undefined }, alsoIn: links };
+  }
+  const fallback = sourceOf(wallpaper);
+  const source = byId.get(ids[0]) ?? { name: fallback.name, href: fallback.url || undefined };
+  return { source, alsoIn: ids.slice(1).flatMap((id) => byId.get(id) ?? []) };
+}
+
 /** Tags in use: palettes first, then subjects, each group by how many wallpapers carry the tag. */
 export function tagsWithCounts(list: Wallpaper[], tags: Tag[]): CountedTag[] {
   const counted = tags

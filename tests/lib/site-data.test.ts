@@ -5,6 +5,7 @@ import {
   byTag,
   collectionIdsOf,
   creditedCollections,
+  creditsOf,
   listedCollections,
   neighbours,
   related,
@@ -229,5 +230,39 @@ describe('creditedCollections', () => {
 
   it('keeps all 11 items', () => {
     expect(creditedCollections(many(11), pageUrl).items).toHaveLength(11);
+  });
+});
+
+describe('creditsOf', () => {
+  const { items } = creditedCollections(
+    [
+      { id: SITE.defaultSource.id, name: SITE.defaultSource.title, repo: SITE.defaultSource.repo },
+      { id: 'nordic-wallpapers', name: 'Nordic Wallpapers', repo: 'linuxdotexe/nordic-wallpapers' },
+      { id: 'gruvbox-wallpapers', name: 'Gruvbox Wallpapers', repo: 'AngelJumbo/gruvbox-wallpapers' },
+    ],
+    (id) => `/sources/${id}/`,
+  );
+
+  it('names every collection as owner/repo, linked to its page, own and indexed alike', () => {
+    expect(creditsOf(wallpaper('cabin', [], { alsoIn: ['gruvbox-wallpapers'] }), items)).toEqual({
+      source: { name: 'D3Ext/aesthetic-wallpapers', href: '/sources/aesthetic-wallpapers/' },
+      alsoIn: [{ name: 'AngelJumbo/gruvbox-wallpapers', href: '/sources/gruvbox-wallpapers/' }],
+    });
+    const indexed = wallpaper('lake', [], {
+      sourceId: 'nordic-wallpapers',
+      source: { name: 'Nordic Wallpapers', url: 'https://github.com/linuxdotexe/nordic-wallpapers' },
+    });
+    expect(creditsOf(indexed, items)).toEqual({
+      source: { name: 'linuxdotexe/nordic-wallpapers', href: '/sources/nordic-wallpapers/' },
+      alsoIn: [],
+    });
+  });
+
+  it('keeps the credit of a wallpaper contributed here directly, which has no collection page', () => {
+    const contributed = wallpaper('hills', [], { source: { name: 'A contributor, pull request #1', url: 'https://github.com/x/y/pull/1' } });
+    expect(creditsOf(contributed, items)).toEqual({
+      source: { name: 'A contributor, pull request #1', href: 'https://github.com/x/y/pull/1' },
+      alsoIn: [],
+    });
   });
 });
