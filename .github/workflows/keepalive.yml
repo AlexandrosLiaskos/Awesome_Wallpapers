@@ -7,6 +7,7 @@ name: Keep scheduled workflows on
 on:
   schedule:
     - cron: '23 5 1 * *'
+  workflow_dispatch:
 
 permissions:
   actions: write
@@ -15,9 +16,15 @@ jobs:
   keepalive:
     runs-on: ubuntu-latest
     steps:
+      # This also turns on again a workflow that was turned off by hand; to keep one off, take it out of this list.
       - run: |
-          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/deploy.yml/enable"
-          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/sync.yml/enable"
-          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/keepalive.yml/enable"
+          failed=0
+          for workflow in deploy.yml sync.yml keepalive.yml; do
+            if ! gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/enable"; then
+              echo "::error::Could not enable $workflow."
+              failed=1
+            fi
+          done
+          exit "$failed"
         env:
           GH_TOKEN: ${{ github.token }}
