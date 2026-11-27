@@ -1,12 +1,14 @@
 name: Sync collections
 
 # Every day: finds the new, changed and removed files of the indexed collections (scripts/sync.ts)
-# and proposes them in one pull request from the branch sync/additions. The branch keeps what
-# earlier runs added until the pull request is merged, and is never rewritten, so hand tags pushed
-# to it stay. Removals do not wait for the pull request: the scheduled deploys leave gone files out.
+# and proposes them in one pull request from the branch sync/additions. While that pull request is
+# open, each run merges main into the branch and adds to it without force, so hand tags pushed to
+# it stay and pending files are not downloaded again. Once it is merged or closed, nothing is under
+# review, and the next run starts again from main and replaces the branch. Removals do not wait for
+# the pull request: the scheduled deploys leave gone files out.
 #
-# The sync job runs the npm packages and reads images from other repositories with a read-only
-# token; the publish job, which installs nothing, pushes its commits and opens the pull request.
+# The sync job runs the npm packages and reads images from other repositories with read-only
+# permissions; the publish job, which installs nothing, pushes its commits and opens the pull request.
 
 on:
   schedule:
@@ -30,18 +32,27 @@ defaults:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
+      state: ${{ steps.branch.outputs.state }}
+      remote-head: ${{ steps.branch.outputs.remote-head }}
+      pull-request: ${{ steps.branch.outputs.pull-request }}
       committed: ${{ steps.commit.outputs.committed }}
       pending: ${{ steps.commit.outputs.pending }}
-      remote-head: ${{ steps.branch.outputs.remote-head }}
     steps:
       # The whole history, to merge main into the branch.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
+      # state: new (no branch), existing (its pull request is open: main is merged in), or replace
+      # (no open pull request: started again from main, and the publish job replaces the branch).
       - name: Take up the branch
         id: branch
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -56,13 +67,23 @@ jobs:
             exit 1
           fi
           git fetch --no-tags origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
+          echo "remote-head=$(git rev-parse "origin/$BRANCH")" >> "$GITHUB_OUTPUT"
+          if ! open=$(gh api "repos/$GITHUB_REPOSITORY/pulls?head=$GITHUB_REPOSITORY_OWNER:$BRANCH&state=open" --jq '.[0].number // empty'); then
+            echo "::error::Could not look up whether a pull request of $BRANCH is open, so the branch is left as it is."
+            exit 1
+          fi
+          if [ -z "$open" ]; then
+            git checkout -B "$BRANCH" origin/main
+            echo 'state=replace' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           git checkout -B "$BRANCH" "origin/$BRANCH"
-          echo "remote-head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo 'state=existing' >> "$GITHUB_OUTPUT"
+          echo "pull-request=$open" >> "$GITHUB_OUTPUT"
           if ! git merge --no-edit -m "chore: merge main into $BRANCH" origin/main; then
             conflicts=$(git diff --name-only --diff-filter=U | paste -sd ' ' -)
             git merge --abort
-            message="Merging main into $BRANCH stopped at a conflict in: $conflicts. Merge main into the branch by hand (or use Resolve conflicts on its pull request), push, then run this workflow again."
+            message="Merging main into $BRANCH stopped at a conflict in: $conflicts. Resolve it on pull request #$open (with Resolve conflicts there, or by merging main into $BRANCH and pushing), then run this workflow again."
             echo "::error::$message"
             printf '## Sync stopped\n\n%s\n' "$message" >> "$GITHUB_STEP_SUMMARY"
             exit 1
@@ -98,6 +119,8 @@ jobs:
         id: test
         run: npm test
 
+      # The body line links each commit to its run's summary and contact sheets; the pull request
+      # body lists these lines.
       - name: Commit the changes
         id: commit
         run: |
@@ -118,7 +141,7 @@ jobs:
 
       - name: Upload the contact sheets
         id: sheets
-        if: steps.commit.outputs.committed == 'true' || steps.commit.outputs.pending == 'true'
+        if: steps.commit.outputs.committed == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: contact-sheets
@@ -130,38 +153,52 @@ jobs:
           overwrite: true
 
       - name: Prepare the pull request and the commits
-        if: steps.sheets.outcome == 'success'
+        if: steps.commit.outputs.committed == 'true'
         env:
-          COMMITTED: ${{ steps.commit.outputs.committed }}
           STATE: ${{ steps.branch.outputs.state }}
           SHEETS_URL: ${{ steps.sheets.outputs.artifact-url }}
         run: |
           mkdir -p "$RUNNER_TEMP/publish"
+          # Every run whose files the branch holds and main does not: the newest 100, oldest first.
+          line='^Summary and contact sheets: '
+          runs=$(git log --grep="$line" --format=%H origin/main..HEAD | wc -l)
+          tail="$RUNNER_TEMP/pull-request-tail.md"
+          {
+            echo
+            echo "The contact sheets of this run are in [its artifact]($SHEETS_URL)."
+            if [ "$runs" -gt 0 ]; then
+              echo
+              echo 'Runs whose files this pull request proposes, each with its summary and contact sheets:'
+              echo
+              if [ "$runs" -gt 100 ]; then echo "- $((runs - 100)) earlier runs, not listed here"; fi
+              git log --grep="$line" --format='%cs %b' --max-count=100 origin/main..HEAD \
+                | sed -n 's/^\([0-9-]*\) Summary and contact sheets: \(https:[^ ]*\)$/\1 \2/p' | tac \
+                | while read -r day url; do echo "- [$day, run ${url##*/}]($url)"; done
+            fi
+            echo
+            echo 'This pull request can be merged once the Validate check on its latest commit passes; held files need tags first.'
+          } > "$tail"
+          # GitHub takes at most 65,536 characters in a pull request body; the summary gets what the
+          # rest leaves.
           summary=.cache/review/summary.md
-          # GitHub takes at most 65,536 characters in a pull request body.
-          limit=60000
+          limit=$((64000 - $(wc -c < "$tail")))
           {
             if [ "$(wc -c < "$summary")" -le "$limit" ]; then
               cat "$summary"
             else
               head -c "$limit" "$summary" | sed '$d'
               echo
-              echo 'The summary is cut short here; all of it is in summary.md in the artifact below.'
+              echo "The summary is cut short here; all of it is in summary.md in this run's artifact."
             fi
-            echo
-            echo "The contact sheets are in [this run's artifact]($SHEETS_URL)."
-            echo
-            echo 'This pull request can be merged once the Validate check on its latest commit passes; held files need tags first.'
+            cat "$tail"
           } > "$RUNNER_TEMP/publish/pull-request.md"
           # Only the commits made here: the publish job fetches main and the branch itself.
-          if [ "$COMMITTED" = true ]; then
-            known=(^origin/main)
-            if [ "$STATE" = existing ]; then known+=("^origin/$BRANCH"); fi
-            git bundle create "$RUNNER_TEMP/publish/branch.bundle" "$BRANCH" "${known[@]}"
-          fi
+          known=(^origin/main)
+          if [ "$STATE" = existing ]; then known+=("^origin/$BRANCH"); fi
+          git bundle create "$RUNNER_TEMP/publish/branch.bundle" "$BRANCH" "${known[@]}"
 
       - name: Hand them to the publish job
-        if: steps.sheets.outcome == 'success'
+        if: steps.commit.outputs.committed == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: publish
@@ -174,6 +211,7 @@ jobs:
         if: ${{ !cancelled() && steps.branch.outcome == 'success' }}
         env:
           STATE: ${{ steps.branch.outputs.state }}
+          PULL_REQUEST: ${{ steps.branch.outputs.pull-request }}
           VALIDATE: ${{ steps.validate.outcome }}
           TEST: ${{ steps.test.outcome }}
           COMMITTED: ${{ steps.commit.outputs.committed }}
@@ -181,17 +219,17 @@ jobs:
           {
             echo '## Sync'
             echo
-            if [ "$STATE" = new ]; then
-              echo "- Branch: $BRANCH, started from main"
-            else
-              echo "- Branch: $BRANCH, with main merged in"
-            fi
+            case $STATE in
+              new) echo "- Branch: $BRANCH, started from main" ;;
+              replace) echo "- Branch: $BRANCH, started again from main, since no pull request of it is open" ;;
+              existing) echo "- Branch: $BRANCH, under review in pull request #$PULL_REQUEST, with main merged in" ;;
+            esac
             echo "- Catalog validation: $VALIDATE (held files fail it until they are tagged by hand)"
             echo "- Tests: $TEST"
             if [ "$COMMITTED" = true ]; then
               echo '- data/sources/ changed and was committed'
             elif [ "$COMMITTED" = false ]; then
-              echo '- data/sources/ did not change'
+              echo '- data/sources/ did not change, so nothing is published'
             fi
             if [ "$VALIDATE" = failure ] && [ -s "$RUNNER_TEMP/validate.log" ]; then
               echo
@@ -211,7 +249,7 @@ jobs:
 
   publish:
     needs: sync
-    if: needs.sync.outputs.committed == 'true' || needs.sync.outputs.pending == 'true'
+    if: needs.sync.outputs.committed == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -227,24 +265,37 @@ jobs:
 
       # The whole history: the commits from the sync job build on main and the branch.
       - uses: actions/checkout@v7
-        if: needs.sync.outputs.committed == 'true'
         with:
           fetch-depth: 0
 
-      # Without force: when the branch moved during the run (new hand tags), the push is refused
-      # and the next run starts from the moved branch.
+      # Under review (existing): without force, so a branch that moved during the run (new hand
+      # tags) refuses the push and the next run starts from it. Nothing under review (replace): the
+      # branch is replaced, but only if it is still where the sync job saw it.
       - name: Push the branch
         id: push
-        if: needs.sync.outputs.committed == 'true'
+        env:
+          STATE: ${{ needs.sync.outputs.state }}
+          REMOTE_HEAD: ${{ needs.sync.outputs.remote-head }}
+          PULL_REQUEST: ${{ needs.sync.outputs.pull-request }}
         run: |
           git fetch --no-tags "$RUNNER_TEMP/publish/branch.bundle" "refs/heads/$BRANCH"
           sha=$(git rev-parse FETCH_HEAD)
-          if ! git push origin "$sha:refs/heads/$BRANCH" 2> "$RUNNER_TEMP/push.log"; then
+          current=$(git ls-remote origin "refs/heads/$BRANCH" | cut -f 1)
+          if [ "$current" = "$sha" ]; then
+            echo "- $BRANCH is already at $sha" >> "$GITHUB_STEP_SUMMARY"
+            echo "sha=$sha" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          lease=()
+          if [ "$STATE" = replace ]; then lease=("--force-with-lease=refs/heads/$BRANCH:$REMOTE_HEAD"); fi
+          if ! git push "${lease[@]}" origin "$sha:refs/heads/$BRANCH" 2> "$RUNNER_TEMP/push.log"; then
             cat "$RUNNER_TEMP/push.log" >&2
-            if grep -q 'workflows' "$RUNNER_TEMP/push.log"; then
-              message="GitHub refused the push: main changed files in .github/workflows since $BRANCH last took it in, and this workflow's token may not push such changes. Use Update branch on the pull request (or merge main into $BRANCH and push), then run this workflow again."
+            if ! grep -q 'workflows' "$RUNNER_TEMP/push.log"; then
+              message="Pushing $BRANCH failed: it changed while this workflow ran. Run the workflow again."
+            elif [ "$STATE" = existing ]; then
+              message="GitHub refused the push: main changed files in .github/workflows since $BRANCH last took it in, and this workflow's token may not push such changes. Use Update branch on pull request #$PULL_REQUEST (or merge main into $BRANCH and push), then run this workflow again."
             else
-              message="Pushing $BRANCH failed. If the branch changed while this workflow ran, run it again."
+              message="GitHub refused the push because it changes files in .github/workflows, which this workflow's token may not do. No pull request of $BRANCH is open, so delete the branch, then run this workflow again."
             fi
             echo "::error::$message"
             printf '## Publish stopped\n\n%s\n' "$message" >> "$GITHUB_STEP_SUMMARY"
@@ -254,30 +305,20 @@ jobs:
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "- Pushed $BRANCH at $sha" >> "$GITHUB_STEP_SUMMARY"
 
-      # Edited when this run pushed. Opened when there is none: after new files, or when an earlier
-      # run pushed but could not open it. One closed at the branch's current commit is left closed.
       - name: Open or update the pull request
         id: pull-request
         env:
-          COMMITTED: ${{ needs.sync.outputs.committed }}
           PENDING: ${{ needs.sync.outputs.pending }}
-          HEAD_SHA: ${{ steps.push.outputs.sha || needs.sync.outputs.remote-head }}
           TITLE: Additions from indexed collections
         run: |
           body="$RUNNER_TEMP/publish/pull-request.md"
-          pulls=$(gh api "repos/$GITHUB_REPOSITORY/pulls?head=$GITHUB_REPOSITORY_OWNER:$BRANCH&base=main&state=all&per_page=100")
-          open=$(jq -r 'map(select(.state == "open")) | .[0].number // empty' <<< "$pulls")
-          seen=$(jq --arg sha "$HEAD_SHA" 'any(.[]; .head.sha == $sha)' <<< "$pulls")
+          open=$(gh api "repos/$GITHUB_REPOSITORY/pulls?head=$GITHUB_REPOSITORY_OWNER:$BRANCH&state=open" --jq '.[0].number // empty')
           if [ -n "$open" ]; then
-            if [ "$COMMITTED" != true ]; then
-              echo "- Pull request #$open already has the branch's files" >> "$GITHUB_STEP_SUMMARY"
-              exit 0
-            fi
             url=$(gh api -X PATCH "repos/$GITHUB_REPOSITORY/pulls/$open" -f title="$TITLE" -F body=@"$body" --jq .html_url)
-          elif [ "$PENDING" = true ] && { [ "$COMMITTED" = true ] || [ "$seen" = false ]; }; then
+          elif [ "$PENDING" = true ]; then
             url=$(gh api "repos/$GITHUB_REPOSITORY/pulls" -f title="$TITLE" -f head="$BRANCH" -f base=main -F body=@"$body" --jq .html_url)
           else
-            echo '- No pull request to open or update' >> "$GITHUB_STEP_SUMMARY"
+            echo '- No pull request: the branch has no files that main does not have' >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
@@ -286,14 +327,14 @@ jobs:
       - name: Explain a refused pull request
         if: failure() && steps.pull-request.outcome == 'failure'
         run: |
-          message="If GitHub answered that Actions may not create pull requests, turn on \"Allow GitHub Actions to create and approve pull requests\" in Settings, Actions, General. The next run opens the pull request for what is already on $BRANCH."
+          message="If GitHub answered that Actions may not create pull requests, turn on \"Allow GitHub Actions to create and approve pull requests\" in Settings, Actions, General. The next run proposes the files again and opens the pull request."
           echo "::error::$message"
           echo "- $message" >> "$GITHUB_STEP_SUMMARY"
 
       # A push or pull request made with this workflow's token starts no checks, so Validate is
       # started here, on the branch's latest commit.
       - name: Run Validate on the branch
-        if: ${{ !cancelled() && (steps.push.outcome == 'success' || steps.pull-request.outputs.url != '') }}
+        if: ${{ !cancelled() && steps.push.outcome == 'success' }}
         run: |
           gh workflow run validate.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
           echo '- Started Validate on the branch' >> "$GITHUB_STEP_SUMMARY"

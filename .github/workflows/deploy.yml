@@ -2,7 +2,8 @@ name: Deploy
 
 # Builds the site and publishes it to GitHub Pages on every push to main, and every six hours so
 # that files gone from the indexed collections leave the site without anyone. A scheduled run
-# publishes only when the catalog it built differs from the live one.
+# publishes only when the catalog it built differs from the live one, or when no run of the same
+# commit has published yet.
 
 on:
   push:
@@ -22,8 +23,12 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # To look up earlier deploys of the same commit (see "Compare with the live site").
+      actions: read
     outputs:
-      deploy: ${{ steps.live.outputs.same != 'true' }}
+      deploy: ${{ steps.live.outputs.skip != 'true' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -52,10 +57,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # A live catalog that cannot be fetched counts as different, so the run deploys.
-      - name: Compare with the live catalog
+      # A scheduled run skips the deploy only when the catalog is the live one and a run of this
+      # commit already deployed: a scheduled run can displace a pending push run of the same commit,
+      # whose code changes would otherwise never go live. A live catalog or an earlier run that
+      # cannot be looked up counts as a difference, so the run deploys.
+      - name: Compare with the live site
         id: live
         if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           built=$(sha256sum dist/api/wallpapers.json)
           built=${built%% *}
@@ -67,15 +77,26 @@ jobs:
           else
             echo "::warning::The live catalog could not be fetched, so this run deploys."
           fi
+          skip=false
           if [ "$built" = "$live" ]; then
-            echo 'same=true' >> "$GITHUB_OUTPUT"
-            echo 'The catalog is the same as the live one, so nothing was deployed.' >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo 'same=false' >> "$GITHUB_OUTPUT"
+            if runs=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy.yml --commit "$GITHUB_SHA" \
+              --status success --json databaseId --jq length); then
+              if [ "$runs" -gt 0 ] 2> /dev/null; then
+                skip=true
+              else
+                echo "No earlier run deployed $GITHUB_SHA, so this run deploys."
+              fi
+            else
+              echo "::warning::Earlier runs of $GITHUB_SHA could not be looked up, so this run deploys."
+            fi
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+          if [ "$skip" = true ]; then
+            echo 'The catalog is the same as the live one and this commit was deployed before, so nothing was deployed.' >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - uses: actions/upload-pages-artifact@v5
-        if: steps.live.outputs.same != 'true'
+        if: steps.live.outputs.skip != 'true'
         with:
           path: dist
 
