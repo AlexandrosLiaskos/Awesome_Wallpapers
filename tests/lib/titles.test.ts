@@ -33,6 +33,12 @@ describe('titleFromPath', () => {
     expect(titleFromPath('unsplash-lake-image-04.jpg')).toBe('Lake');
   });
 
+  it('drops the ign prefix that ImageGoNord gives the files it converts', () => {
+    expect(titleFromPath('wallpapers/ign_lighthouse.png')).toBe('Lighthouse');
+    expect(titleFromPath('ign-supertree-grove-singapore.png')).toBe('Supertree Grove Singapore');
+    expect(titleFromPath('ign_0001.png')).toBeNull();
+  });
+
   it('treats brackets and commas as separators', () => {
     expect(titleFromPath('forest (3).png')).toBe('Forest');
     expect(titleFromPath('lake[2],pines.png')).toBe('Lake Pines');

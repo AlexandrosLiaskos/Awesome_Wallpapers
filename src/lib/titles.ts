@@ -1,4 +1,5 @@
-const DROPPED = new Set(['wallhaven', 'wallpaper', 'wall', 'img', 'image', 'unsplash', 'photo']);
+// "ign" is the prefix ImageGoNord gives the files it converts (nordic-wallpapers names most of its files so).
+const DROPPED = new Set(['wallhaven', 'wallpaper', 'wall', 'img', 'image', 'unsplash', 'photo', 'ign']);
 const SMALL_WORDS = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'with']);
 
 function isNoise(token: string): boolean {
