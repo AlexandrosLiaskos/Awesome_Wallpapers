@@ -7,8 +7,8 @@ import tagsYaml from '../../data/tags.yml?raw';
 import catalog from '../generated/catalog.json';
 import { parseTags } from './catalog.ts';
 import { attributionOf } from './indexed.ts';
-import { SITE } from './site.ts';
-import { listedCollections, otherCollections, tagsWithCounts } from './site-data.ts';
+import { SITE, url } from './site.ts';
+import { creditedCollections, listedCollections, tagsWithCounts } from './site-data.ts';
 import { parseSources } from './sources.ts';
 import type { Attribution, Wallpaper } from './types.ts';
 
@@ -39,8 +39,8 @@ export const collections = listedCollections(wallpapers, [
   ...sources.map((source) => ({ id: source.id, name: source.name, repo: source.repo })),
 ]);
 
-/** The collections named after the default one in the intro and the footer; null when there are none. */
-export const otherCollectionsText = otherCollections(collections);
+/** Every collection, named equally in the intro and the footer. */
+export const credited = creditedCollections(collections, (id) => url(`/sources/${id}/`));
 
 const labels = new Map(tags.map((tag) => [tag.slug, tag.label]));
 

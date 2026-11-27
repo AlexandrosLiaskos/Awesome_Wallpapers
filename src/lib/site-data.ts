@@ -47,15 +47,27 @@ export function listedCollections(list: Wallpaper[], collections: CollectionInfo
     .sort((a, b) => b.wallpapers.length - a.wallpapers.length);
 }
 
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+
+/** A collection as the intro and the footer name it: owner/repo, linked to its page. */
+export interface CreditedCollection {
+  id: string;
+  name: string;
+  href: string;
+}
+
 /**
- * The collections besides the default one, as the intro and the footer name
- * them after it: "one other collection", "3 other collections". Null when
- * the default collection is the only one.
+ * The collections the intro and the footer name, all equally and in the order
+ * /sources/ lists them, with how many there are: in words up to ten, in digits
+ * after. The page address comes from the caller because it depends on the base path.
  */
-export function otherCollections(collections: { id: string }[]): string | null {
-  const others = collections.filter((collection) => collection.id !== SITE.defaultSource.id).length;
-  if (others === 0) return null;
-  return others === 1 ? 'one other collection' : `${others} other collections`;
+export function creditedCollections(
+  collections: CollectionInfo[],
+  pageUrl: (id: string) => string,
+): { items: CreditedCollection[]; countText: string } {
+  const items = collections.map(({ id, repo }) => ({ id, name: repo, href: pageUrl(id) }));
+  const count = items.length;
+  return { items, countText: count < NUMBER_WORDS.length ? NUMBER_WORDS[count] : String(count) };
 }
 
 /** Tags in use: palettes first, then subjects, each group by how many wallpapers carry the tag. */

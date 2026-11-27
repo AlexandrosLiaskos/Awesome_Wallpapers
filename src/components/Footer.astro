@@ -1,17 +1,22 @@
 ---
-import { otherCollectionsText as others } from '../lib/data.ts';
+import { credited } from '../lib/data.ts';
 import { SITE, url } from '../lib/site.ts';
 import Icon from './Icon.astro';
 
-const source = SITE.defaultSource;
+const { items } = credited;
 ---
 
 <footer class="site-footer">
   {/* Spaces around the links are written out: line breaks next to tags are not kept as spaces. */}
   <p>
     The wallpapers belong to their original artists and were collected from{' '}
-    <a class="link" href={source.url}>{source.name}</a>
-    {others && <>{' '}and <a class="link" href={url('/sources/')}>{others}</a></>}
+    {items.map((item, i) => (
+      <>
+        {i > 0 && (i === items.length - 1 ? ' and ' : ', ')}
+        <a class="link" href={item.href}>{item.name}</a>
+      </>
+    ))}
+    {' on GitHub'}
     {'. Want one credited or removed? '}
     <a class="link" href={`${SITE.repo}/issues/new/choose`}>Open an issue</a>. The code of this site is{' '}
     <a class="link" href={`${SITE.repo}/blob/main/LICENSE`}>MIT licensed</a>.

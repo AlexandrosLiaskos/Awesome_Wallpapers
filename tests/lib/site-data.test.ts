@@ -4,9 +4,9 @@ import {
   bySource,
   byTag,
   collectionIdsOf,
+  creditedCollections,
   listedCollections,
   neighbours,
-  otherCollections,
   related,
   sourceOf,
   stats,
@@ -206,20 +206,28 @@ describe('listedCollections', () => {
   });
 });
 
-describe('otherCollections', () => {
-  const own = { id: SITE.defaultSource.id };
+describe('creditedCollections', () => {
+  const info = (id: string) => ({ id, name: `Name ${id}`, repo: `owner/${id}` });
+  const pageUrl = (id: string) => `/base/sources/${id}/`;
+  const many = (n: number) => Array.from({ length: n }, (_, i) => info(`c${i + 1}`));
 
-  it('is null when the catalog has only the default collection, or none', () => {
-    expect(otherCollections([own])).toBeNull();
-    expect(otherCollections([])).toBeNull();
+  it('lists the collections as owner/repo with their page, in the order given', () => {
+    const { items } = creditedCollections([info('nordic'), info('gruvbox')], pageUrl);
+    expect(items).toEqual([
+      { id: 'nordic', name: 'owner/nordic', href: '/base/sources/nordic/' },
+      { id: 'gruvbox', name: 'owner/gruvbox', href: '/base/sources/gruvbox/' },
+    ]);
   });
 
-  it('names one other collection in words', () => {
-    expect(otherCollections([{ id: 'nordic' }, own])).toBe('one other collection');
+  it('writes the count in words up to ten and in digits after', () => {
+    expect(creditedCollections(many(1), pageUrl).countText).toBe('one');
+    expect(creditedCollections(many(2), pageUrl).countText).toBe('two');
+    expect(creditedCollections(many(4), pageUrl).countText).toBe('four');
+    expect(creditedCollections(many(10), pageUrl).countText).toBe('ten');
+    expect(creditedCollections(many(11), pageUrl).countText).toBe('11');
   });
 
-  it('counts the others, wherever the default collection is in the list', () => {
-    expect(otherCollections([{ id: 'gruvbox' }, own, { id: 'nordic' }, { id: 'rose-pine' }])).toBe('3 other collections');
-    expect(otherCollections([{ id: 'gruvbox' }, { id: 'nordic' }])).toBe('2 other collections');
+  it('keeps all 11 items', () => {
+    expect(creditedCollections(many(11), pageUrl).items).toHaveLength(11);
   });
 });
