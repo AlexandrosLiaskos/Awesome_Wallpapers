@@ -22,12 +22,17 @@ export function layoutTags(row: HTMLElement, toggle: HTMLButtonElement, open: bo
   }
 
   toggle.hidden = true;
-  const tops = [...new Set(items.map((item) => item.offsetTop))].sort((a, b) => a - b);
+  // Measured once, before anything is hidden: reading offsetTop after hiding a chip
+  // would make the browser lay the page out again for every chip.
+  const itemTops = items.map((item) => item.offsetTop);
+  const tops = [...new Set(itemTops)].sort((a, b) => a - b);
   const rows = wide ? ROWS_WIDE : ROWS_NARROW;
   if (tops.length <= rows) return;
 
   const lastTop = tops[rows - 1];
-  for (const item of items) if (item.offsetTop > lastTop) item.hidden = true;
+  items.forEach((item, i) => {
+    if (itemTops[i] > lastTop) item.hidden = true;
+  });
   toggle.hidden = false;
 
   // Make room for the toggle on the last row, and never end that row on the divider.

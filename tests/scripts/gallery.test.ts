@@ -103,6 +103,30 @@ describe('initGallery on a first page', () => {
     expect(fetchIndex).toHaveBeenCalledWith('/api/index.json');
   });
 
+  it('adds one batch per report of the sentinel, below the cards already there', async () => {
+    listing(300, 120);
+    initGallery(() => {});
+    const first = document.querySelector('[data-wall] > li');
+    const report = () =>
+      FakeObserver.last!.callback([{ isIntersecting: true } as IntersectionObserverEntry], FakeObserver.last as never);
+    const shown = () => [...document.querySelectorAll<HTMLElement>('[data-wall] > li')].map((item) => item.dataset.slug);
+
+    idle!();
+    // Reports before the index is in only wait for it; the first one after it adds a batch.
+    await vi.waitFor(() => {
+      report();
+      expect(shown()).toHaveLength(240);
+    });
+    expect(shown().slice(118, 122)).toEqual(['w118', 'w119', 'w120', 'w121']);
+    // The cards already there stay as they are, and the sentinel is watched again for the next batch.
+    expect(document.querySelector('[data-wall] > li')).toBe(first);
+    expect(FakeObserver.last!.observed.has(sentinel())).toBe(true);
+    report();
+    expect(shown()).toHaveLength(300);
+    report();
+    expect(shown()).toHaveLength(300);
+  });
+
   it('keeps the pager, and does not load the index, without IntersectionObserver', () => {
     vi.stubGlobal('IntersectionObserver', undefined);
     listing(300, 120);

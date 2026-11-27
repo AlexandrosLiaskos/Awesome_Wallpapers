@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { justify, type Box } from '../../src/lib/justify.ts';
+import { justify, justifyRows, type Box } from '../../src/lib/justify.ts';
 
 const opts = { targetHeight: 200, gap: 6 };
 
@@ -82,5 +82,35 @@ describe('justify', () => {
       expect(Number.isFinite(box.width) && box.width >= 0).toBe(true);
       expect(Number.isFinite(box.height) && box.height >= 0).toBe(true);
     }
+  });
+});
+
+describe('justifyRows', () => {
+  // A long, varied wall: desktop, ultrawide, phone and square images in a fixed pseudo-random order.
+  const shapes = [16 / 9, 21 / 9, 32 / 9, 16 / 10, 4 / 3, 1, 9 / 19.5, 3 / 2];
+  const many = Array.from({ length: 400 }, (_, i) => shapes[(i * 7 + (i >> 2)) % shapes.length]);
+
+  it('gives the same boxes as justify', () => {
+    expect(justifyRows(mixed, 1200, opts).boxes).toEqual(justify(mixed, 1200, opts));
+  });
+
+  it('settles every row before the last one, so a batch added at the end only lays out that row and the batch', () => {
+    for (const width of [360, 1200, 2560]) {
+      const o = { targetHeight: width < 640 ? 110 : 220, gap: 6 };
+      const whole = justify(many, width, o);
+      for (const shown of [1, 7, 120, 240, 361]) {
+        const { boxes, lastRow } = justifyRows(many.slice(0, shown), width, o);
+        expect(lastRow).toBeLessThanOrEqual(shown);
+        // The settled rows are already final...
+        expect(boxes.slice(0, lastRow)).toEqual(whole.slice(0, lastRow));
+        // ...and justifying from the last row on gives the rest exactly.
+        expect(justify(many.slice(lastRow), width, o)).toEqual(whole.slice(lastRow));
+      }
+    }
+  });
+
+  it('starts the last row at the end when the images fill their last row exactly', () => {
+    const { lastRow } = justifyRows([1, 1], 406, { targetHeight: 200, gap: 6 });
+    expect(lastRow).toBe(2);
   });
 });

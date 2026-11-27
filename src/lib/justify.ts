@@ -23,8 +23,18 @@ const MAX_GROWTH = 1.5;
  * height rather than stretched.
  */
 export function justify(ratios: number[], containerWidth: number, opts: Options): Box[] {
+  return justifyRows(ratios, containerWidth, opts).boxes;
+}
+
+/**
+ * Like `justify`, and also says where the last, unfinished row starts. A row is
+ * settled once the image after it is known, so the rows before `lastRow` stay as
+ * they are when images are added at the end: justifying the images from `lastRow`
+ * on gives the same boxes as justifying them all again.
+ */
+export function justifyRows(ratios: number[], containerWidth: number, opts: Options): { boxes: Box[]; lastRow: number } {
   const { targetHeight, gap } = opts;
-  if (!(containerWidth > 0)) return ratios.map(() => ({ width: 0, height: 0 }));
+  if (!(containerWidth > 0)) return { boxes: ratios.map(() => ({ width: 0, height: 0 })), lastRow: 0 };
 
   const boxes: Box[] = [];
   /** The height at which images of these ratios exactly fill the container. */
@@ -50,8 +60,9 @@ export function justify(ratios: number[], containerWidth: number, opts: Options)
     }
   }
 
+  const lastRow = boxes.length;
   if (row.length > 0) place(row, Math.min(targetHeight, fit(row)));
-  return boxes;
+  return { boxes, lastRow };
 }
 
 /** Rounded down, so a row never overflows its container by a fraction of a pixel. */

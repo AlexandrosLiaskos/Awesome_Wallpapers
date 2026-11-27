@@ -18,7 +18,7 @@ import {
 } from '../lib/filter.ts';
 import { url } from '../lib/site.ts';
 import { PAGE_SIZE, inScope, nextBatch, parseScope, scopePath, type WallScope } from '../lib/wall-batches.ts';
-import { layoutWall } from './layout.ts';
+import { layoutAppended, layoutWall } from './layout.ts';
 
 type Facet = 'size' | 'shape' | 'color' | 'sort';
 
@@ -147,6 +147,8 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
   function place(slugs: string[]): void {
     const current = slugsOn(wall);
     const same = current.length === slugs.length && current.every((slug, i) => slug === slugs[i]);
+    // The same cards keep the layout they have; the resize observer keeps it right for the width.
+    if (same && wall.hasAttribute('data-ready')) return;
     if (!same) {
       build(slugs);
       wall.replaceChildren(...slugs.map((slug) => cards.get(slug)!));
@@ -160,7 +162,7 @@ function initFirstPage(wall: HTMLElement, scope: WallScope | null, open: (slug: 
     if (batch.length === 0) return;
     build(batch);
     wall.append(...batch.map((slug) => cards.get(slug)!));
-    layoutWall(wall);
+    layoutAppended(wall);
     watch();
   }
 
