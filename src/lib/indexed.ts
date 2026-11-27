@@ -9,7 +9,7 @@ import { bucketsOf } from './colors.ts';
 import { slugify, toSlug } from './slug.ts';
 import { inFolders, isWanted, type Source } from './sources.ts';
 import { fallbackTitle, titleFromPath } from './titles.ts';
-import type { ApprovedFile, Attribution, Wallpaper } from './types.ts';
+import type { ApprovedFile, Attribution, SkippedFile, Tag, Wallpaper } from './types.ts';
 
 const RAW_HOST = 'https://raw.githubusercontent.com';
 
@@ -97,13 +97,6 @@ export const SKIP = {
   moved: 'changed while it was downloaded',
 } as const;
 
-export interface Skipped {
-  path: string;
-  reason: string;
-  /** What went wrong, when the reason alone does not say. */
-  detail?: string;
-}
-
 const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v', 'ogv', 'wmv', 'flv'];
 
 /**
@@ -111,15 +104,16 @@ const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v', 'ogv', 'wmv
  * downloading: videos and images over 100 MB. Files outside the collection's folders, and files
  * that are neither pictures nor videos (a README, a licence), are not mentioned at all.
  */
-export function screenFiles(files: RemoteFile[], source: Source): { wanted: RemoteFile[]; skipped: Skipped[] } {
+export function screenFiles(files: RemoteFile[], source: Source): { wanted: RemoteFile[]; skipped: SkippedFile[] } {
   const wanted: RemoteFile[] = [];
-  const skipped: Skipped[] = [];
+  const skipped: SkippedFile[] = [];
   for (const file of files) {
-    if (isWanted(file.path, file.size, source)) wanted.push(file);
-    else if (!inFolders(file.path, source)) continue;
-    else if (isWanted(file.path, 0, source)) skipped.push({ path: file.path, reason: SKIP.tooLarge });
-    else if (VIDEO_EXTENSIONS.includes(file.path.slice(file.path.lastIndexOf('.') + 1).toLowerCase())) {
-      skipped.push({ path: file.path, reason: SKIP.video });
+    const { path, sha } = file;
+    if (isWanted(path, file.size, source)) wanted.push(file);
+    else if (!inFolders(path, source)) continue;
+    else if (isWanted(path, 0, source)) skipped.push({ path, sha, reason: SKIP.tooLarge });
+    else if (VIDEO_EXTENSIONS.includes(path.slice(path.lastIndexOf('.') + 1).toLowerCase())) {
+      skipped.push({ path, sha, reason: SKIP.video });
     }
   }
   return { wanted, skipped };
@@ -131,14 +125,20 @@ export function combineTags(...lists: string[][]): string[] {
 }
 
 /**
- * The title of a new file: from its file name, or else from its first two tags and the lowest
- * number that no title in `titles` (the others of its collection) has.
+ * The title of a new file: from its file name, or else from its first two subject tags and the
+ * lowest number that no title in `titles` (the others of its collection) has. Palette tags, which
+ * include the collection's own, say little about the picture and are used only when it has no
+ * subject tag.
  */
-export function titleOf(path: string, tags: string[], labels: Record<string, string>, titles: ReadonlySet<string>): string {
+export function titleOf(path: string, tags: string[], vocabulary: Tag[], titles: ReadonlySet<string>): string {
   const named = titleFromPath(path);
   if (named) return named;
+  const labels = Object.fromEntries(vocabulary.map((tag) => [tag.slug, tag.label]));
+  const subjects = new Set(vocabulary.filter((tag) => tag.kind === 'subject').map((tag) => tag.slug));
+  const describing = tags.filter((tag) => subjects.has(tag));
+  const words = (describing.length > 0 ? describing : tags).slice(0, 2);
   for (let n = 1; ; n++) {
-    const title = fallbackTitle(tags.slice(0, 2), labels, n);
+    const title = fallbackTitle(words, labels, n);
     if (!titles.has(title)) return title;
   }
 }

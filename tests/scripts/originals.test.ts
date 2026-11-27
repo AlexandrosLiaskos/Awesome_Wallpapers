@@ -8,6 +8,7 @@ import {
   fetchOriginal,
   indexedItem,
   loadApproved,
+  loadCollection,
   withoutSlugClashes,
   type IndexedFile,
 } from '../../scripts/lib/originals.ts';
@@ -131,13 +132,16 @@ describe('indexedItem', () => {
   });
 });
 
-describe('loadApproved', () => {
+describe('loadCollection and loadApproved', () => {
   let dir: string;
+  const skipped = { path: 'small.png', sha: 's1', reason: 'long edge under 1280 px', detail: '1000x800' };
 
   beforeAll(async () => {
     dir = await mkdtemp(join(tmpdir(), 'aw-approved-'));
-    await writeFile(join(dir, 'listed.json'), JSON.stringify([approvedFile('a.png', 'a1')]));
+    await writeFile(join(dir, 'listed.json'), JSON.stringify({ approved: [approvedFile('a.png', 'a1')], skipped: [skipped] }));
+    await writeFile(join(dir, 'unskipped.json'), JSON.stringify({ approved: [approvedFile('a.png', 'a1')] }));
     await writeFile(join(dir, 'object.json'), JSON.stringify({ path: 'a.png' }));
+    await writeFile(join(dir, 'list.json'), JSON.stringify([approvedFile('a.png', 'a1')]));
     await writeFile(join(dir, 'broken.json'), '[{');
   });
 
@@ -145,16 +149,20 @@ describe('loadApproved', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it('reads the approved files of a collection', async () => {
+  it('reads the approved and the skipped files of a collection', async () => {
+    expect(await loadCollection(dir, 'listed')).toEqual({ approved: [approvedFile('a.png', 'a1')], skipped: [skipped] });
     expect(await loadApproved(dir, 'listed')).toEqual([approvedFile('a.png', 'a1')]);
+    expect(await loadCollection(dir, 'unskipped')).toEqual({ approved: [approvedFile('a.png', 'a1')], skipped: [] });
   });
 
   it('has none for a collection without a file', async () => {
+    expect(await loadCollection(dir, 'missing')).toEqual({ approved: [], skipped: [] });
     expect(await loadApproved(dir, 'missing')).toEqual([]);
   });
 
-  it('names the file when it is not a list', async () => {
+  it('names the file when it is not shaped as documented', async () => {
     await expect(loadApproved(dir, 'object')).rejects.toThrow(/object\.json/);
+    await expect(loadApproved(dir, 'list')).rejects.toThrow(/list\.json/);
     await expect(loadApproved(dir, 'broken')).rejects.toThrow(/broken\.json/);
   });
 });

@@ -13,7 +13,7 @@ import {
   toWallpaper,
 } from '../../src/lib/indexed.ts';
 import type { Source } from '../../src/lib/sources.ts';
-import type { ApprovedFile } from '../../src/lib/types.ts';
+import type { ApprovedFile, Tag } from '../../src/lib/types.ts';
 
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -201,9 +201,9 @@ describe('screenFiles', () => {
     expect(screenFiles(files, walls)).toEqual({
       wanted: [files[0]],
       skipped: [
-        { path: 'walls/b.MP4', reason: SKIP.video },
-        { path: 'walls/c.jpg', reason: SKIP.tooLarge },
-        { path: 'walls/d.webm', reason: SKIP.video },
+        { path: 'walls/b.MP4', sha: '2', reason: SKIP.video },
+        { path: 'walls/c.jpg', sha: '3', reason: SKIP.tooLarge },
+        { path: 'walls/d.webm', sha: '4', reason: SKIP.video },
       ],
     });
   });
@@ -232,15 +232,29 @@ describe('combineTags', () => {
 });
 
 describe('titleOf', () => {
-  const labels = { nord: 'Nord', forest: 'Forest', city: 'City' };
+  const tag = (slug: string, label: string, kind: Tag['kind']): Tag => ({ slug, label, kind, description: label });
+  const vocabulary = [
+    tag('rose-pine', 'Rosé Pine', 'palette'),
+    tag('nord', 'Nord', 'palette'),
+    tag('minimal', 'Minimal', 'subject'),
+    tag('landscape', 'Landscape', 'subject'),
+    tag('city', 'City', 'subject'),
+  ];
 
   it('takes the title from the file name when it says something', () => {
-    expect(titleOf('walls/cyberpunk_car.png', ['nord', 'city'], labels, new Set())).toBe('Cyberpunk Car');
+    expect(titleOf('walls/cyberpunk_car.png', ['nord', 'city'], vocabulary, new Set())).toBe('Cyberpunk Car');
   });
 
-  it('otherwise names the file after its first two tags and the lowest number no other title has', () => {
-    const titles = new Set(['Nord Forest 1', 'Nord Forest 3']);
-    expect(titleOf('walls/wallhaven-x67oxo.png', ['nord', 'forest', 'city'], labels, titles)).toBe('Nord Forest 2');
-    expect(titleOf('walls/IMG_2034.jpg', ['nord', 'city'], labels, titles)).toBe('Nord City 1');
+  it('otherwise names the file after its first two subject tags and the lowest number no other title has', () => {
+    const titles = new Set(['Minimal Landscape 1', 'Minimal Landscape 3']);
+    expect(titleOf('walls/wallhaven-x67oxo.png', ['rose-pine', 'minimal', 'landscape', 'city'], vocabulary, titles)).toBe('Minimal Landscape 2');
+  });
+
+  it('uses a single subject tag on its own', () => {
+    expect(titleOf('walls/IMG_2034.jpg', ['rose-pine', 'city'], vocabulary, new Set())).toBe('City 1');
+  });
+
+  it('uses the palette and collection tags only when there is no subject tag', () => {
+    expect(titleOf('walls/IMG_2034.jpg', ['rose-pine', 'nord'], vocabulary, new Set(['Rosé Pine Nord 1']))).toBe('Rosé Pine Nord 2');
   });
 });

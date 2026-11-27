@@ -113,7 +113,8 @@ images/              the original files
 data/wallpapers.yml  a title and tags for each file, written by hand
 data/tags.yml        the tags that may be used
 data/sources.yml     the collections on GitHub that are indexed
-data/sources/        the files of each collection that were reviewed and approved
+data/sources/        the files of each collection that were reviewed and approved,
+                     and the ones skipped, with the reason
         │
         ▼
 scripts/build-media.ts   measures every image, extracts its colours,

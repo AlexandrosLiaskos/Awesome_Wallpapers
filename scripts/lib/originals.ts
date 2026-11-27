@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { availableFiles, rawFileUrl } from '../../src/lib/indexed.ts';
 import type { Source } from '../../src/lib/sources.ts';
-import type { ApprovedFile } from '../../src/lib/types.ts';
+import type { ApprovedFile, SkippedFile } from '../../src/lib/types.ts';
 import type { Listing } from './github.ts';
 import type { MediaItem } from './media.ts';
 
@@ -88,24 +88,42 @@ export function indexedItem(source: Source, file: ApprovedFile, deps: FetchDeps 
   };
 }
 
-/** The approved files of a collection, from `<dir>/<id>.json`; none when there is no such file. */
-export async function loadApproved(dir: string, id: string): Promise<ApprovedFile[]> {
+/**
+ * What `data/sources/<id>.json` keeps about a collection: the approved files, and the files sync
+ * skipped, so that it does not download them again until they change.
+ */
+export interface CollectionRecord {
+  approved: ApprovedFile[];
+  skipped: SkippedFile[];
+}
+
+/** A collection's record from `<dir>/<id>.json`; empty when there is no such file. */
+export async function loadCollection(dir: string, id: string): Promise<CollectionRecord> {
   const path = join(dir, `${id}.json`);
   let text: string;
   try {
     text = await readFile(path, 'utf8');
   } catch (error) {
-    if ((error as { code?: string }).code === 'ENOENT') return [];
+    if ((error as { code?: string }).code === 'ENOENT') return { approved: [], skipped: [] };
     throw error;
   }
-  let files: unknown;
+  let record: unknown;
   try {
-    files = JSON.parse(text);
+    record = JSON.parse(text);
   } catch (error) {
     throw new Error(`${path} is not valid JSON: ${reasonOf(error)}`);
   }
-  if (!Array.isArray(files)) throw new Error(`${path} must hold a list of approved files`);
-  return files as ApprovedFile[];
+  const fields = typeof record === 'object' && record !== null && !Array.isArray(record) ? (record as Record<string, unknown>) : {};
+  const { approved, skipped = [] } = fields;
+  if (!Array.isArray(approved) || !Array.isArray(skipped)) {
+    throw new Error(`${path} must hold { "approved": [...], "skipped": [...] }`);
+  }
+  return { approved: approved as ApprovedFile[], skipped: skipped as SkippedFile[] };
+}
+
+/** The approved files of a collection (see loadCollection). */
+export async function loadApproved(dir: string, id: string): Promise<ApprovedFile[]> {
+  return (await loadCollection(dir, id)).approved;
 }
 
 export interface OriginalsDeps {

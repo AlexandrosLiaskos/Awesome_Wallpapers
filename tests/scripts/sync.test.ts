@@ -7,10 +7,10 @@ import type { Listing, RemoteFile } from '../../scripts/lib/github.ts';
 import type { Derived } from '../../scripts/lib/media.ts';
 import { blobSha } from '../../scripts/lib/originals.ts';
 import { contactSheet, PER_SHEET } from '../../scripts/lib/sheet.ts';
-import { checkModel, formatApproved, summaryOf, syncSource, type SyncDeps, type SyncResult } from '../../scripts/sync.ts';
+import { checkModel, formatCollection, summaryOf, syncSource, type SyncDeps, type SyncResult } from '../../scripts/sync.ts';
 import { rawFileUrl, SKIP } from '../../src/lib/indexed.ts';
 import type { Source } from '../../src/lib/sources.ts';
-import type { ApprovedFile } from '../../src/lib/types.ts';
+import type { ApprovedFile, SkippedFile, Tag } from '../../src/lib/types.ts';
 
 const source: Source = {
   id: 'nordic-wallpapers',
@@ -25,7 +25,14 @@ const source: Source = {
   status: 'active',
 };
 
-const labels = { nord: 'Nord', forest: 'Forest', city: 'City', night: 'Night', gruvbox: 'Gruvbox' };
+const tag = (slug: string, label: string, kind: Tag['kind']): Tag => ({ slug, label, kind, description: label });
+const vocabulary = [
+  tag('nord', 'Nord', 'palette'),
+  tag('gruvbox', 'Gruvbox', 'palette'),
+  tag('forest', 'Forest', 'subject'),
+  tag('city', 'City', 'subject'),
+  tag('night', 'Night', 'subject'),
+];
 const LFS = Buffer.from('version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 123\n');
 
 /** A stand-in collection: each path has its bytes, what they measure and what the image taggers say about them. */
@@ -75,7 +82,7 @@ function collection(files: Record<string, Fake>, over: Partial<SyncDeps> = {}) {
       return { tags: fake.tags ?? [], hints: fake.hints ?? [] };
     }),
     taken: new Set<string>(),
-    labels,
+    vocabulary,
     ...over,
   };
   return { deps, listing };
@@ -154,17 +161,19 @@ describe('syncSource', () => {
     expect(result.review[0]).toMatchObject({ status: 'held', hints: ['sunset'] });
   });
 
-  it('titles meaningless names from their tags, numbered apart from the other titles of the collection', async () => {
-    const kept = approved('walls/forest/old.png', image('old'), { title: 'Nord Forest 1' });
+  it('titles meaningless names from their subject tags, numbered apart from the other titles of the collection', async () => {
+    const kept = approved('walls/forest/old.png', image('old'), { title: 'Forest City 1' });
     const { deps } = collection({
       'walls/forest/old.png': { bytes: image('old') },
-      'walls/forest/IMG_1.jpg': { bytes: image('one'), derived: {} },
-      'walls/forest/wallhaven-x67oxo.png': { bytes: image('two'), derived: {} },
+      'walls/forest/IMG_1.jpg': { bytes: image('one'), derived: {}, tags: ['gruvbox', 'city'] },
+      'walls/forest/wallhaven-x67oxo.png': { bytes: image('two'), derived: {}, tags: ['city', 'night'] },
+      'walls/IMG_2.jpg': { bytes: image('three'), derived: {}, tags: ['night'] },
     });
     const result = await syncSource(source, [kept], deps);
     expect(result.added.map((file) => [file.path, file.title])).toEqual([
-      ['walls/forest/IMG_1.jpg', 'Nord Forest 2'],
-      ['walls/forest/wallhaven-x67oxo.png', 'Nord Forest 3'],
+      ['walls/IMG_2.jpg', 'Night 1'],
+      ['walls/forest/IMG_1.jpg', 'Forest City 2'],
+      ['walls/forest/wallhaven-x67oxo.png', 'Forest City 3'],
     ]);
   });
 
@@ -204,14 +213,16 @@ describe('syncSource', () => {
     const result = await syncSource(source, [before], deps);
     expect(result.approved).toEqual([before]);
     expect(result.changed).toEqual([]);
-    expect(result.skipped).toEqual([{ path: 'walls/lake.png', reason: SKIP.download, detail: 'answered 503, after 3 tries' }]);
+    expect(result.skipped).toEqual([{ path: 'walls/lake.png', sha: blobSha(image('lake v2')), reason: SKIP.download, detail: 'answered 503, after 3 tries' }]);
+    expect(result.skipList).toEqual([]);
   });
 
   it('skips a file whose download is not the listed version', async () => {
     const { deps, listing } = collection({ 'walls/lake.png': { bytes: image('lake'), derived: {} } });
     if (listing.kind === 'ok') listing.files[0].sha = 'f'.repeat(40);
     const result = await syncSource(source, [], deps);
-    expect(result.skipped).toEqual([{ path: 'walls/lake.png', reason: SKIP.moved }]);
+    expect(result.skipped).toEqual([{ path: 'walls/lake.png', sha: 'f'.repeat(40), reason: SKIP.moved }]);
+    expect(result.skipList).toEqual([]);
     expect(deps.measure).not.toHaveBeenCalled();
   });
 
@@ -288,13 +299,62 @@ describe('syncSource', () => {
   });
 });
 
-describe('formatApproved', () => {
+describe('syncSource remembering skipped files', () => {
+  const small = { bytes: image('small'), derived: { width: 1000, height: 800 } };
+
+  it('does not download a skipped file again while its SHA stays the same', async () => {
+    const first = collection({ 'walls/small.png': small, 'walls/clip.mp4': { bytes: image('clip') } });
+    const one = await syncSource(source, [], first.deps);
+    expect(one.skipList).toEqual([
+      { path: 'walls/clip.mp4', sha: blobSha(image('clip')), reason: SKIP.video },
+      { path: 'walls/small.png', sha: blobSha(image('small')), reason: SKIP.tooSmall, detail: '1000x800' },
+    ]);
+
+    const second = collection({ 'walls/small.png': small, 'walls/clip.mp4': { bytes: image('clip') } });
+    const two = await syncSource(source, [], second.deps, one.skipList);
+    expect(second.deps.fetchOriginal).not.toHaveBeenCalled();
+    expect(two.skipped).toEqual([]);
+    expect(two.skipList).toEqual(one.skipList);
+  });
+
+  it('downloads it again when its SHA changes', async () => {
+    const remembered: SkippedFile[] = [{ path: 'walls/small.png', sha: blobSha(image('small')), reason: SKIP.tooSmall }];
+    const { deps } = collection({ 'walls/small.png': { bytes: image('small, larger'), derived: {}, tags: ['city'] } });
+    const result = await syncSource(source, [], deps, remembered);
+    expect(deps.fetchOriginal).toHaveBeenCalledTimes(1);
+    expect(result.added.map((file) => file.path)).toEqual(['walls/small.png']);
+    expect(result.skipList).toEqual([]);
+  });
+
+  it('forgets a skipped file that left the listing', async () => {
+    const remembered: SkippedFile[] = [{ path: 'walls/gone.png', sha: 'a'.repeat(40), reason: SKIP.tooSmall }];
+    const { deps } = collection({});
+    expect((await syncSource(source, [], deps, remembered)).skipList).toEqual([]);
+  });
+
+  it('remembers a changed file that is no longer usable, and keeps the list when the collection cannot be listed', async () => {
+    const before = approved('walls/small.png', image('big'));
+    const { deps } = collection({ 'walls/small.png': small });
+    const result = await syncSource(source, [before], deps);
+    expect(result.removed).toEqual([before]);
+    expect(result.skipList.map((file) => file.path)).toEqual(['walls/small.png']);
+
+    const failed = collection({}, { listTree: vi.fn(async (): Promise<Listing> => ({ kind: 'transient', reason: 'GitHub answered 502' })) });
+    expect((await syncSource(source, [], failed.deps, result.skipList)).skipList).toEqual(result.skipList);
+  });
+});
+
+describe('formatCollection', () => {
   it('writes one key per line, so a hand edit of the tags is a one-line change, and reads back the same', () => {
-    const files = [approved('walls/a.png', image('a'), { held: true, tags: ['nord'] })];
-    const text = formatApproved(files);
-    expect(JSON.parse(text)).toEqual(files);
-    expect(text).toContain('\n    "tags": ["nord"],\n');
-    expect(formatApproved([])).toBe('[]\n');
+    const record = {
+      approved: [approved('walls/a.png', image('a'), { held: true, tags: ['nord'] })],
+      skipped: [{ path: 'walls/b.png', sha: 'b'.repeat(40), reason: SKIP.tooSmall, detail: '1000x800' }],
+    };
+    const text = formatCollection(record);
+    expect(JSON.parse(text)).toEqual(record);
+    expect(text).toContain('\n      "tags": ["nord"],\n');
+    expect(text).toContain(`\n    {"path":"walls/b.png","sha":"${'b'.repeat(40)}","reason":"long edge under 1280 px","detail":"1000x800"}\n`);
+    expect(JSON.parse(formatCollection({ approved: [], skipped: [] }))).toEqual({ approved: [], skipped: [] });
   });
 });
 
@@ -312,7 +372,7 @@ describe('checkModel', () => {
 });
 
 describe('summaryOf', () => {
-  const empty: SyncResult = { approved: [], added: [], held: [], changed: [], removed: [], skipped: [], kept: [], review: [] };
+  const empty: SyncResult = { approved: [], added: [], held: [], changed: [], removed: [], skipped: [], skipList: [], kept: [], review: [] };
   const held = approved('walls/IMG_1.jpg', image('one'), { tags: ['nord'], held: true, title: 'Nord 1' });
   const added = approved('walls/a.png', image('a'));
   const result: SyncResult = {
@@ -321,10 +381,11 @@ describe('summaryOf', () => {
     held: [held],
     removed: [approved('walls/gone.png', image('gone'))],
     skipped: [
-      { path: 'walls/s1.png', reason: SKIP.tooSmall },
-      { path: 'walls/s2.png', reason: SKIP.tooSmall },
-      { path: 'walls/v.mp4', reason: SKIP.video },
+      { path: 'walls/s1.png', sha: '1', reason: SKIP.tooSmall },
+      { path: 'walls/s2.png', sha: '2', reason: SKIP.tooSmall },
+      { path: 'walls/v.mp4', sha: '3', reason: SKIP.video },
     ],
+    skipList: ['s1', 's2', 'v', 'old1', 'old2'].map((name) => ({ path: `walls/${name}`, sha: name, reason: SKIP.tooSmall })),
     kept: [{ path: 'walls/lake.png', tags: ['nord', 'night'], machine: ['nord', 'city'] }],
     review: [
       { file: held, status: 'held', preview: Buffer.alloc(0), hints: ['sunset'] },
@@ -342,7 +403,8 @@ describe('summaryOf', () => {
     expect(text).toContain('- Held for hand tagging: 1 (fewer than two tags after tagging)');
     expect(text).toContain('- Changed: 0');
     expect(text).toContain('- Removed: 1');
-    expect(text).toContain('- Skipped: 3 (long edge under 1280 px: 2, video: 1)');
+    expect(text).toContain('- Skipped this time: 3 (long edge under 1280 px: 2, video: 1)');
+    expect(text).toContain('- Skipped and remembered: 5, not downloaded again until they change');
     expect(text).toContain('nordic-wallpapers-01.jpg');
     expect(text).toContain('could not be listed (GitHub answered 502)');
   });

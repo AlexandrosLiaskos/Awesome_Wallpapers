@@ -101,6 +101,16 @@ export interface ApprovedFile {
   held?: boolean;
 }
 
+/** A file of an indexed collection that sync did not propose, and why; remembered until its SHA changes. */
+export interface SkippedFile {
+  path: string;
+  /** Git blob SHA of the version that was skipped. */
+  sha: string;
+  reason: string;
+  /** What went wrong, when the reason alone does not say. */
+  detail?: string;
+}
+
 /** What validation needs to know about a file on disk. */
 export interface FileFacts {
   file: string;
