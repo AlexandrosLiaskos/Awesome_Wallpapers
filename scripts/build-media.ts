@@ -10,7 +10,7 @@
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { validateCatalog } from '../src/lib/catalog.ts';
+import { slugOf, validateCatalog } from '../src/lib/catalog.ts';
 import { mergeDuplicates } from '../src/lib/dedup.ts';
 import { toWallpaper } from '../src/lib/indexed.ts';
 import { parseSources } from '../src/lib/sources.ts';
@@ -25,7 +25,7 @@ import {
   thumbnailsMatch,
   type MediaOptions,
 } from './lib/media.ts';
-import { availableOriginals, indexedItem, loadApproved } from './lib/originals.ts';
+import { availableOriginals, indexedItem, loadApproved, withoutSlugClashes } from './lib/originals.ts';
 import { scanImages } from './lib/scan.ts';
 
 const IMAGES_DIR = 'images';
@@ -50,11 +50,14 @@ try {
 
   const sources = parseSources(sourcesYaml, tags.map((tag) => tag.slug));
   const token = process.env.GITHUB_TOKEN || undefined;
-  const indexed = await availableOriginals(sources, {
+  const warn = (message: string) => console.warn(message);
+  const available = await availableOriginals(sources, {
     approved: (source) => loadApproved(APPROVED_DIR, source.id),
     list: (source) => listTree(source, { token }),
-    warn: (message) => console.warn(message),
+    warn,
   });
+  // Own slugs were checked by validateCatalog above; a clash with an indexed file only costs that file.
+  const indexed = withoutSlugClashes(entries.map(slugOf), available, warn);
 
   // Validation made sure every entry's file is there.
   const sha1 = new Map(files.map((facts) => [facts.file, facts.sha1]));

@@ -94,6 +94,11 @@ export interface ApprovedFile {
   palette: Swatch[];
   phash: string;
   featured?: boolean;
+  /**
+   * Set by sync when tagging left fewer than two tags. Validation fails and the build leaves the
+   * file out until someone tags it by hand and removes the mark.
+   */
+  held?: boolean;
 }
 
 /** What validation needs to know about a file on disk. */

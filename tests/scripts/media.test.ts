@@ -9,6 +9,7 @@ import {
   buildHomeOg,
   buildMedia,
   catalogOrder,
+  measureOriginal,
   ownItem,
   ownWallpaper,
   PIPELINE_VERSION,
@@ -232,6 +233,19 @@ describe('buildMedia', () => {
     expect(existsSync(join(opts.outDir, 't/solid-blue.webp'))).toBe(false);
     expect(existsSync(join(opts.outDir, 'og/solid-blue.jpg'))).toBe(false);
     expect(existsSync(join(opts.outDir, 't/tall.webp'))).toBe(true);
+  });
+});
+
+describe('measureOriginal', () => {
+  it('measures as the media step does and makes the very preview it writes', async () => {
+    const mopts = { outDir: join(root, 'out-measure'), cacheFile: join(root, 'cache', 'media-measure.json') };
+    const [tall, loop] = await ownItems([entries[1], entries[2]]);
+    const built = await buildMedia([tall, loop], mopts);
+    for (const item of [tall, loop]) {
+      const { derived, preview } = await measureOriginal(await item.read());
+      expect(derived).toEqual(built.derived.get(item.key));
+      expect(preview.equals(await readFile(join(mopts.outDir, 'p', `${item.slug}.webp`)))).toBe(true);
+    }
   });
 });
 

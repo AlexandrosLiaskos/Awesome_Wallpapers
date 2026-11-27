@@ -3,7 +3,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Listing } from '../../scripts/lib/github.ts';
-import { availableOriginals, fetchOriginal, indexedItem, loadApproved } from '../../scripts/lib/originals.ts';
+import {
+  availableOriginals,
+  fetchOriginal,
+  indexedItem,
+  loadApproved,
+  withoutSlugClashes,
+  type IndexedFile,
+} from '../../scripts/lib/originals.ts';
 import type { Source } from '../../src/lib/sources.ts';
 import type { ApprovedFile } from '../../src/lib/types.ts';
 
@@ -70,6 +77,13 @@ describe('fetchOriginal', () => {
       await expect(fetchOriginal(URL_, { fetch, sleep: noWait })).rejects.toThrow(String(status));
       expect(fetch).toHaveBeenCalledTimes(1);
     }
+  });
+
+  it('still gives up at once when the answer cannot be cancelled', async () => {
+    const body = { cancel: async () => Promise.reject(new Error('stream locked')) };
+    const fetch = vi.fn<Fetch>(async () => ({ status: 404, body }) as unknown as Response);
+    await expect(fetchOriginal(URL_, { fetch, sleep: noWait })).rejects.toThrow('answered 404');
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('counts a request that runs past the timeout as a network error', async () => {
@@ -199,6 +213,15 @@ describe('availableOriginals', () => {
     expect(warnings[0]).toContain('GitHub answered 502');
   });
 
+  it('leaves out a file that is still held for hand tagging, and says which', async () => {
+    const held = { ...b1, held: true };
+    const { deps, warnings } = setup({ [source.id]: [a1, held] }, { [source.id]: { kind: 'transient', reason: 'x' } });
+    expect(await availableOriginals([source], deps)).toEqual([{ source, file: a1 }]);
+    expect(warnings.filter((warning) => warning.includes('held'))).toEqual([
+      'Nordic Wallpapers: wallpapers/b.png is held for hand tagging: it is left out of this build',
+    ]);
+  });
+
   it('keeps the order of the collections and of their files', async () => {
     const { deps } = setup(
       { [source.id]: [b1, a1], [second.id]: [a1] },
@@ -209,6 +232,27 @@ describe('availableOriginals', () => {
       'rose-pine:wallpapers/a.png',
       'nordic-wallpapers:wallpapers/b.png',
       'nordic-wallpapers:wallpapers/a.png',
+    ]);
+  });
+});
+
+describe('withoutSlugClashes', () => {
+  const second: Source = { ...source, id: 'rose-pine', short: 'rose-pine', name: 'Rose Pine', repo: 'rose-pine/wallpapers' };
+  const file = (path: string, slug: string) => ({ ...approvedFile(path, 'x'), slug });
+
+  it('leaves out an indexed file whose slug an own wallpaper or an earlier indexed file already has, and says which', () => {
+    const warnings: string[] = [];
+    const indexed: IndexedFile[] = [
+      { source, file: file('a.png', 'aurora') },
+      { source, file: file('b.png', 'night-city') },
+      { source: second, file: file('c.png', 'aurora') },
+      { source: second, file: file('d.png', 'dunes') },
+    ];
+    const kept = withoutSlugClashes(['night-city', 'forest'], indexed, (message) => warnings.push(message));
+    expect(kept).toEqual([indexed[0], indexed[3]]);
+    expect(warnings).toEqual([
+      'Nordic Wallpapers: b.png is left out of this build, its address "night-city" is already used by an own wallpaper',
+      'Rose Pine: c.png is left out of this build, its address "aurora" is already used by Nordic Wallpapers: a.png',
     ]);
   });
 });

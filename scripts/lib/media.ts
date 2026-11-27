@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import sharp from 'sharp';
+import sharp, { type Sharp } from 'sharp';
 import { slugOf } from '../../src/lib/catalog.ts';
 import { aspectLabel, formatOf, shapeOf, sizeClass } from '../../src/lib/classify.ts';
 import { bucketsOf, paletteFromRgb } from '../../src/lib/colors.ts';
@@ -76,30 +76,15 @@ async function readCache(cacheFile: string): Promise<Cache> {
   }
 }
 
-async function derive(bytes: Buffer, outDir: string, slug: string): Promise<Derived> {
+/** An original decoded once: its first frame, upright, on the site background, and what it measures. */
+async function decode(bytes: Buffer): Promise<{ frame: () => Sharp; derived: Derived }> {
   const { pages = 1 } = await sharp(bytes).metadata();
-  // First frame only, upright, on the site background.
   const still = sharp(bytes, { pages: 1 }).rotate().flatten({ background: BACKGROUND });
   const { data, info } = await still.clone().raw().toBuffer({ resolveWithObject: true });
   const frame = () => sharp(data, { raw: { width: info.width, height: info.height, channels: info.channels } });
 
-  const [thumb, thumb2x, preview, og] = outputsOf(outDir, slug);
   const sample = await frame().resize(64, 64, { fit: 'fill' }).removeAlpha().raw().toBuffer();
-  const phash = await dHashOfFrame(frame());
-  await Promise.all([
-    frame().resize({ height: THUMB_HEIGHT }).webp({ quality: 72 }).toFile(thumb),
-    frame()
-      .resize({ height: THUMB_HEIGHT * 2, withoutEnlargement: true })
-      .webp({ quality: 60 })
-      .toFile(thumb2x),
-    frame()
-      .resize({ width: PREVIEW_EDGE, height: PREVIEW_EDGE, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 75 })
-      .toFile(preview),
-    frame().resize(1200, 630, { fit: 'cover', position: 'attention' }).jpeg({ quality: 70, mozjpeg: true }).toFile(og),
-  ]);
-
-  return {
+  const derived: Derived = {
     width: info.width,
     height: info.height,
     bytes: bytes.length,
@@ -108,8 +93,37 @@ async function derive(bytes: Buffer, outDir: string, slug: string): Promise<Deri
       hex: swatch.hex,
       share: Math.round(swatch.share * 1000) / 1000,
     })),
-    phash,
+    phash: await dHashOfFrame(frame()),
   };
+  return { frame, derived };
+}
+
+const previewOf = (frame: Sharp): Sharp =>
+  frame.resize({ width: PREVIEW_EDGE, height: PREVIEW_EDGE, fit: 'inside', withoutEnlargement: true }).webp({ quality: 75 });
+
+async function derive(bytes: Buffer, outDir: string, slug: string): Promise<Derived> {
+  const { frame, derived } = await decode(bytes);
+  const [thumb, thumb2x, preview, og] = outputsOf(outDir, slug);
+  await Promise.all([
+    frame().resize({ height: THUMB_HEIGHT }).webp({ quality: 72 }).toFile(thumb),
+    frame()
+      .resize({ height: THUMB_HEIGHT * 2, withoutEnlargement: true })
+      .webp({ quality: 60 })
+      .toFile(thumb2x),
+    previewOf(frame()).toFile(preview),
+    frame().resize(1200, 630, { fit: 'cover', position: 'attention' }).jpeg({ quality: 70, mozjpeg: true }).toFile(og),
+  ]);
+  return derived;
+}
+
+/**
+ * What the media step would measure from an original and the preview it would write, without
+ * writing anything. The taggers were calibrated on these previews, so sync tags new files from
+ * exactly this image.
+ */
+export async function measureOriginal(bytes: Buffer): Promise<{ derived: Derived; preview: Buffer }> {
+  const { frame, derived } = await decode(bytes);
+  return { derived, preview: await previewOf(frame()).toBuffer() };
 }
 
 /** Removes generated files that belong to no item. */

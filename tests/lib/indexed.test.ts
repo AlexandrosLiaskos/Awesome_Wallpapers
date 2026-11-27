@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import type { RemoteFile } from '../../scripts/lib/github.ts';
 import { bucketsOf } from '../../src/lib/colors.ts';
-import { availableFiles, diffListing, indexedSlug, rawFileUrl, toWallpaper } from '../../src/lib/indexed.ts';
+import {
+  availableFiles,
+  combineTags,
+  diffListing,
+  indexedSlug,
+  rawFileUrl,
+  screenFiles,
+  SKIP,
+  titleOf,
+  toWallpaper,
+} from '../../src/lib/indexed.ts';
 import type { Source } from '../../src/lib/sources.ts';
 import type { ApprovedFile } from '../../src/lib/types.ts';
 
@@ -175,5 +185,62 @@ describe('toWallpaper', () => {
   it('keeps the featured mark only when it is set', () => {
     expect(toWallpaper(source, { ...file, featured: true }).featured).toBe(true);
     expect('featured' in toWallpaper(source, file)).toBe(false);
+  });
+});
+
+describe('screenFiles', () => {
+  const walls: Source = { ...source, include: ['walls/'], exclude: ['walls/old/'] };
+
+  it('keeps the images worth downloading and skips videos and images over 100 MB at once', () => {
+    const files: RemoteFile[] = [
+      { path: 'walls/a.png', sha: '1', size: 1000 },
+      { path: 'walls/b.MP4', sha: '2', size: 1000 },
+      { path: 'walls/c.jpg', sha: '3', size: 104_857_601 },
+      { path: 'walls/d.webm', sha: '4', size: 1000 },
+    ];
+    expect(screenFiles(files, walls)).toEqual({
+      wanted: [files[0]],
+      skipped: [
+        { path: 'walls/b.MP4', reason: SKIP.video },
+        { path: 'walls/c.jpg', reason: SKIP.tooLarge },
+        { path: 'walls/d.webm', reason: SKIP.video },
+      ],
+    });
+  });
+
+  it('does not mention files outside the folders or files that are neither pictures nor videos', () => {
+    const files: RemoteFile[] = [
+      { path: 'README.md', sha: '1', size: 10 },
+      { path: 'walls/LICENSE', sha: '2', size: 10 },
+      { path: 'other/a.png', sha: '3', size: 10 },
+      { path: 'walls/old/b.mp4', sha: '4', size: 10 },
+    ];
+    expect(screenFiles(files, walls)).toEqual({ wanted: [], skipped: [] });
+  });
+});
+
+describe('combineTags', () => {
+  it('keeps the order of the lists, each tag once, at most five', () => {
+    expect(combineTags(['nord'], ['anime'], ['nord', 'gruvbox'], ['city', 'anime', 'night', 'neon'])).toEqual([
+      'nord',
+      'anime',
+      'gruvbox',
+      'city',
+      'night',
+    ]);
+  });
+});
+
+describe('titleOf', () => {
+  const labels = { nord: 'Nord', forest: 'Forest', city: 'City' };
+
+  it('takes the title from the file name when it says something', () => {
+    expect(titleOf('walls/cyberpunk_car.png', ['nord', 'city'], labels, new Set())).toBe('Cyberpunk Car');
+  });
+
+  it('otherwise names the file after its first two tags and the lowest number no other title has', () => {
+    const titles = new Set(['Nord Forest 1', 'Nord Forest 3']);
+    expect(titleOf('walls/wallhaven-x67oxo.png', ['nord', 'forest', 'city'], labels, titles)).toBe('Nord Forest 2');
+    expect(titleOf('walls/IMG_2034.jpg', ['nord', 'city'], labels, titles)).toBe('Nord City 1');
   });
 });

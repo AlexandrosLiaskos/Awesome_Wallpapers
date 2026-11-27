@@ -3,10 +3,12 @@
 // is kept here.
 
 import type { Listing, RemoteFile } from '../../scripts/lib/github.ts';
+import { MAX_TAGS } from './catalog.ts';
 import { aspectLabel, formatOf, shapeOf, sizeClass } from './classify.ts';
 import { bucketsOf } from './colors.ts';
 import { slugify, toSlug } from './slug.ts';
-import type { Source } from './sources.ts';
+import { inFolders, isWanted, type Source } from './sources.ts';
+import { fallbackTitle, titleFromPath } from './titles.ts';
 import type { ApprovedFile, Attribution, Wallpaper } from './types.ts';
 
 const RAW_HOST = 'https://raw.githubusercontent.com';
@@ -82,6 +84,63 @@ export function diffListing(
     changed: files.filter((file) => known.has(file.path) && known.get(file.path) !== file.sha),
     removed: approved.filter((file) => !listed.has(file.path)),
   };
+}
+
+/** Why a file of a collection is not proposed for review; the review summary counts files per reason. */
+export const SKIP = {
+  video: 'video',
+  tooLarge: 'over 100 MB',
+  lfs: 'Git LFS pointer',
+  tooSmall: 'long edge under 1280 px',
+  unreadable: 'not a readable image',
+  download: 'could not be downloaded',
+  moved: 'changed while it was downloaded',
+} as const;
+
+export interface Skipped {
+  path: string;
+  reason: string;
+  /** What went wrong, when the reason alone does not say. */
+  detail?: string;
+}
+
+const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v', 'ogv', 'wmv', 'flv'];
+
+/**
+ * Splits a listing into the files worth downloading (see isWanted) and those skipped without
+ * downloading: videos and images over 100 MB. Files outside the collection's folders, and files
+ * that are neither pictures nor videos (a README, a licence), are not mentioned at all.
+ */
+export function screenFiles(files: RemoteFile[], source: Source): { wanted: RemoteFile[]; skipped: Skipped[] } {
+  const wanted: RemoteFile[] = [];
+  const skipped: Skipped[] = [];
+  for (const file of files) {
+    if (isWanted(file.path, file.size, source)) wanted.push(file);
+    else if (!inFolders(file.path, source)) continue;
+    else if (isWanted(file.path, 0, source)) skipped.push({ path: file.path, reason: SKIP.tooLarge });
+    else if (VIDEO_EXTENSIONS.includes(file.path.slice(file.path.lastIndexOf('.') + 1).toLowerCase())) {
+      skipped.push({ path: file.path, reason: SKIP.video });
+    }
+  }
+  return { wanted, skipped };
+}
+
+/** Tags in the order of the lists, most trusted first, each once, at most MAX_TAGS. */
+export function combineTags(...lists: string[][]): string[] {
+  return [...new Set(lists.flat())].slice(0, MAX_TAGS);
+}
+
+/**
+ * The title of a new file: from its file name, or else from its first two tags and the lowest
+ * number that no title in `titles` (the others of its collection) has.
+ */
+export function titleOf(path: string, tags: string[], labels: Record<string, string>, titles: ReadonlySet<string>): string {
+  const named = titleFromPath(path);
+  if (named) return named;
+  for (let n = 1; ; n++) {
+    const title = fallbackTitle(tags.slice(0, 2), labels, n);
+    if (!titles.has(title)) return title;
+  }
 }
 
 /** An approved file as a wallpaper, classified the same way as the own catalog. */

@@ -50,9 +50,10 @@ export async function fetchOriginal(url: string, deps: FetchDeps = {}): Promise<
     try {
       const response = await request(url, { signal: AbortSignal.timeout(deps.timeoutMs ?? TIMEOUT_MS) });
       if (response.status === 200) return Buffer.from(await response.arrayBuffer());
-      await response.body?.cancel();
       status = response.status;
       reason = `answered ${status}`;
+      // The status is what counts; a body that cannot be cancelled changes nothing about it.
+      await response.body?.cancel().catch(() => {});
     } catch (error) {
       // A network error or the timeout, also while the body arrives.
       reason = reasonOf(error);
@@ -64,7 +65,7 @@ export async function fetchOriginal(url: string, deps: FetchDeps = {}): Promise<
 }
 
 /** The Git blob SHA of some bytes, as a tree listing gives it. */
-function blobSha(bytes: Buffer): string {
+export function blobSha(bytes: Buffer): string {
   return createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
 }
 
@@ -119,7 +120,9 @@ export interface OriginalsDeps {
  * a removed one shows nothing and is not asked. One without approved files is
  * not asked either, so a build needs no network until a collection is approved.
  * One that is gone shows nothing; one that could not be listed keeps its
- * approved files (see `availableFiles`).
+ * approved files (see `availableFiles`). A file still held for hand tagging is
+ * left out with a warning: validation keeps it from being merged, and a
+ * scheduled build must not stop over it.
  */
 export async function availableOriginals(sources: Source[], deps: OriginalsDeps): Promise<IndexedFile[]> {
   const found = await Promise.all(
@@ -135,8 +138,30 @@ export async function availableOriginals(sources: Source[], deps: OriginalsDeps)
         } else if (listing.kind === 'transient') {
           deps.warn(`${name} could not be listed (${listing.reason}): its approved files are kept`);
         }
-        return availableFiles(approved, listing).map((file) => ({ source, file }));
+        return availableFiles(approved, listing).flatMap((file) => {
+          if (!file.held) return [{ source, file }];
+          deps.warn(`${source.name}: ${file.path} is held for hand tagging: it is left out of this build`);
+          return [];
+        });
       }),
   );
   return found.flat();
+}
+
+/**
+ * The indexed files whose slug no own wallpaper and no earlier indexed file has. Two items with one
+ * slug would overwrite each other's pages and images; validation catches a clash before a merge,
+ * and a scheduled build leaves the later file out with a warning instead of stopping.
+ */
+export function withoutSlugClashes(ownSlugs: Iterable<string>, indexed: IndexedFile[], warn: (message: string) => void): IndexedFile[] {
+  const users = new Map<string, string>([...ownSlugs].map((slug) => [slug, 'an own wallpaper']));
+  return indexed.filter(({ source, file }) => {
+    const user = users.get(file.slug);
+    if (user !== undefined) {
+      warn(`${source.name}: ${file.path} is left out of this build, its address "${file.slug}" is already used by ${user}`);
+      return false;
+    }
+    users.set(file.slug, `${source.name}: ${file.path}`);
+    return true;
+  });
 }

@@ -108,13 +108,18 @@ export function parseSources(yamlText: string, knownTagSlugs: string[]): Source[
   });
 }
 
+/** Whether a path lies in the folders the collection is indexed from (include, minus exclude). */
+export function inFolders(path: string, source: Source): boolean {
+  if (source.include.length > 0 && !source.include.some((prefix) => path.startsWith(prefix))) return false;
+  return !source.exclude.some((prefix) => path.startsWith(prefix));
+}
+
 /** Whether a file of the collection is an image worth indexing. */
 export function isWanted(path: string, size: number, source: Source): boolean {
   const extension = path.slice(path.lastIndexOf('.') + 1).toLowerCase();
   if (!IMAGE_EXTENSIONS.includes(extension) || path.lastIndexOf('.') < path.lastIndexOf('/')) return false;
   if (size > MAX_SOURCE_BYTES) return false;
-  if (source.include.length > 0 && !source.include.some((prefix) => path.startsWith(prefix))) return false;
-  return !source.exclude.some((prefix) => path.startsWith(prefix));
+  return inFolders(path, source);
 }
 
 /** The collection's own tags plus those of the deepest mapped folder above the file. */

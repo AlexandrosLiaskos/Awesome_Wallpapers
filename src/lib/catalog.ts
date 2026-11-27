@@ -1,9 +1,12 @@
 import { parse } from 'yaml';
 import { toSlug } from './slug.ts';
-import type { Attribution, Entry, FileFacts, Issue, Tag } from './types.ts';
+import type { ApprovedFile, Attribution, Entry, FileFacts, Issue, Tag } from './types.ts';
 
 export const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 export const MAX_BYTES = 25 * 1024 * 1024;
+/** Every wallpaper carries this many different tags at least, and MAX_TAGS at most. */
+export const MIN_TAGS = 2;
+export const MAX_TAGS = 5;
 /** Long edge every wallpaper must reach. */
 export const MIN_LONG_EDGE = 1280;
 /** Long edge a newly contributed wallpaper must reach. */
@@ -145,7 +148,7 @@ export function validateCatalog(
     for (const tag of entry.tags) {
       if (!known.has(tag)) report('unknown-tag', entry.file, `tag "${tag}" is not in tags.yml`);
     }
-    if (new Set(entry.tags).size < 2) report('too-few-tags', entry.file, 'needs at least two different tags');
+    if (new Set(entry.tags).size < MIN_TAGS) report('too-few-tags', entry.file, 'needs at least two different tags');
     if (!slugOf(entry)) {
       report('empty-slug', entry.file, 'the filename has no letters or digits; add a "slug" to the entry');
     }
@@ -184,6 +187,50 @@ export function validateCatalog(
       group[0].file,
       `shares the address "${slugOf(group[0])}" with ${group.slice(1).map((e) => e.file).join(', ')}; add a "slug" to one of them`,
     );
+  }
+
+  return issues;
+}
+
+/** The approved files of one indexed collection, as kept in `data/sources/<id>.json`. */
+export interface ApprovedList {
+  id: string;
+  files: ApprovedFile[];
+}
+
+/**
+ * Checks the approved files of the indexed collections, each named `<collection id>:<path>`. A
+ * file must no longer be held for hand tagging and needs two to five different tags from
+ * tags.yml. A slug names a page and its images, so none may be used twice across the own
+ * wallpapers and every collection; a clash between two own wallpapers is left to validateCatalog.
+ */
+export function validateApproved(entries: Entry[], tags: Tag[], collections: ApprovedList[]): Issue[] {
+  const issues: Issue[] = [];
+  const report = (rule: string, file: string, message: string) => issues.push({ rule, file, message });
+  const known = new Set(tags.map((tag) => tag.slug));
+
+  const users: { name: string; slug: string; own: boolean }[] = entries
+    .filter((entry) => slugOf(entry))
+    .map((entry) => ({ name: `images/${entry.file}`, slug: slugOf(entry), own: true }));
+  for (const { id, files } of collections) {
+    for (const file of files) {
+      const name = `${id}:${file.path}`;
+      users.push({ name, slug: file.slug, own: false });
+      if (file.held) report('held', name, 'is held for hand tagging: give it two to five tags and remove "held"');
+      for (const tag of file.tags) {
+        if (!known.has(tag)) report('unknown-tag', name, `tag "${tag}" is not in tags.yml`);
+      }
+      const count = new Set(file.tags).size;
+      if (count < MIN_TAGS) report('too-few-tags', name, 'needs at least two different tags');
+      if (count > MAX_TAGS) report('too-many-tags', name, `has ${count} tags; at most ${MAX_TAGS} are allowed`);
+    }
+  }
+
+  for (const group of collisions(users, (user) => user.slug)) {
+    const indexed = group.filter((user) => !user.own);
+    if (indexed.length === 0) continue;
+    const others = group.filter((user) => user !== indexed[0]).map((user) => user.name);
+    report('slug-collision', indexed[0].name, `shares the address "${indexed[0].slug}" with ${others.join(', ')}; change one "slug"`);
   }
 
   return issues;
