@@ -4,9 +4,10 @@
 // The 64-bit fingerprint only shortlists pairs: it does not see a small logo in
 // the middle of a plain background (among our own wallpapers it pairs up 18
 // that differ, Tux and Windows on the same pink). A pair is a copy only when
-// the first swatches and the aspect ratios match too, and a comparison of the
+// the dominant colours and the aspect ratios match too, and a comparison of the
 // pictures themselves (given by the caller) agrees. A recolouring of one
-// artwork, a Nord and a Gruvbox version, fails on the first swatch.
+// artwork, a Nord and a Gruvbox version, fails on the dominant colour, or on
+// the picture comparison when the two themes' backgrounds are near-equal greys.
 //
 // Only copies in different collections merge, and a group takes in at most
 // one copy per collection: a collection's own files are left as its maintainer
@@ -17,7 +18,7 @@ import type { Wallpaper } from './types.ts';
 
 /** Fingerprints at most this many bits apart may show the same image. */
 const MAX_BITS = 6;
-/** First swatches at most this far apart in RGB are the same colouring. */
+/** Swatches at most this far apart in RGB are the same colour. */
 const MAX_COLOUR_DISTANCE = 24;
 /** Aspect ratios at most this far apart, relative to the wider one. */
 const MAX_ASPECT_DIFFERENCE = 0.03;
@@ -40,11 +41,16 @@ interface Halves {
   lo: number;
 }
 
-/** What the shortlist compares: the hash, the first swatch, the shape and the collection. */
-interface Print extends Halves {
+interface Rgb {
   r: number;
   g: number;
   b: number;
+}
+
+/** What the shortlist compares: the hash, the first two swatches, the shape and the collection. */
+interface Print extends Halves {
+  /** The first swatch, then the second if there is one. */
+  swatches: Rgb[];
   ratio: number;
   source: string;
 }
@@ -62,25 +68,37 @@ export function hamming(a: string, b: string): number {
   return bitsApart(halves(a), halves(b));
 }
 
+function rgbOf(hex: string): Rgb {
+  const value = parseInt(hex.slice(1), 16);
+  return { r: (value >> 16) & 255, g: (value >> 8) & 255, b: value & 255 };
+}
+
 function printOf(wallpaper: Wallpaper): Print | undefined {
-  const first = wallpaper.palette[0]?.hex;
-  if (!first || !HASH.test(wallpaper.phash) || !(wallpaper.height > 0)) return undefined;
-  const value = parseInt(first.slice(1), 16);
+  if (!wallpaper.palette[0]?.hex || !HASH.test(wallpaper.phash) || !(wallpaper.height > 0)) return undefined;
   return {
     ...halves(wallpaper.phash),
-    r: (value >> 16) & 255,
-    g: (value >> 8) & 255,
-    b: value & 255,
+    swatches: wallpaper.palette.slice(0, 2).map((swatch) => rgbOf(swatch.hex)),
     ratio: wallpaper.width / wallpaper.height,
     source: wallpaper.sourceId,
   };
+}
+
+const near = (x: Rgb, y: Rgb) => (x.r - y.r) ** 2 + (x.g - y.g) ** 2 + (x.b - y.b) ** 2 <= MAX_COLOUR_DISTANCE ** 2;
+
+/**
+ * Whether two wallpapers have the same dominant colours: each one's first swatch
+ * is near one of the other's first two. Two colours that cover about as much of
+ * a picture can swap places between copies.
+ */
+function sameColouring(a: Print, b: Print): boolean {
+  return b.swatches.some((swatch) => near(a.swatches[0], swatch)) && a.swatches.some((swatch) => near(b.swatches[0], swatch));
 }
 
 /** The cheap checks besides the hash; a pair that passes them goes to the picture comparison. */
 function alike(a: Print, b: Print): boolean {
   if (a.source === b.source) return false;
   if (Math.abs(a.ratio - b.ratio) > MAX_ASPECT_DIFFERENCE * Math.max(a.ratio, b.ratio)) return false;
-  return (a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2 <= MAX_COLOUR_DISTANCE ** 2;
+  return sameColouring(a, b);
 }
 
 /** The wallpapers that share one hash, in the order they are handled. */

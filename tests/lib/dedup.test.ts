@@ -79,6 +79,33 @@ describe('mergeDuplicates', () => {
     expect(await mergeDuplicates(list, same)).toHaveLength(2);
   });
 
+  it('merges copies whose two dominant colours swap places', async () => {
+    // Own "Forest Cabin" and Gruvbox "Cabin": the same picture, its two greens 43%/32% in one and 36%/36% in the other.
+    const own = wallpaper('cabin', { sourceId: 'own', palette: [{ hex: '#29352c', share: 0.433 }, { hex: '#495747', share: 0.32 }] });
+    const gruvbox = wallpaper('cabin-gruvbox', {
+      sourceId: 'gruvbox',
+      phash: flip(HASH, 1),
+      palette: [{ hex: '#475847', share: 0.357 }, { hex: '#26362b', share: 0.355 }],
+    });
+    expect(await mergeDuplicates([own, gruvbox], same)).toEqual([{ ...own, alsoIn: ['gruvbox'] }]);
+    expect(await mergeDuplicates([gruvbox, own], same)).toEqual([{ ...own, alsoIn: ['gruvbox'] }]);
+  });
+
+  it("needs each first swatch near one of the other's first two", async () => {
+    const dark = { hex: '#2e3440', share: 0.6 };
+    const blue = { hex: '#5e81ac', share: 0.3 };
+    const red = { hex: '#bf616a', share: 0.3 };
+    // b's first swatch is a's second, but a's first is not among b's first two.
+    const a = wallpaper('a', { palette: [dark, blue] });
+    const b = wallpaper('b', { sourceId: 'gruvbox', palette: [blue, red] });
+    expect(await mergeDuplicates([a, b], same)).toHaveLength(2);
+    // Within 24 of the second swatch counts, just over does not: #2e3458 is 24 from #2e3440, #2e3459 is 25.
+    const within = wallpaper('within', { sourceId: 'gruvbox', palette: [blue, { hex: '#2e3458', share: 0.3 }] });
+    const over = wallpaper('over', { sourceId: 'gruvbox', palette: [blue, { hex: '#2e3459', share: 0.3 }] });
+    expect(await mergeDuplicates([a, within], same)).toHaveLength(1);
+    expect(await mergeDuplicates([a, over], same)).toHaveLength(2);
+  });
+
   it('needs aspect ratios within 3%', async () => {
     const a = wallpaper('a');
     // 1920×1110 is 2.7% narrower than 16:9; 1920×1120 is 3.6% narrower.
