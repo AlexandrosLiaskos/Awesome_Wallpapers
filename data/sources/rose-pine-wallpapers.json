@@ -379,17 +379,17 @@
       "phash": "0038464848463000"
     },
     {
-      "path": "illustration/n-cubed-2025-moon.png",
-      "sha": "24473955d437cc64bb71047780125c8fdf510583",
-      "slug": "n-cubed-2025-moon-rose-pine",
-      "title": "N Cubed Moon",
+      "path": "illustration/n-cubed-2025.png",
+      "sha": "a3639316219c22a0d296b0189e2bd532588bf683",
+      "slug": "n-cubed-2025-rose-pine",
+      "title": "N Cubed",
       "tags": ["rose-pine","typography","minimal","tech"],
       "width": 1920,
       "height": 1080,
-      "bytes": 53127,
+      "bytes": 19784,
       "animated": false,
-      "palette": [{"hex":"#232136","share":0.948},{"hex":"#67657a","share":0.017},{"hex":"#464459","share":0.017},{"hex":"#858398","share":0.014},{"hex":"#a9a7bc","share":0.005}],
-      "phash": "12c2b8b2b6384202"
+      "palette": [{"hex":"#191724","share":0.946},{"hex":"#585666","share":0.02},{"hex":"#393746","share":0.017},{"hex":"#797788","share":0.011},{"hex":"#9896a8","share":0.007}],
+      "phash": "0042b8b6b6340200"
     },
     {
       "path": "illustration/obliquas-dark.jpg",
@@ -822,17 +822,17 @@
       "phash": "0203060616140904"
     },
     {
-      "path": "os/arch-btw-moon.png",
-      "sha": "5bc8ed187eda3aa453de84e2391baf8b87ee1322",
-      "slug": "arch-btw-moon-rose-pine",
-      "title": "Arch Moon",
+      "path": "os/arch-btw.png",
+      "sha": "0b25e46d2fd4581eb30ec05bbd98b0d9c8481027",
+      "slug": "arch-btw-rose-pine",
+      "title": "Arch",
       "tags": ["rose-pine","linux","minimal"],
       "width": 3840,
       "height": 2160,
-      "bytes": 48116,
+      "bytes": 47969,
       "animated": false,
-      "palette": [{"hex":"#2a273f","share":0.813},{"hex":"#f7c176","share":0.069},{"hex":"#9bcfd9","share":0.044},{"hex":"#4097b8","share":0.044},{"hex":"#e8e6fb","share":0.029}],
-      "phash": "01060909090a0601"
+      "palette": [{"hex":"#1f1d2e","share":0.784},{"hex":"#f7c176","share":0.071},{"hex":"#e8e6fc","share":0.069},{"hex":"#337b96","share":0.046},{"hex":"#263e52","share":0.03}],
+      "phash": "01020909090b0601"
     },
     {
       "path": "os/arch.jpg",
@@ -1174,7 +1174,7 @@
     }
   ],
   "skipped": [
-    {"path":"illustration/n-cubed-2025.png","sha":"a3639316219c22a0d296b0189e2bd532588bf683","reason":"declined: tone variant of illustration/n-cubed-2025-moon.png"},
-    {"path":"os/arch-btw.png","sha":"0b25e46d2fd4581eb30ec05bbd98b0d9c8481027","reason":"declined: tone variant of os/arch-btw-moon.png"}
+    {"path":"illustration/n-cubed-2025-moon.png","sha":"24473955d437cc64bb71047780125c8fdf510583","reason":"declined: tone variant of illustration/n-cubed-2025.png"},
+    {"path":"os/arch-btw-moon.png","sha":"5bc8ed187eda3aa453de84e2391baf8b87ee1322","reason":"declined: tone variant of os/arch-btw.png"}
   ]
 }
