@@ -5,10 +5,13 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Listing } from '../../scripts/lib/github.ts';
 import {
   availableOriginals,
+  checkLeftOut,
   fetchOriginal,
   indexedItem,
+  leftOutLimit,
   loadApproved,
   loadCollection,
+  retryAfterMs,
   withoutSlugClashes,
   type IndexedFile,
 } from '../../scripts/lib/originals.ts';
@@ -72,12 +75,67 @@ describe('fetchOriginal', () => {
     expect(down).toHaveBeenCalledTimes(3);
   });
 
-  it('gives up at once when the file is not there', async () => {
-    for (const status of [404, 403, 429]) {
+  it('gives up at once when the file is not there or access is refused', async () => {
+    for (const status of [404, 403, 410]) {
       const fetch = answers(status);
       await expect(fetchOriginal(URL_, { fetch, sleep: noWait })).rejects.toThrow(String(status));
       expect(fetch).toHaveBeenCalledTimes(1);
     }
+  });
+
+  it('tries again after rate limiting, waiting as long as Retry-After asks, at most a minute', async () => {
+    let call = 0;
+    const steps = [
+      new Response('slow down', { status: 429, headers: { 'retry-after': '7' } }),
+      new Response('slow down', { status: 403, headers: { 'retry-after': '3600' } }),
+      new Response(new Uint8Array([1, 2, 3]), { status: 200 }),
+    ];
+    const fetch = vi.fn<Fetch>(async () => steps[call++]);
+    const sleep = vi.fn(noWait);
+    expect([...(await fetchOriginal(URL_, { fetch, sleep }))]).toEqual([1, 2, 3]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(sleep.mock.calls.map(([ms]) => ms)).toEqual([7_000, 60_000]);
+  });
+
+  it('counts a 403 with no requests left as rate limiting, and a 429 without Retry-After waits as after a server error', async () => {
+    const limited = vi.fn<Fetch>(async () => new Response('', { status: 403, headers: { 'x-ratelimit-remaining': '0' } }));
+    await expect(fetchOriginal(URL_, { fetch: limited, sleep: noWait })).rejects.toThrow(/403, after 3 tries/);
+    expect(limited).toHaveBeenCalledTimes(3);
+
+    const sleep = vi.fn(noWait);
+    await fetchOriginal(URL_, { fetch: answers(429, 200), sleep });
+    expect(sleep.mock.calls.map(([ms]) => ms)).toEqual([2_000]);
+  });
+
+  it('sends the token to raw.githubusercontent.com only', async () => {
+    const fetch = answers(200);
+    await fetchOriginal(URL_, { fetch, sleep: noWait, token: 'secret' });
+    expect(new Headers(fetch.mock.calls[0][1]?.headers).get('authorization')).toBe('Bearer secret');
+
+    const elsewhere = answers(200);
+    await fetchOriginal('https://example.com/raw.githubusercontent.com/a.png', { fetch: elsewhere, sleep: noWait, token: 'secret' });
+    expect(new Headers(elsewhere.mock.calls[0][1]?.headers).has('authorization')).toBe(false);
+
+    const without = answers(200);
+    await fetchOriginal(URL_, { fetch: without, sleep: noWait });
+    expect(new Headers(without.mock.calls[0][1]?.headers).has('authorization')).toBe(false);
+  });
+
+  it('asks once more without the token when it is answered 404, as raw.githubusercontent.com does for a token it does not take', async () => {
+    const fetch = answers(404, 200);
+    expect([...(await fetchOriginal(URL_, { fetch, sleep: noWait, token: 'stale' }))]).toEqual([1, 2, 3]);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(new Headers(fetch.mock.calls[1][1]?.headers).has('authorization')).toBe(false);
+
+    const missing = answers(404);
+    await expect(fetchOriginal(URL_, { fetch: missing, sleep: noWait, token: 'stale' })).rejects.toThrow('answered 404');
+    expect(missing).toHaveBeenCalledTimes(2);
+  });
+
+  it('never names the token in an error', async () => {
+    await expect(fetchOriginal(URL_, { fetch: answers(404), sleep: noWait, token: 'secret' })).rejects.toThrow(
+      expect.objectContaining({ message: expect.not.stringContaining('secret') }),
+    );
   });
 
   it('still gives up at once when the answer cannot be cancelled', async () => {
@@ -102,6 +160,45 @@ describe('fetchOriginal', () => {
     const [first, second] = sleep.mock.calls.map(([ms]) => ms);
     expect(first).toBeGreaterThan(0);
     expect(second).toBeGreaterThan(first);
+  });
+});
+
+describe('retryAfterMs', () => {
+  const now = Date.parse('2026-11-27T12:00:00Z');
+  const of = (headers: Record<string, string>) => retryAfterMs(new Headers(headers), now);
+
+  it('reads seconds or a date from Retry-After, else the reset time, and caps the pause at a minute', () => {
+    expect(of({ 'retry-after': '30' })).toBe(30_000);
+    expect(of({ 'retry-after': 'Fri, 27 Nov 2026 12:00:20 GMT' })).toBe(20_000);
+    expect(of({ 'retry-after': '120' })).toBe(60_000);
+    expect(of({ 'x-ratelimit-reset': String(now / 1000 + 15) })).toBe(15_000);
+    expect(of({ 'retry-after': 'Fri, 27 Nov 2026 11:00:00 GMT' })).toBe(0);
+  });
+
+  it('has none when the answer asks for none', () => {
+    expect(of({})).toBeUndefined();
+    expect(of({ 'retry-after': 'soon' })).toBeUndefined();
+  });
+});
+
+describe('checkLeftOut', () => {
+  const second: Source = { ...source, id: 'gruvbox', short: 'gruvbox', name: 'Gruvbox Wallpapers', repo: 'AngelJumbo/gruvbox-wallpapers' };
+  const missing = (count: number, from: Source) =>
+    Array.from({ length: count }, (_, i): IndexedFile => ({ source: from, file: approvedFile(`w/${from.id}-${i}.png`, 'x') }));
+
+  it('lets a build leave out 10 files, or 2% of them when that is more', () => {
+    expect(leftOutLimit(100)).toBe(10);
+    expect(leftOutLimit(830)).toBe(16);
+    expect(leftOutLimit(4600)).toBe(92);
+    expect(() => checkLeftOut(missing(10, source), 100)).not.toThrow();
+    expect(() => checkLeftOut(missing(16, source), 830)).not.toThrow();
+  });
+
+  it('stops the build beyond that, naming each collection with its count', () => {
+    expect(() => checkLeftOut([...missing(12, second), ...missing(5, source)], 830)).toThrow(
+      '17 of the 830 files from the collections could not be fetched (Gruvbox Wallpapers: 12, Nordic Wallpapers: 5), more than the 16 a build may leave out.',
+    );
+    expect(() => checkLeftOut(missing(11, source), 100)).toThrow(/more than the 10/);
   });
 });
 
@@ -205,12 +302,21 @@ describe('availableOriginals', () => {
     expect(list.mock.calls.map(([s]) => s.id)).toEqual([paused.id]);
   });
 
-  it('drops a collection that is gone and says which', async () => {
+  it('drops a collection that is gone and says which, also for the job summary', async () => {
     const { deps, warnings } = setup({ [source.id]: [a1] }, { [source.id]: { kind: 'gone', status: 404 } });
-    expect(await availableOriginals([source], deps)).toEqual([]);
+    const gone: string[] = [];
+    expect(await availableOriginals([source], { ...deps, gone: (message) => gone.push(message) })).toEqual([]);
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain('Nordic Wallpapers');
     expect(warnings[0]).toContain('404');
+    expect(gone).toEqual(warnings);
+  });
+
+  it('tells the job summary only about a collection that is gone', async () => {
+    const { deps } = setup({ [source.id]: [a1] }, { [source.id]: { kind: 'transient', reason: 'GitHub answered 502' } });
+    const gone: string[] = [];
+    await availableOriginals([source], { ...deps, gone: (message) => gone.push(message) });
+    expect(gone).toEqual([]);
   });
 
   it('keeps the approved files of a collection that could not be listed, and says which', async () => {

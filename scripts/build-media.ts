@@ -6,7 +6,8 @@
 //
 //   node scripts/build-media.ts
 //
-// GITHUB_TOKEN, when set, is used to list the collections.
+// GITHUB_TOKEN, when set, is used to list the collections and to download their files. In GitHub
+// Actions, a collection that is gone and a build that stops are also written to the job summary.
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -25,8 +26,9 @@ import {
   thumbnailsMatch,
   type MediaOptions,
 } from './lib/media.ts';
-import { availableOriginals, indexedItem, loadApproved, withoutSlugClashes } from './lib/originals.ts';
+import { availableOriginals, checkLeftOut, indexedItem, loadApproved, withoutSlugClashes } from './lib/originals.ts';
 import { scanImages } from './lib/scan.ts';
+import { writeJobSummary } from './lib/summary.ts';
 
 const IMAGES_DIR = 'images';
 const SOURCES_FILE = 'data/sources.yml';
@@ -51,33 +53,43 @@ try {
   const sources = parseSources(sourcesYaml, tags.map((tag) => tag.slug));
   const token = process.env.GITHUB_TOKEN || undefined;
   const warn = (message: string) => console.warn(message);
+  const gone: string[] = [];
   const available = await availableOriginals(sources, {
     approved: (source) => loadApproved(APPROVED_DIR, source.id),
     list: (source) => listTree(source, { token }),
     warn,
+    gone: (message) => gone.push(message),
   });
+  if (gone.length > 0) {
+    const lines = gone.map((message) => `- ${message}`);
+    await writeJobSummary(['## Collections left out', '', ...lines, '', 'If one moved or renamed its branch, update data/sources.yml.'].join('\n'));
+  }
   // Own slugs were checked by validateCatalog above; a clash with an indexed file only costs that file.
   const indexed = withoutSlugClashes(entries.map(slugOf), available, warn);
 
   // Validation made sure every entry's file is there.
   const sha1 = new Map(files.map((facts) => [facts.file, facts.sha1]));
   const own = entries.map((entry) => ({ entry, item: ownItem(entry, IMAGES_DIR, sha1.get(entry.file)!) }));
-  const remote = indexed.map(({ source, file }) => ({ source, file, item: indexedItem(source, file) }));
+  const remote = indexed.map(({ source, file }) => ({ source, file, item: indexedItem(source, file, { token }) }));
   const { derived, failed, processed, cached } = await buildMedia(
     [...own.map(({ item }) => item), ...remote.map(({ item }) => item)],
     options,
   );
 
-  // An own file must build; an indexed one that cannot be fetched waits for the next build.
+  // An own file must build; an indexed one that cannot be fetched waits for the next build, as
+  // long as only a few do.
+  const missing: typeof remote = [];
   for (const { item, error } of failed) {
     const copy = remote.find((candidate) => candidate.item === item);
     if (copy) {
       console.warn(`${copy.source.name}: ${copy.file.path} is left out of this build (${error.message})`);
+      missing.push(copy);
     } else {
       const { entry } = own.find((candidate) => candidate.item === item)!;
       throw new Error(`images/${entry.file} could not be processed: ${error.message}`);
     }
   }
+  checkLeftOut(missing, remote.length);
 
   const list = [
     ...own.map(({ entry, item }) => ownWallpaper(entry, derived.get(item.key)!)),
@@ -97,4 +109,5 @@ try {
 } catch (error) {
   console.error((error as Error).message);
   process.exitCode = 1;
+  await writeJobSummary(`## Build stopped\n\n${(error as Error).message}`).catch(() => {});
 }

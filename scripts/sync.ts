@@ -10,7 +10,7 @@
 // that need hand tagging, and the skipped files, which are not downloaded again until they
 // change), contact sheets of the files to review to .cache/review/<id>-NN.jpg, and
 // .cache/review/summary.md, the pull request's body. GITHUB_TOKEN, when set, is used to list the
-// collections.
+// collections and to download their files.
 
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
@@ -381,7 +381,7 @@ async function main(): Promise<void> {
   const token = process.env.GITHUB_TOKEN || undefined;
   const deps: SyncDeps = {
     listTree: (source) => listTree(source, { token }),
-    fetchOriginal: (url) => fetchOriginal(url),
+    fetchOriginal: (url) => fetchOriginal(url, { token }),
     measure: measureOriginal,
     tag: imageTagger(JSON.parse(taggerText) as TaggerFile, weights.probes, loadClip),
     taken: new Set([...entries.map(slugOf), ...[...records.values()].flatMap((record) => record.approved.map((file) => file.slug))]),
