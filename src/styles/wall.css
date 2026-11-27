@@ -154,16 +154,30 @@ html.js .wall:not([data-ready]) {
   background: var(--bg);
 }
 
+/* Chips wrap. With scripts, the bar shows one row (two on small screens) and a chip that
+   opens the rest; the height is held from the start so nothing below moves. */
 .filters__tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 10px var(--pad);
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
-.filters__tags::-webkit-scrollbar {
-  display: none;
+html.js .filters__tags:not([data-state='open']) {
+  max-height: calc(10px + 32px + 10px);
+  overflow: hidden;
+}
+
+.chip--more {
+  border-style: dashed;
+  border-color: var(--line-strong);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.chip--more:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .filters__divider {
@@ -171,6 +185,10 @@ html.js .wall:not([data-ready]) {
   width: 1px;
   margin: 4px 6px;
   background: var(--line);
+}
+
+.filters__toggle {
+  display: none;
 }
 
 .filters__facets {
@@ -289,30 +307,49 @@ html.js .wall:not([data-ready]) {
   }
 }
 
-/* On small screens the facets share one row that scrolls sideways, like the tags above them. */
+/* On small screens two rows of tags show, and the facets open from a Filters button,
+   one per line, instead of running off the side. */
 @media (max-width: 860px) {
-  .filters__facets {
-    flex-wrap: nowrap;
-    gap: 10px;
-    overflow-x: auto;
-    scrollbar-width: none;
+  html.js .filters__tags:not([data-state='open']) {
+    max-height: calc(10px + 32px + 6px + 32px + 10px);
   }
 
-  .filters__facets::-webkit-scrollbar {
+  .filters__facets {
+    gap: 12px 16px;
+  }
+
+  .filters__toggle {
+    display: inline-flex;
+    order: -2;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .filters__toggle[aria-expanded='true'] {
+    border-color: var(--text);
+  }
+
+  .filters__facets:not([data-open]) .facet {
     display: none;
   }
 
   .facet {
-    flex: none;
+    flex: 1 1 100%;
   }
 
   .facet legend {
-    display: none;
+    width: 52px;
   }
 
   .filters__status {
-    flex: none;
-    margin-left: 4px;
+    order: -1;
     white-space: nowrap;
   }
 
