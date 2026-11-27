@@ -9,8 +9,17 @@ import {
 } from '@huggingface/transformers';
 import sharp from 'sharp';
 
-/** The subject thresholds in data/tagger.json were calibrated on this model; changing it means running npm run eval-tagger again. */
-export const CLIP_MODEL = 'Xenova/clip-vit-base-patch32';
+/**
+ * The model the subject probes and thresholds were fitted on, pinned to one commit of its files on
+ * the Hugging Face Hub, so a new upload there cannot change the tags. npm run eval-tagger writes it
+ * into data/tagger-weights.json and sync refuses weights fitted on anything else; changing any part
+ * means running the evaluation again.
+ */
+export const CLIP = {
+  id: 'Xenova/clip-vit-base-patch32',
+  revision: '6b7c523703ae26e39be4b03774966f8571c7f523',
+  dtype: 'q8',
+} as const;
 
 // Downloaded once on first use and kept out of git (.cache/ is ignored).
 const CACHE_DIR = fileURLToPath(new URL('../../.cache/models', import.meta.url));
@@ -26,18 +35,20 @@ function unitRows(data: Float32Array, count: number): Float32Array[] {
 }
 
 /**
- * Loads CLIP (quantized) for embedding images and texts into the same space, where their cosine
- * similarity says how well a text describes an image. Embeddings come back at unit length, which
- * is what the subject probes in data/tagger-weights.json were trained on.
+ * Loads CLIP (the files and quantization named in CLIP) for embedding images and texts into the
+ * same space, where their cosine similarity says how well a text describes an image. Embeddings
+ * come back at unit length, which is what the subject probes in data/tagger-weights.json were
+ * trained on.
  */
 export async function loadClip(): Promise<{ image(buffer: Buffer): Promise<Float32Array>; texts(prompts: string[]): Promise<Float32Array[]> }> {
   env.cacheDir = CACHE_DIR;
-  const options = { dtype: 'q8' } as const;
+  const files = { revision: CLIP.revision };
+  const options = { ...files, dtype: CLIP.dtype };
   const [tokenizer, processor, textModel, visionModel] = await Promise.all([
-    AutoTokenizer.from_pretrained(CLIP_MODEL),
-    AutoProcessor.from_pretrained(CLIP_MODEL),
-    CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, options),
-    CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, options),
+    AutoTokenizer.from_pretrained(CLIP.id, files),
+    AutoProcessor.from_pretrained(CLIP.id, files),
+    CLIPTextModelWithProjection.from_pretrained(CLIP.id, options),
+    CLIPVisionModelWithProjection.from_pretrained(CLIP.id, options),
   ]);
 
   return {

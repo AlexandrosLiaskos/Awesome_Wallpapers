@@ -16,9 +16,11 @@
 // probe that scores the held-out fold is then trained on all the training folds.
 //
 // Afterwards the probes and thresholds are fitted the same way on all wallpapers and written:
-// weights to data/tagger-weights.json, thresholds to data/tagger.json under "subjects", and the
-// held-out result under "subjectsGate", which sync checks with subjectsUsable. Exits 1 when the
-// held-out precision of everything the probes assigned is under MIN_PRECISION.
+// weights to data/tagger-weights.json with the model they were fitted on, thresholds to
+// data/tagger.json under "subjects", the held-out result under "subjectsGate", which sync checks
+// with subjectsUsable, and each tag's held-out figures under "subjectsHeldOut", which sync checks
+// with applicableSubjects. Exits 1 when the held-out precision of everything the probes assigned is
+// under MIN_PRECISION.
 
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
@@ -27,8 +29,16 @@ import { join } from 'node:path';
 import { slugOf } from '../src/lib/catalog.ts';
 import { paletteTags, type PaletteSetting } from '../src/lib/palettes.ts';
 import { probeScore, trainProbe, type Probe } from '../src/lib/probe.ts';
-import { chooseThreshold, MIN_PRECISION, similarities, subjectPrompts, suggestTags, type SubjectsGate } from '../src/lib/suggest.ts';
-import { CLIP_MODEL, loadClip } from './lib/clip.ts';
+import {
+  chooseThreshold,
+  MIN_PRECISION,
+  similarities,
+  subjectPrompts,
+  suggestTags,
+  type HeldOut,
+  type SubjectsGate,
+} from '../src/lib/suggest.ts';
+import { CLIP, loadClip } from './lib/clip.ts';
 import { loadCatalog } from './lib/load.ts';
 import { sampleForPalette } from './lib/palette-sample.ts';
 
@@ -43,13 +53,14 @@ const WEIGHTS_FILE = join('data', 'tagger-weights.json');
 // between runs, keyed by the preview's own bytes and by what made the embedding. Change CACHE_KEY
 // after changing how clip.ts prepares an image.
 const EMBEDDING_CACHE = join('.cache', 'clip-embeddings.json');
-const CACHE_KEY = `${CLIP_MODEL}, unit length`;
+const CACHE_KEY = `${CLIP.id}@${CLIP.revision} (${CLIP.dtype}), unit length`;
 
 interface Tagger {
   palettes?: Record<string, PaletteSetting>;
   prompts?: Record<string, string>;
   subjects?: Record<string, number | null>;
   subjectsGate?: SubjectsGate;
+  subjectsHeldOut?: Record<string, HeldOut>;
 }
 
 interface EmbeddingCache {
@@ -234,11 +245,13 @@ function tally(heldOut: string[][], slug: string): Tally {
 const final = Object.fromEntries(subjects.map((slug) => [slug, fitTag(everyone, slug)]));
 const rows = ['                           zero-shot  |  probe', 'tag            hand-tagged  precision  recall  |  threshold  assigned  correct  precision  recall'];
 const totals = { zeroShot: { assigned: 0, correct: 0 }, probe: { assigned: 0, correct: 0 }, tagged: 0 };
+const subjectsHeldOut: Record<string, HeldOut> = {};
 for (const slug of subjects) {
   const tagged = items.filter((item) => item.tags.has(slug)).length;
   const zeroShot = tally(heldOutZeroShot, slug);
   const probe = tally(heldOutProbe, slug);
   const threshold = final[slug].threshold;
+  subjectsHeldOut[slug] = { assigned: probe.assigned, precision: probe.assigned === 0 ? null : round4(probe.correct / probe.assigned) };
   totals.tagged += tagged;
   for (const [total, counts] of [[totals.zeroShot, zeroShot], [totals.probe, probe]] as const) {
     total.assigned += counts.assigned;
@@ -276,7 +289,7 @@ const passed = precision >= MIN_PRECISION;
 const withThreshold = subjects.filter((slug) => final[slug].threshold !== null);
 
 console.log(
-  `${CLIP_MODEL} (q8), ${items.length} hand-tagged wallpapers, ${FOLDS}-fold cross-validation (seed ${FOLD_SEED}), ` +
+  `${CLIP.id} (${CLIP.dtype}, revision ${CLIP.revision.slice(0, 7)}), ${items.length} hand-tagged wallpapers, ${FOLDS}-fold cross-validation (seed ${FOLD_SEED}), ` +
     `probe thresholds from ${INNER_FOLDS}-fold out-of-fold scores, precision >= ${MIN_PRECISION} per tag`,
 );
 console.log('Zero-shot prompts: "a <label> wallpaper"' + Object.entries(tagger.prompts ?? {}).map(([slug, text]) => `, ${slug}: "${text}"`).join(''));
@@ -287,13 +300,15 @@ console.log(summary('Probe (gated)', heldOutProbe, totals.probe));
 console.log(`Probes and thresholds written for ${withThreshold.length} of ${subjects.length} subject tags`);
 console.log(`Embedded ${embedded} previews, ${items.length - embedded} from cache; ${((performance.now() - started) / 1000).toFixed(1)} s`);
 
-// tagger.json is shared with the other taggers: only "subjects" and "subjectsGate" are written here.
+// tagger.json is shared with the other taggers: only the "subjects" keys are written here.
 // Both files are written whatever the gate says; sync assigns subject tags only when it passed.
 const subjectsGate: SubjectsGate = { precision: round4(precision), recall: round4(recall), passed };
-const thresholds = Object.fromEntries(
-  [...subjects].sort((a, b) => a.localeCompare(b)).map((slug) => [slug, final[slug].threshold === null ? null : floor4(final[slug].threshold!)]),
+const bySlug = <T>(record: Record<string, T>): Record<string, T> =>
+  Object.fromEntries(Object.entries(record).sort(([a], [b]) => a.localeCompare(b)));
+const thresholds = bySlug(
+  Object.fromEntries(subjects.map((slug) => [slug, final[slug].threshold === null ? null : floor4(final[slug].threshold!)])),
 );
-const merged = { ...tagger, subjects: thresholds, subjectsGate };
+const merged = { ...tagger, subjects: thresholds, subjectsGate, subjectsHeldOut: bySlug(subjectsHeldOut) };
 const sorted = Object.fromEntries(Object.entries(merged).sort(([a], [b]) => a.localeCompare(b)));
 await writeFile(TAGGER_FILE, JSON.stringify(sorted, null, 2) + '\n');
 
@@ -304,7 +319,8 @@ const probeLines = [...withThreshold]
     const probe = final[slug].probe!;
     return `    ${JSON.stringify(slug)}: ${JSON.stringify({ bias: round4(probe.bias), weights: probe.weights.map(round4) })}`;
   });
-await writeFile(WEIGHTS_FILE, `{\n  "model": ${JSON.stringify(CACHE_KEY)},\n  "probes": {\n${probeLines.join(',\n')}\n  }\n}\n`);
+// The probes work on unit-length image embeddings from exactly this model; sync checks it.
+await writeFile(WEIGHTS_FILE, `{\n  "model": ${JSON.stringify(CLIP)},\n  "probes": {\n${probeLines.join(',\n')}\n  }\n}\n`);
 console.log(`\nWrote ${TAGGER_FILE} and ${WEIGHTS_FILE}`);
 
 if (!passed) {

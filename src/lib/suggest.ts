@@ -79,6 +79,37 @@ export function subjectsUsable(tagger: { subjectsGate?: SubjectsGate }): boolean
   return tagger.subjectsGate?.passed === true;
 }
 
+/** What the evaluation records per subject tag about the probes' held-out assignments. */
+export interface HeldOut {
+  assigned: number;
+  /** null when nothing was assigned. */
+  precision: number | null;
+}
+
+/**
+ * Held-out precision a subject tag must reach to be assigned. The gate is passed by all tags
+ * together; this keeps out the few that pass in-sample but are mostly wrong on unseen wallpapers.
+ */
+export const MIN_TAG_PRECISION = 0.6;
+
+/**
+ * The subject thresholds sync may apply, for suggestTags: none unless the gate passed, and null for
+ * every tag whose held-out precision is missing or under MIN_TAG_PRECISION.
+ */
+export function applicableSubjects(tagger: {
+  subjects?: Record<string, number | null>;
+  subjectsGate?: SubjectsGate;
+  subjectsHeldOut?: Record<string, HeldOut>;
+}): Record<string, number | null> {
+  if (!subjectsUsable(tagger)) return {};
+  return Object.fromEntries(
+    Object.entries(tagger.subjects ?? {}).map(([slug, threshold]) => {
+      const precision = tagger.subjectsHeldOut?.[slug]?.precision;
+      return [slug, precision != null && precision >= MIN_TAG_PRECISION ? threshold : null];
+    }),
+  );
+}
+
 function norm(vector: Float32Array): number {
   let sum = 0;
   for (const value of vector) sum += value * value;

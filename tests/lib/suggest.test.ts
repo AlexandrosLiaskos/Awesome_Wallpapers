@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { chooseThreshold, similarities, subjectPrompts, subjectsUsable, suggestTags } from '../../src/lib/suggest.ts';
+import {
+  applicableSubjects,
+  chooseThreshold,
+  MIN_TAG_PRECISION,
+  similarities,
+  subjectPrompts,
+  subjectsUsable,
+  suggestTags,
+} from '../../src/lib/suggest.ts';
 import type { Tag } from '../../src/lib/types.ts';
 
 describe('chooseThreshold', () => {
@@ -102,5 +110,33 @@ describe('subjectsUsable', () => {
 
   it('is false when the gate was never run', () => {
     expect(subjectsUsable({})).toBe(false);
+  });
+});
+
+describe('applicableSubjects', () => {
+  const gate = { precision: 0.81, recall: 0.4, passed: true };
+  const subjects = { city: 2.1, sunset: 1.8, cozy: 1.9, retro: null };
+  const subjectsHeldOut = {
+    city: { assigned: 32, precision: 0.906 },
+    sunset: { assigned: 14, precision: 0.571 },
+    cozy: { assigned: 2, precision: MIN_TAG_PRECISION },
+    retro: { assigned: 0, precision: null },
+  };
+
+  it('keeps the thresholds of tags whose held-out precision reached the floor, and nulls the others', () => {
+    expect(applicableSubjects({ subjects, subjectsGate: gate, subjectsHeldOut })).toEqual({
+      city: 2.1,
+      sunset: null,
+      cozy: 1.9,
+      retro: null,
+    });
+  });
+
+  it('applies no subject tag when the gate did not pass', () => {
+    expect(applicableSubjects({ subjects, subjectsGate: { ...gate, passed: false }, subjectsHeldOut })).toEqual({});
+  });
+
+  it('applies no tag that has no held-out figure', () => {
+    expect(applicableSubjects({ subjects, subjectsGate: gate })).toEqual({ city: null, sunset: null, cozy: null, retro: null });
   });
 });
