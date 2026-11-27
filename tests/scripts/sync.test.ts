@@ -326,6 +326,28 @@ describe('syncSource remembering skipped files', () => {
     expect(result.skipList).toEqual([]);
   });
 
+  it('keeps a file declined by hand out, without downloading it, run after run', async () => {
+    // How the owner declines a file in the review pull request: its entry moves from approved to skipped.
+    const declined: SkippedFile = { path: 'walls/forest/lake.png', sha: blobSha(image('lake')), reason: 'declined' };
+    const files = {
+      'walls/forest/lake.png': { bytes: image('lake'), derived: {}, tags: ['city'] },
+      'walls/forest/pine.png': { bytes: image('pine'), derived: {}, tags: ['city'] },
+    };
+    const first = collection(files);
+    const one = await syncSource(source, [], first.deps, [declined]);
+    expect(first.deps.fetchOriginal).toHaveBeenCalledTimes(1);
+    expect(first.deps.fetchOriginal).not.toHaveBeenCalledWith(rawFileUrl(source, declined.path));
+    expect(one.approved.map((file) => file.path)).toEqual(['walls/forest/pine.png']);
+    expect(one.skipped).toEqual([]);
+    expect(one.skipList).toEqual([declined]);
+
+    const second = collection(files);
+    const two = await syncSource(source, one.approved, second.deps, one.skipList);
+    expect(second.deps.fetchOriginal).not.toHaveBeenCalled();
+    expect(two.approved).toEqual(one.approved);
+    expect(two.skipList).toEqual([declined]);
+  });
+
   it('forgets a skipped file that left the listing', async () => {
     const remembered: SkippedFile[] = [{ path: 'walls/gone.png', sha: 'a'.repeat(40), reason: SKIP.tooSmall }];
     const { deps } = collection({});
